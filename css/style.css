@@ -1,53 +1,51 @@
 /* ============================================
-   style.css - Custom CSS ส่วนที่ Tailwind ครอบคลุมไม่ถึง
-   (พื้นหลัง bg-slate-50 และการ์ดสีขาวกำหนดด้วย Tailwind ใน index.html)
+   style.css - Design System โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)
+   Modern Bento Grid, Soft Glassmorphism, Premium Shadows
    ============================================ */
 
-/* ---------- สีเน้น (Accent) สำหรับ Theme Switcher ----------
-   เปลี่ยนเฉพาะสีเน้น เพื่อคงพื้นเทาอ่อนและการ์ดขาวตาม Design System */
-:root,
-[data-theme="school"]  { --c-brand: 21 128 61;  --c-brand-soft: 254 249 195; } /* เขียวโรงเรียน + เหลืองอ่อน */
-[data-theme="ocean"]   { --c-brand: 37 99 235;  --c-brand-soft: 219 234 254; } /* น้ำเงิน */
-[data-theme="blossom"] { --c-brand: 219 39 119; --c-brand-soft: 252 231 243; } /* ชมพู */
+:root {
+  --bcs-green: #15803d;
+  --bcs-green-dark: #14532d;
+  --bcs-green-light: #22c55e;
+  --bcs-yellow: #f59e0b;
+  --bcs-yellow-gold: #fbbf24;
+  --bcs-blue-navy: #1e3a8a;
+}
 
 body {
   font-family: 'Prompt', sans-serif;
   word-break: break-word;
   overflow-wrap: break-word;
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
-/* สีเน้นเปลี่ยนแบบนุ่มนวลเมื่อสลับธีม */
-.bg-brand, .bg-brand-soft, .text-brand, .ring-brand, .border-brand {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* Glassmorphism Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
-/* ---------- เอฟเฟกต์ Floating ---------- */
-@keyframes floating {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50%      { transform: translateY(-14px) rotate(3deg); }
+.glass-dark {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.float-slow   { animation: floating 6s ease-in-out infinite; }
-.float-medium { animation: floating 4.5s ease-in-out infinite; animation-delay: -1.5s; }
 
-/* ---------- Hero Carousel ---------- */
-.carousel-track { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
-.carousel-dot { transition: width 0.3s ease, background-color 0.3s ease; }
-.carousel-dot.active { width: 2rem; background-color: #fff; }
-
-/* ---------- Dropdown "เพิ่มเติม" ---------- */
-.dropdown-panel {
-  opacity: 0; visibility: hidden; transform: translateY(-8px);
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+/* Modern Card Glow & Hover */
+.modern-card {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
 }
-.dropdown-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.modern-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 45px -12px rgba(21, 128, 61, 0.15);
+}
 
-/* ---------- Floating Widget ประกาศด่วน ---------- */
-.announce-widget { transition: opacity 0.4s ease, transform 0.4s ease; }
-.announce-widget.is-closing { opacity: 0; transform: translateY(24px); pointer-events: none; }
-.announce-widget.is-entering { animation: widget-in 0.5s ease both; }
-@keyframes widget-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ---------- สไตล์เส้นขอบสีใต้การ์ด 7 เมนูด่วน (Quick Action Cards) ---------- */
+/* 7 Quick Action Cards Border Accents */
 .card-border-blue    { border-bottom: 4px solid #2563eb; }
 .card-border-amber   { border-bottom: 4px solid #f59e0b; }
 .card-border-emerald { border-bottom: 4px solid #10b981; }
@@ -56,7 +54,25 @@ body {
 .card-border-orange  { border-bottom: 4px solid #ea580c; }
 .card-border-yellow  { border-bottom: 4px solid #eab308; }
 
-/* ---------- Staff Popup Modal ---------- */
+/* Carousel */
+.carousel-track { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.carousel-dot { transition: width 0.3s ease, background-color 0.3s ease; }
+.carousel-dot.active { width: 2.2rem; background-color: #fbbf24; }
+
+/* Subtle Floating Animations */
+@keyframes soft-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%      { transform: translateY(-10px) rotate(1.5deg); }
+}
+.float-subtle { animation: soft-float 5s ease-in-out infinite; }
+.float-delay-1 { animation: soft-float 6s ease-in-out 1s infinite; }
+.float-delay-2 { animation: soft-float 7s ease-in-out 2s infinite; }
+
+/* Mobile Menu Slide */
+.mobile-menu { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; }
+.mobile-menu.open { max-height: 600px; }
+
+/* Staff Modal */
 .modal-backdrop {
   opacity: 0;
   visibility: hidden;
@@ -67,22 +83,23 @@ body {
   visibility: visible;
 }
 .modal-box {
-  transform: scale(0.92) translateY(10px);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  transform: scale(0.92) translateY(12px);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 .modal-backdrop.open .modal-box {
   transform: scale(1) translateY(0);
 }
 
-/* ล็อกการเลื่อนหน้าเว็บหลักขณะเปิด Slide-over หรือ Modal */
+/* Floating Widget */
+.announce-widget { transition: opacity 0.4s ease, transform 0.4s ease; }
+.announce-widget.is-closing { opacity: 0; transform: translateY(24px); pointer-events: none; }
+.announce-widget.is-entering { animation: widget-in 0.5s ease both; }
+@keyframes widget-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
 body.no-scroll { overflow: hidden; }
 
-/* ---------- เมนูมือถือ ---------- */
-.mobile-menu { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
-.mobile-menu.open { max-height: 480px; }
-
-/* เคารพผู้ใช้ที่ปิดแอนิเมชันในระบบ */
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .float-slow, .float-medium { animation: none; }
-  .carousel-track { transition: none; }
+  .float-subtle, .float-delay-1, .float-delay-2 { animation: none; }
+  .carousel-track, .modern-card { transition: none; }
 }
