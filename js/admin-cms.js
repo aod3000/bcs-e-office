@@ -334,16 +334,30 @@ window.saveUserProfile = async function(userId) {
 
   try {
     const updates = {
-      is_active: newStatus,
-      updated_at: new Date().toISOString()
+      department_id: newDept
     };
     if (newRole) updates.role = newRole;
-    updates.department_id = newDept;
+    if (typeof newStatus === 'boolean') updates.is_active = newStatus;
+    updates.updated_at = new Date().toISOString();
 
-    const { error } = await getSupabase()
+    let { error } = await getSupabase()
       .from('profiles')
       .update(updates)
       .eq('id', userId);
+
+    // หากฐานข้อมูลยังไม่มี updated_at ให้ลองส่งใหม่โดยไม่รวม updated_at
+    if (error && error.message && error.message.includes('updated_at')) {
+      delete updates.updated_at;
+      const retry = await getSupabase().from('profiles').update(updates).eq('id', userId);
+      error = retry.error;
+    }
+
+    // หากฐานข้อมูลยังไม่มี is_active ให้ลองส่งใหม่โดยไม่รวม is_active
+    if (error && error.message && error.message.includes('is_active')) {
+      delete updates.is_active;
+      const retry = await getSupabase().from('profiles').update(updates).eq('id', userId);
+      error = retry.error;
+    }
 
     if (error) throw error;
 

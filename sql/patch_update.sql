@@ -4,9 +4,11 @@
 -- ปลอดภัย 100%: ไม่ลบข้อมูลเดิม และรันซ้ำได้ไม่จำกัด
 -- =====================================================================
 
--- 1) เพิ่มคอลัมน์ is_active ให้กับตาราง profiles (หากยังไม่มี)
+-- 1) เพิ่มคอลัมน์ is_active, updated_at, created_at ให้กับตาราง profiles (แก้ Error ทันที)
 alter table public.profiles 
-  add column if not exists is_active boolean not null default true;
+  add column if not exists is_active boolean not null default true,
+  add column if not exists updated_at timestamptz not null default now(),
+  add column if not exists created_at timestamptz not null default now();
 
 -- 2) เพิ่มคอลัมน์ kind ให้กับตาราง departments (หากยังไม่มี)
 alter table public.departments 
