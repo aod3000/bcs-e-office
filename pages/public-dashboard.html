@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แดชบอร์ดรายงานภาพรวมสถานศึกษา (Public Dashboard) | โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Prompt', 'sans-serif'] },
+          colors: {
+            brand: '#047857',
+            'brand-dark': '#064e3b',
+            'brand-gold': '#f59e0b'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    @media print {
+      header, footer, .no-print { display: none !important; }
+      body { background: white !important; color: black !important; padding: 0 !important; }
+      .print-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col justify-between antialiased">
+
+  <!-- ============================================================== -->
+  <!-- NAVBAR -->
+  <!-- ============================================================== -->
+  <header class="bg-[#0f172a] text-white border-b-2 border-amber-400 sticky top-0 z-40 shadow-lg">
+    <div class="mx-auto max-w-[1536px] px-4 sm:px-8 h-20 flex items-center justify-between">
+      <a href="../index.html" class="flex items-center gap-3 hover:opacity-95 transition">
+        <img src="../assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-12 w-auto drop-shadow">
+        <div>
+          <span class="block font-bold text-base text-white tracking-wide">รายงานภาพรวมสถานศึกษา</span>
+          <span class="block text-xs text-amber-300">โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) · ข้อมูลเปิดเผยสาธารณะ (Non-PII)</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <button onclick="window.print()" class="no-print rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>🖨️</span> <span>พิมพ์รายงาน</span>
+        </button>
+        <a href="student-portal.html" class="no-print rounded-xl bg-emerald-800 hover:bg-emerald-700 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>🎓</span> <span>ระบบนักเรียน</span>
+        </a>
+        <a href="../index.html" class="no-print rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2 text-xs font-bold transition flex items-center gap-1 shadow-sm">
+          <span>🏠</span> <span>หน้าแรก</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- MAIN DASHBOARD CONTENT -->
+  <!-- ============================================================== -->
+  <main class="mx-auto max-w-[1536px] w-full px-4 sm:px-8 py-8 flex-1 space-y-8">
+    
+    <!-- Title Banner & Disclaimer -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 print-card flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full mb-2 border border-emerald-200">
+          <span>🔒</span> ข้อมูลคุ้มครองตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA)
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+          แดชบอร์ดรายงานผลการดำเนินงานและสถิติการเรียนรู้
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl">
+          รายงานสถิติรวมของโรงเรียนในภาพกว้าง โดยไม่มีการเปิดเผยชื่อ เลขประจำตัว หรือข้อมูลส่วนบุคคลของนักเรียนรายบุคคล เพื่อความโปร่งใสและประโยชน์ในการพัฒนาการศึกษา
+        </p>
+      </div>
+
+      <!-- Filter Controls (No-print) -->
+      <div class="no-print flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 shrink-0">
+        <span class="text-xs font-bold text-slate-600 px-2">สายชั้น:</span>
+        <select id="grade-filter" class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white focus:outline-none focus:border-emerald-600">
+          <option value="all">ทุกระดับชั้น (ภาพรวมโรงเรียน)</option>
+          <option value="kindergarten">ระดับชั้นปฐมวัย (อ.1 - อ.3)</option>
+          <option value="primary_low">ประถมศึกษาตอนต้น (ป.1 - ป.3)</option>
+          <option value="primary_high">ประถมศึกษาตอนปลาย (ป.4 - ป.6)</option>
+          <option value="secondary">มัธยมศึกษาตอนต้น (ม.1 - ม.3)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 4 Key Summary Counter Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 print-card">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500">อัตราการมาเรียนรวมวันนี้</span>
+          <span class="p-2 rounded-xl bg-emerald-50 text-emerald-700 text-lg">🏫</span>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="metric-attendance" class="text-3xl font-black text-emerald-700">97.8%</span>
+          <span class="text-xs text-emerald-600 font-semibold">▲ สูงกว่าเป้าหมาย</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">เป้าหมายมาตรฐานสำนักการศึกษา: 95.0%</p>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 print-card">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500">อัตราการส่งงาน & ชิ้นงาน</span>
+          <span class="p-2 rounded-xl bg-amber-50 text-amber-700 text-lg">📝</span>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="metric-homework" class="text-3xl font-black text-amber-600">96.2%</span>
+          <span class="text-xs text-amber-600 font-semibold">ตามกำหนดเวลา</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">ส่งชิ้นงานผ่านระบบออนไลน์ครบถ้วน</p>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 print-card">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500">ผลการประเมินผ่านเกณฑ์</span>
+          <span class="p-2 rounded-xl bg-blue-50 text-blue-700 text-lg">🏆</span>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="metric-eval" class="text-3xl font-black text-blue-700">98.5%</span>
+          <span class="text-xs text-blue-600 font-semibold">ระดับคุณภาพดีเยี่ยม</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">การประเมินสมรรถนะผู้เรียนตามหลักสูตร</p>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 print-card">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-500">รายงานหน้าเดียว & กิจกรรม</span>
+          <span class="p-2 rounded-xl bg-purple-50 text-purple-700 text-lg">📊</span>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="metric-reports" class="text-3xl font-black text-purple-700">142</span>
+          <span class="text-xs text-purple-600 font-semibold">ฉบับในภาคเรียนนี้</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">สรุปการจัดกิจกรรมและการเรียนรู้</p>
+      </div>
+
+    </div>
+
+    <!-- Attendance Breakdown Visual -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- ฝั่งซ้าย: สถิติการเข้าเรียนประจำวัน -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 print-card space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span>📅</span> สถิติการเข้าเรียนประจำวันจำแนกตามสายชั้น
+          </h2>
+          <span class="text-xs text-slate-400">อัปเดตวันนี้ 08:30 น.</span>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>ระดับชั้นปฐมวัย (อนุบาล 1-3)</span>
+              <span class="text-emerald-700 font-bold">98.2% มาเรียน</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+              <div class="bg-emerald-600 h-full" style="width: 98.2%"></div>
+              <div class="bg-amber-400 h-full" style="width: 1.2%"></div>
+              <div class="bg-red-500 h-full" style="width: 0.6%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>ระดับชั้นประถมศึกษาตอนต้น (ป.1 - ป.3)</span>
+              <span class="text-emerald-700 font-bold">97.9% มาเรียน</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+              <div class="bg-emerald-600 h-full" style="width: 97.9%"></div>
+              <div class="bg-amber-400 h-full" style="width: 1.5%"></div>
+              <div class="bg-red-500 h-full" style="width: 0.6%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>ระดับชั้นประถมศึกษาตอนปลาย (ป.4 - ป.6)</span>
+              <span class="text-emerald-700 font-bold">97.5% มาเรียน</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+              <div class="bg-emerald-600 h-full" style="width: 97.5%"></div>
+              <div class="bg-amber-400 h-full" style="width: 1.8%"></div>
+              <div class="bg-red-500 h-full" style="width: 0.7%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>ระดับชั้นมัธยมศึกษาตอนต้น (ม.1 - ม.3)</span>
+              <span class="text-emerald-700 font-bold">96.8% มาเรียน</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+              <div class="bg-emerald-600 h-full" style="width: 96.8%"></div>
+              <div class="bg-amber-400 h-full" style="width: 2.2%"></div>
+              <div class="bg-red-500 h-full" style="width: 1.0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-6 pt-2 text-xs font-medium text-slate-500 border-t border-slate-100">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-600"></span> มาเรียนปกติ</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400"></span> ลาป่วย/ลากิจ</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span> ขาดเรียน</span>
+        </div>
+      </div>
+
+      <!-- ฝั่งขวา: ผลสัมฤทธิ์รายกลุ่มสาระ -->
+      <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 print-card space-y-6">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <span>📚</span> ร้อยละการผ่านเกณฑ์รายกลุ่มสาระ
+        </h2>
+
+        <div class="space-y-3 text-xs">
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+            <span class="font-bold text-slate-800">กลุ่มสาระการเรียนรู้ภาษาไทย</span>
+            <span class="font-extrabold text-emerald-700">98.4%</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+            <span class="font-bold text-slate-800">กลุ่มสาระการเรียนรู้คณิตศาสตร์</span>
+            <span class="font-extrabold text-emerald-700">95.6%</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+            <span class="font-bold text-slate-800">กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี</span>
+            <span class="font-extrabold text-emerald-700">97.2%</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+            <span class="font-bold text-slate-800">กลุ่มสาระการเรียนรู้ภาษาต่างประเทศ (EP)</span>
+            <span class="font-extrabold text-emerald-700">96.9%</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl">
+            <span class="font-bold text-slate-800">กลุ่มสาระการเรียนรู้สังคมศึกษา ศาสนาฯ</span>
+            <span class="font-extrabold text-emerald-700">99.1%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    © โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) · สำนักงานเขตคลองสามวา กรุงเทพมหานคร · ระบบรายงานสถิติแบบเปิดเผยข้อมูล
+  </footer>
+
+</body>
+</html>

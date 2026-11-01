@@ -366,6 +366,107 @@ where l.status = 'approved'
   and l.end_at   >= ((now() at time zone 'Asia/Bangkok')::date::timestamp at time zone 'Asia/Bangkok');
 
 -- =====================================================================
+-- Sprint 3: ระบบสายชั้น, เช็คชื่อนักเรียน, รายงานหน้าเดียว, และระบบนักเรียน
+-- =====================================================================
+
+-- ---------- 6) classrooms: ห้องเรียนประจำสายชั้น ----------
+create table if not exists public.classrooms (
+  id           bigint generated always as identity primary key,
+  grade_level  text not null,                       -- เช่น 'ป.1', 'ป.2', 'ม.1'
+  room_number  text not null,                       -- เช่น '1', '2', 'EP'
+  name         text not null unique,                -- เช่น 'ป.1/1', 'ป.1/2'
+  created_at   timestamptz not null default now()
+);
+
+-- ---------- 7) classroom_teachers: กำหนดครูประจำชั้น (รองรับหลายท่านต่อ 1 ห้อง) ----------
+create table if not exists public.classroom_teachers (
+  id           bigint generated always as identity primary key,
+  classroom_id bigint not null references public.classrooms(id) on delete cascade,
+  teacher_id   uuid not null references public.profiles(id) on delete cascade,
+  is_primary   boolean not null default false,
+  created_at   timestamptz not null default now(),
+  unique (classroom_id, teacher_id)
+);
+
+-- ---------- 8) grade_level_staff: ประธานสายชั้น และ IT ประจำสายชั้น (หลายท่านได้) ----------
+create table if not exists public.grade_level_staff (
+  id           bigint generated always as identity primary key,
+  grade_level  text not null,                       -- เช่น 'ป.1', 'ป.2'
+  staff_id     uuid not null references public.profiles(id) on delete cascade,
+  role_type    text not null check (role_type in ('chairperson', 'it_admin')), -- ประธานสายชั้น / IT ประจำสายชั้น
+  created_at   timestamptz not null default now(),
+  unique (grade_level, staff_id, role_type)
+);
+
+-- ---------- 9) students: ข้อมูลนักเรียน (จัดเก็บตามห้องเรียน) ----------
+create table if not exists public.students (
+  id           bigint generated always as identity primary key,
+  classroom_id bigint not null references public.classrooms(id) on delete cascade,
+  student_code text not null unique,                -- รหัสนักเรียน เช่น 'BCS-6901'
+  first_name   text not null,
+  last_name    text not null,
+  gender       text check (gender in ('M', 'F')),
+  is_active    boolean not null default true,
+  created_at   timestamptz not null default now()
+);
+create index if not exists students_classroom_idx on public.students(classroom_id);
+
+-- ---------- 10) student_attendance: บันทึกการเช็คชื่อนักเรียนประจำวัน ----------
+create table if not exists public.student_attendance (
+  id           bigint generated always as identity primary key,
+  student_id   bigint not null references public.students(id) on delete cascade,
+  classroom_id bigint not null references public.classrooms(id) on delete cascade,
+  date         date not null default current_date,
+  status       text not null check (status in ('present', 'absent', 'leave', 'late')), -- มา, ขาด, ลา, มาสาย
+  recorded_by  uuid not null references public.profiles(id),
+  remark       text,
+  created_at   timestamptz not null default now(),
+  unique (student_id, date)
+);
+create index if not exists attendance_date_room_idx on public.student_attendance(date, classroom_id);
+
+-- ---------- 11) assignments & submissions: ชิ้นงานที่มอบหมายและผลงานนักเรียน ----------
+create table if not exists public.assignments (
+  id           bigint generated always as identity primary key,
+  teacher_id   uuid not null references public.profiles(id),
+  classroom_id bigint references public.classrooms(id) on delete cascade,
+  subject      text not null,
+  title        text not null,
+  description  text,
+  due_date     timestamptz,
+  max_score    numeric(5,2) default 100,
+  created_at   timestamptz not null default now()
+);
+
+create table if not exists public.student_submissions (
+  id            bigint generated always as identity primary key,
+  assignment_id bigint not null references public.assignments(id) on delete cascade,
+  student_code  text not null,
+  student_name  text not null,
+  file_url      text not null,                      -- ไฟล์ผลงานใน Google Drive ผ่าน GAS
+  file_name     text,
+  notes         text,
+  score         numeric(5,2),
+  feedback      text,
+  status        text not null default 'submitted' check (status in ('submitted', 'graded', 'revision')),
+  created_at    timestamptz not null default now()
+);
+
+-- ---------- 12) one_page_reports: ระบบรายงานหน้าเดียว พร้อมจัดเก็บลิ้งค์รูปภาพ ----------
+create table if not exists public.one_page_reports (
+  id           bigint generated always as identity primary key,
+  title        text not null,                       -- หัวข้อรายงาน
+  grade_level  text,                                -- สังกัดสายชั้น/กลุ่มงาน
+  report_date  date not null default current_date,
+  summary_text text not null,                       -- สรุปผลการปฏิบัติงาน
+  metrics_json jsonb default '{}'::jsonb,           -- สถิติตัวชี้วัด เช่น { attendance: 98, participants: 120 }
+  photo_urls   text[],                              -- อาเรย์ของลิ้งค์รูปภาพกิจกรรม (Google Drive / CDN)
+  drive_folder text,                                -- ลิ้งค์โฟลเดอร์รูปภาพฉบับเต็ม
+  created_by   uuid not null references public.profiles(id),
+  created_at   timestamptz not null default now()
+);
+
+-- =====================================================================
 -- หลังรันเสร็จ: ตั้ง SuperAdmin ให้กับ admin@bcs.ac.th
 --   update public.profiles set role = 'admin' where lower(email) = 'admin@bcs.ac.th';
 -- =====================================================================

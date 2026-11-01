@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initStaffModal();
   initGalleryFilter();
   initNavDropdowns();
+  initImageLightbox();
   loadDynamicActivities();
 });
 
@@ -403,9 +404,131 @@ async function loadDynamicActivities() {
 
       grid.prepend(card);
     });
+    bindGalleryCards();
   } catch (err) {
     console.warn('โหลดภาพกิจกรรมแบบไดนามิกไม่สำเร็จ:', err);
   }
+}
+
+/* ---------- Interactive Image Lightbox & Reaction Box ---------- */
+function initImageLightbox() {
+  const modal = document.getElementById('image-lightbox-modal');
+  const closeBtn = document.getElementById('lightbox-close');
+  const imgEl = document.getElementById('lightbox-img');
+  const titleEl = document.getElementById('lightbox-title');
+  const categoryEl = document.getElementById('lightbox-category');
+  const dateEl = document.getElementById('lightbox-date');
+  const descEl = document.getElementById('lightbox-desc');
+  const commentForm = document.getElementById('lightbox-comment-form');
+  const commentInput = document.getElementById('lightbox-comment-input');
+  const commentsList = document.getElementById('lightbox-comments-list');
+
+  if (!modal || !closeBtn || !imgEl) return;
+
+  let isZoomed = false;
+
+  // ฟังก์ชันเปิด Lightbox
+  window.openImageLightbox = function(options) {
+    const { src, title, category, date, desc } = options;
+    imgEl.src = src || '';
+    imgEl.style.transform = 'scale(1)';
+    isZoomed = false;
+    imgEl.className = 'max-h-[60vh] max-w-full object-contain mx-auto cursor-zoom-in transition-transform duration-300 select-none';
+
+    if (titleEl) titleEl.textContent = title || 'ภาพกิจกรรมโรงเรียนบางชัน';
+    if (categoryEl) categoryEl.textContent = category || 'กิจกรรม';
+    if (dateEl) dateEl.textContent = date ? `📅 ${date}` : '';
+    if (descEl) descEl.textContent = desc || 'ภาพบรรยากาศกิจกรรมการเรียนรู้และการพัฒนาศักยภาพผู้เรียน โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)';
+
+    modal.classList.remove('hidden');
+    document.body.classList.add('no-scroll');
+  };
+
+  // คลิกที่รูปเพื่อซูมเข้า/ออก
+  imgEl.addEventListener('click', () => {
+    isZoomed = !isZoomed;
+    if (isZoomed) {
+      imgEl.style.transform = 'scale(1.8)';
+      imgEl.className = 'max-h-[60vh] max-w-full object-contain mx-auto cursor-zoom-out transition-transform duration-300 select-none';
+    } else {
+      imgEl.style.transform = 'scale(1)';
+      imgEl.className = 'max-h-[60vh] max-w-full object-contain mx-auto cursor-zoom-in transition-transform duration-300 select-none';
+    }
+  });
+
+  // ปิด Lightbox
+  const closeLightbox = () => {
+    modal.classList.add('hidden');
+    document.body.classList.remove('no-scroll');
+    imgEl.style.transform = 'scale(1)';
+    isZoomed = false;
+  };
+
+  closeBtn.addEventListener('click', closeLightbox);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeLightbox();
+  });
+
+  // กล่องกด Reaction ตอบโต้ (❤️ 👏 💡 👍)
+  document.querySelectorAll('.lightbox-react-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const countEl = btn.querySelector('.react-count');
+      if (countEl) {
+        let current = parseInt(countEl.textContent, 10) || 0;
+        countEl.textContent = current + 1;
+        btn.classList.add('scale-125');
+        setTimeout(() => btn.classList.remove('scale-125'), 200);
+      }
+    });
+  });
+
+  // ฟอร์มส่งข้อความตอบโต้
+  if (commentForm && commentInput && commentsList) {
+    commentForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = commentInput.value.trim();
+      if (!text) return;
+
+      const item = document.createElement('div');
+      item.className = 'bg-white p-2.5 rounded-xl border border-slate-200 text-slate-700 animate-fadeIn';
+      item.innerHTML = `<span class="font-bold text-emerald-800">ผู้เยี่ยมชม:</span> ${escapeHtml(text)}`;
+      commentsList.prepend(item);
+      commentInput.value = '';
+    });
+  }
+
+  // ผูกคลิกกับการ์ดภาพกิจกรรมทั้งหมดบนหน้าแรก
+  bindGalleryCards();
+}
+
+function bindGalleryCards() {
+  document.querySelectorAll('#gallery article, #gallery-grid article').forEach(card => {
+    if (card.dataset.lightboxBound) return;
+    card.dataset.lightboxBound = 'true';
+    card.style.cursor = 'pointer';
+
+    card.addEventListener('click', () => {
+      const img = card.querySelector('img');
+      const title = card.querySelector('h3') ? card.querySelector('h3').textContent : '';
+      const date = card.querySelector('.text-amber-600') ? card.querySelector('.text-amber-600').textContent : '';
+      const desc = card.querySelector('p') ? card.querySelector('p').textContent : '';
+      const cat = card.dataset.galleryCategory || 'กิจกรรม';
+
+      const imgSrc = img ? img.src : 'assets/logo.png';
+      if (window.openImageLightbox) {
+        window.openImageLightbox({
+          src: imgSrc,
+          title,
+          category: cat,
+          date,
+          desc
+        });
+      }
+    });
+  });
 }
 
 /* ---------- เมนูมือถือ (Hamburger) ---------- */

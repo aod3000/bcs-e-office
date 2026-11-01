@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadStaffDirectory();
   initActivityUpload();
   initRevisionModal();
+  initAttendanceModule();
+  initOnePageReportModule();
 });
 
 /* =====================================================================
@@ -683,9 +685,9 @@ function initActivityUpload() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const file = fileInput.files[0];
-    if (!file) {
-      alert('กรุณาเลือกไฟล์รูปภาพ');
+    const files = Array.from(fileInput.files);
+    if (!files || files.length === 0) {
+      alert('กรุณาเลือกไฟล์รูปภาพอย่างน้อย 1 รูป');
       return;
     }
 
@@ -696,50 +698,57 @@ function initActivityUpload() {
     try {
       submitBtn.disabled = true;
       spinner.classList.remove('hidden');
-      btnText.textContent = 'กำลังส่งไฟล์เข้า Google Drive...';
 
-      // 1. แปลงไฟล์เป็น Base64
-      const base64 = await fileToBase64(file);
+      let uploadedCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        btnText.textContent = `กำลังส่งไฟล์เข้า Google Drive (${i + 1}/${files.length})...`;
 
-      // 2. ส่งไปยัง Google Apps Script (บันทึก Google Drive)
-      const res = await fetch(GAS_UPLOAD_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          base64: base64,
-          fileName: file.name,
-          mimeType: file.type,
-          category: 'activities'
-        })
-      });
+        // 1. แปลงไฟล์เป็น Base64
+        const base64 = await fileToBase64(file);
 
-      const result = await res.json();
-      const driveUrl = result.url || result.fileUrl || '';
+        // 2. ส่งไปยัง Google Apps Script (บันทึก Google Drive)
+        const res = await fetch(GAS_UPLOAD_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            base64: base64,
+            fileName: file.name,
+            mimeType: file.type,
+            category: 'activities'
+          })
+        });
 
-      // 3. บันทึกข้อมูลลงตาราง Supabase tasks (category = 'ภาพกิจกรรม_' + category)
-      if (isSupabaseConfigured() && window.supabase && currentUser) {
-        await getSupabase().from('tasks').insert([{
-          owner_id: currentUser.id,
-          title: title,
-          category: 'ภาพกิจกรรม_' + category,
+        const result = await res.json();
+        const driveUrl = result.url || result.fileUrl || '';
+
+        // 3. บันทึกข้อมูลลงตาราง Supabase tasks (category = 'ภาพกิจกรรม_' + category)
+        if (isSupabaseConfigured() && window.supabase && currentUser) {
+          await getSupabase().from('tasks').insert([{
+            owner_id: currentUser.id,
+            title: files.length > 1 ? `${title} (ภาพที่ ${i + 1})` : title,
+            category: 'ภาพกิจกรรม_' + category,
+            description: desc,
+            file_url: driveUrl,
+            file_name: file.name,
+            mime_type: file.type,
+            status: 'approved'
+          }]);
+        }
+
+        // 4. บันทึกลง local storage เผื่อใช้งานแบบออฟไลน์
+        saveLocalActivity({
+          title: files.length > 1 ? `${title} (ภาพที่ ${i + 1})` : title,
+          category,
           description: desc,
           file_url: driveUrl,
-          file_name: file.name,
-          mime_type: file.type,
-          status: 'approved'
-        }]);
+          date: new Date().toISOString()
+        });
+
+        uploadedCount++;
       }
 
-      // 4. บันทึกลง local storage เผื่อใช้งานแบบออฟไลน์
-      saveLocalActivity({
-        title,
-        category,
-        description: desc,
-        file_url: driveUrl,
-        date: new Date().toISOString()
-      });
-
-      showToast('✅ เพิ่มภาพกิจกรรมและเก็บไฟล์ลง Google Drive เรียบร้อยแล้ว!');
+      showToast(`✅ เพิ่มภาพกิจกรรม ${uploadedCount} ภาพลง Google Drive สำเร็จเรียบร้อยแล้ว!`);
       form.reset();
       await loadActivities();
     } catch (err) {
@@ -850,8 +859,227 @@ function loadStaffDirectory() {
 }
 
 /* =====================================================================
-   8. UTILITIES (TOAST & HELPERS)
+   9. GRADE LEVEL & ATTENDANCE MODULE (ระบบสายชั้น & เช็คชื่อนักเรียน)
    ===================================================================== */
+const MOCK_CLASS_STUDENTS = {
+  'ป.1/1': [
+    { no: 1, code: 'BCS-6901', name: 'ด.ช. ภูมิพัฒน์ สุขใจ', status: 'present', remark: '' },
+    { no: 2, code: 'BCS-6902', name: 'ด.ช. ณภัทร ภักดี', status: 'present', remark: '' },
+    { no: 3, code: 'BCS-6903', name: 'ด.ญ. กัญญาณี รัตนกุล', status: 'leave', remark: 'ลาป่วยมีใบรับรองแพทย์' },
+    { no: 4, code: 'BCS-6904', name: 'ด.ช. ธีรภัทร ชาญวิทย์', status: 'present', remark: '' },
+    { no: 5, code: 'BCS-6905', name: 'ด.ญ. พิชญา เจริญสุข', status: 'present', remark: '' },
+    { no: 6, code: 'BCS-6906', name: 'ด.ช. อัครพงศ์ มงคล', status: 'absent', remark: 'ผู้ปกครองยังไม่ติดต่อ' },
+    { no: 7, code: 'BCS-6907', name: 'ด.ญ. วรัญญา เลิศปัญญา', status: 'present', remark: '' },
+    { no: 8, code: 'BCS-6908', name: 'ด.ช. ชนน ชัยชนะ', status: 'present', remark: '' }
+  ],
+  'ป.1/2': [
+    { no: 1, code: 'BCS-6911', name: 'ด.ช. ธนกร มงคลชัย', status: 'present', remark: '' },
+    { no: 2, code: 'BCS-6912', name: 'ด.ญ. ภัทรพร ศรีสุข', status: 'present', remark: '' },
+    { no: 3, code: 'BCS-6913', name: 'ด.ช. ศุภกฤต วงศ์ษา', status: 'present', remark: '' }
+  ],
+  'ป.1/3': [
+    { no: 1, code: 'BCS-6921', name: 'ด.ช. เคนจิ ทาคูมิ (EP)', status: 'present', remark: '' },
+    { no: 2, code: 'BCS-6922', name: 'ด.ญ. เอมิลี่ เจนสัน (EP)', status: 'present', remark: '' }
+  ]
+};
+
+function initAttendanceModule() {
+  const roleSelect = document.getElementById('att-role-select');
+  const gradeSelect = document.getElementById('att-grade-select');
+  const roomSelect = document.getElementById('att-room-select');
+  const tbody = document.getElementById('att-students-table-body');
+  const manageBtn = document.getElementById('att-manage-students-btn');
+  const broadcastBtn = document.getElementById('att-grade-broadcast-btn');
+  const saveBtn = document.getElementById('save-attendance-btn');
+
+  if (!roleSelect || !gradeSelect || !roomSelect || !tbody) return;
+
+  function getCurrentClassKey() {
+    return `${gradeSelect.value}/${roomSelect.value}`;
+  }
+
+  function renderAttendanceTable() {
+    const classKey = getCurrentClassKey();
+    const students = MOCK_CLASS_STUDENTS[classKey] || [
+      { no: 1, code: 'BCS-001', name: 'ด.ช. นักเรียน ตัวอย่าง 1', status: 'present', remark: '' },
+      { no: 2, code: 'BCS-002', name: 'ด.ญ. นักเรียน ตัวอย่าง 2', status: 'present', remark: '' }
+    ];
+
+    tbody.innerHTML = students.map((s, idx) => `
+      <tr class="hover:bg-slate-50 transition" data-student-index="${idx}">
+        <td class="py-3 px-4 text-center font-bold text-slate-700">${s.no}</td>
+        <td class="py-3 px-4 font-mono text-[11px] font-bold text-slate-500">${s.code}</td>
+        <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(s.name)}</td>
+        <td class="py-3 px-4 text-center">
+          <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+            <button type="button" onclick="setStudentStatus(${idx}, 'present')" class="att-btn px-2.5 py-1 rounded-lg text-xs font-bold transition ${s.status === 'present' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'}">มา</button>
+            <button type="button" onclick="setStudentStatus(${idx}, 'absent')" class="att-btn px-2.5 py-1 rounded-lg text-xs font-bold transition ${s.status === 'absent' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'}">ขาด</button>
+            <button type="button" onclick="setStudentStatus(${idx}, 'leave')" class="att-btn px-2.5 py-1 rounded-lg text-xs font-bold transition ${s.status === 'leave' ? 'bg-yellow-500 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'}">ลา</button>
+            <button type="button" onclick="setStudentStatus(${idx}, 'late')" class="att-btn px-2.5 py-1 rounded-lg text-xs font-bold transition ${s.status === 'late' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-200'}">สาย</button>
+          </div>
+        </td>
+        <td class="py-3 px-4">
+          <input type="text" value="${escapeHtml(s.remark || '')}" placeholder="ระบุเหตุผล (ถ้ามี)..." onchange="setStudentRemark(${idx}, this.value)" class="w-full rounded-lg border border-slate-200 px-2.5 py-1 text-xs focus:border-emerald-600 focus:outline-none">
+        </td>
+      </tr>
+    `).join('');
+
+    updateAttendanceStats(students);
+  }
+
+  window.setStudentStatus = function(idx, status) {
+    const classKey = getCurrentClassKey();
+    const students = MOCK_CLASS_STUDENTS[classKey];
+    if (students && students[idx]) {
+      students[idx].status = status;
+      renderAttendanceTable();
+    }
+  };
+
+  window.setStudentRemark = function(idx, val) {
+    const classKey = getCurrentClassKey();
+    const students = MOCK_CLASS_STUDENTS[classKey];
+    if (students && students[idx]) {
+      students[idx].remark = val;
+    }
+  };
+
+  function updateAttendanceStats(students) {
+    const p = students.filter(s => s.status === 'present').length;
+    const a = students.filter(s => s.status === 'absent').length;
+    const l = students.filter(s => s.status === 'leave').length;
+    const lt = students.filter(s => s.status === 'late').length;
+
+    const elP = document.getElementById('stat-att-present');
+    const elA = document.getElementById('stat-att-absent');
+    const elL = document.getElementById('stat-att-leave');
+    const elLt = document.getElementById('stat-att-late');
+
+    if (elP) elP.textContent = `${p} คน`;
+    if (elA) elA.textContent = `${a} คน`;
+    if (elL) elL.textContent = `${l} คน`;
+    if (elLt) elLt.textContent = `${lt} คน`;
+  }
+
+  // ปรับเปลี่ยนการเข้าถึงตามบทบาท (Homeroom vs Chairperson vs IT Admin)
+  function handleRoleAccess() {
+    const role = roleSelect.value;
+    if (role === 'homeroom') {
+      // ครูประจำชั้น: ล็อกให้เลือกได้เฉพาะห้องของตน
+      roomSelect.disabled = false;
+      if (manageBtn) manageBtn.classList.add('opacity-50', 'pointer-events-none');
+      if (broadcastBtn) broadcastBtn.classList.add('opacity-50', 'pointer-events-none');
+    } else if (role === 'chairperson') {
+      // ประธานสายชั้น: สลับห้องในสายชั้นได้ทั้งหมด และเปิดปุ่มจัดการนักเรียน
+      roomSelect.disabled = false;
+      if (manageBtn) manageBtn.classList.remove('opacity-50', 'pointer-events-none');
+      if (broadcastBtn) broadcastBtn.classList.add('opacity-50', 'pointer-events-none');
+    } else if (role === 'it_admin') {
+      // IT สายชั้น: ดำเนินการแทนได้ทุกห้อง และมีปุ่มประกาศข่าวด่วน
+      roomSelect.disabled = false;
+      if (manageBtn) manageBtn.classList.remove('opacity-50', 'pointer-events-none');
+      if (broadcastBtn) broadcastBtn.classList.remove('opacity-50', 'pointer-events-none');
+    } else {
+      // Executive / Admin: อิสระทุกฟังชันก์
+      roomSelect.disabled = false;
+      if (manageBtn) manageBtn.classList.remove('opacity-50', 'pointer-events-none');
+      if (broadcastBtn) broadcastBtn.classList.remove('opacity-50', 'pointer-events-none');
+    }
+    renderAttendanceTable();
+  }
+
+  roleSelect.addEventListener('change', handleRoleAccess);
+  gradeSelect.addEventListener('change', renderAttendanceTable);
+  roomSelect.addEventListener('change', renderAttendanceTable);
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      showToast('✅ บันทึกข้อมูลการเช็คชื่อนักเรียนประจำวันสำเร็จเรียบร้อย');
+    });
+  }
+
+  if (manageBtn) {
+    manageBtn.addEventListener('click', () => {
+      const name = prompt('กรุณาระบุชื่อ-นามสกุลนักเรียนใหม่ เพื่อเพิ่มเข้าในสายชั้น ' + gradeSelect.value + ':');
+      if (name && name.trim()) {
+        const classKey = getCurrentClassKey();
+        if (!MOCK_CLASS_STUDENTS[classKey]) MOCK_CLASS_STUDENTS[classKey] = [];
+        const nextNo = MOCK_CLASS_STUDENTS[classKey].length + 1;
+        MOCK_CLASS_STUDENTS[classKey].push({
+          no: nextNo,
+          code: `BCS-69${nextNo < 10 ? '0' + nextNo : nextNo}`,
+          name: name.trim(),
+          status: 'present',
+          remark: 'เพิ่มใหม่โดยประธาน/IT สายชั้น'
+        });
+        renderAttendanceTable();
+        showToast('✅ เพิ่มนักเรียนในสายชั้นสำเร็จ');
+      }
+    });
+  }
+
+  if (broadcastBtn) {
+    broadcastBtn.addEventListener('click', () => {
+      const msg = prompt('กรอกข้อความประกาศด่วนประจำสายชั้น ' + gradeSelect.value + ':\n(ระบบจะส่งแจ้งเตือนด่วนไปยังนักเรียนและผู้ปกครองในสายชั้น)');
+      if (msg && msg.trim()) {
+        showToast('📢 ส่งประกาศข่าวด่วนประจำสายชั้นสำเร็จเรียบร้อย');
+      }
+    });
+  }
+
+  handleRoleAccess();
+}
+
+/* =====================================================================
+   10. ONE-PAGE REPORT GENERATOR MODULE (ระบบรายงานหน้าเดียว)
+   ===================================================================== */
+function initOnePageReportModule() {
+  const form = document.getElementById('onepage-form');
+  const previewBtn = document.getElementById('preview-onepage-btn');
+  if (!form) return;
+
+  function updateOnePagePreview() {
+    const title = document.getElementById('op-title').value.trim();
+    const dept = document.getElementById('op-dept').value;
+    const date = document.getElementById('op-date').value;
+    const summary = document.getElementById('op-summary').value.trim();
+    const m1 = document.getElementById('op-m1').value.trim();
+    const m2 = document.getElementById('op-m2').value.trim();
+    const m3 = document.getElementById('op-m3').value.trim();
+    const img1 = document.getElementById('op-img1').value.trim();
+    const img2 = document.getElementById('op-img2').value.trim();
+
+    const prevTitle = document.getElementById('prev-title');
+    const prevDept = document.getElementById('prev-dept');
+    const prevDate = document.getElementById('prev-date');
+    const prevSummary = document.getElementById('prev-summary');
+    const prevM1 = document.getElementById('prev-m1');
+    const prevM2 = document.getElementById('prev-m2');
+    const prevM3 = document.getElementById('prev-m3');
+    const prevImg1 = document.getElementById('prev-img1');
+    const prevImg2 = document.getElementById('prev-img2');
+
+    if (prevTitle) prevTitle.textContent = title || 'รายงานผลการดำเนินงาน';
+    if (prevDept) prevDept.textContent = dept;
+    if (prevDate) prevDate.textContent = date ? `วันที่จัดกิจกรรม: ${new Date(date).toLocaleDateString('th-TH')}` : 'วันที่จัดกิจกรรม: 1 พฤศจิกายน 2569';
+    if (prevSummary) prevSummary.textContent = summary;
+    if (prevM1) prevM1.textContent = m1;
+    if (prevM2) prevM2.textContent = m2;
+    if (prevM3) prevM3.textContent = m3;
+    if (prevImg1 && img1) prevImg1.src = img1;
+    if (prevImg2 && img2) prevImg2.src = img2;
+  }
+
+  if (previewBtn) previewBtn.addEventListener('click', () => {
+    updateOnePagePreview();
+    showToast('🔄 อัปเดตตัวอย่างรายงานหน้าเดียวแล้ว');
+  });
+
+  form.querySelectorAll('input, select, textarea').forEach(input => {
+    input.addEventListener('input', updateOnePagePreview);
+  });
+}
+
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

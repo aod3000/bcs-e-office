@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="school">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบนักเรียน (Student Portal) | โรงเรียนบางชันปลื้มวิทยานุสรณ์</title>
+  <title>ระบบบริการนักเรียน (Student Portal) | โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</title>
 
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -12,8 +13,9 @@
         extend: {
           fontFamily: { sans: ['Prompt', 'sans-serif'] },
           colors: {
-            brand: 'rgb(var(--c-brand) / <alpha-value>)',
-            'brand-soft': 'rgb(var(--c-brand-soft) / <alpha-value>)'
+            brand: '#047857',
+            'brand-dark': '#064e3b',
+            'brand-gold': '#f59e0b'
           }
         }
       }
@@ -21,53 +23,427 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen font-sans leading-relaxed flex flex-col justify-between">
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col justify-between antialiased">
 
-  <!-- Navbar -->
-  <header class="bg-white border-b border-slate-100 sticky top-0 z-40">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <a href="../index.html" class="flex items-center">
-        <img src="../assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-12 w-auto object-contain mr-3">
-        <span class="font-semibold text-slate-900">บางชันปลื้มวิทยานุสรณ์</span>
+  <!-- ============================================================== -->
+  <!-- NAVBAR -->
+  <!-- ============================================================== -->
+  <header class="bg-[#0f172a] text-white border-b-2 border-amber-400 sticky top-0 z-40 shadow-lg">
+    <div class="mx-auto max-w-[1536px] px-4 sm:px-8 h-20 flex items-center justify-between">
+      <a href="../index.html" class="flex items-center gap-3 hover:opacity-95 transition">
+        <img src="../assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-12 w-auto drop-shadow">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="block font-bold text-base text-white tracking-wide">BCS Student Portal</span>
+            <span class="bg-emerald-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full">นักเรียน</span>
+          </div>
+          <span class="block text-xs text-amber-300">ระบบบริการนักเรียนออนไลน์ โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</span>
+        </div>
       </a>
-      <a href="../index.html" class="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium hover:bg-brand-soft hover:text-brand transition-all duration-300">← กลับหน้าแรก</a>
+
+      <div class="flex items-center gap-3">
+        <a href="public-dashboard.html" class="rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>📊</span> <span class="hidden sm:inline">แดชบอร์ดภาพรวม</span>
+        </a>
+        <a href="../index.html" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 px-4 py-2 text-xs font-bold transition flex items-center gap-1 shadow-sm">
+          <span>🏠</span> <span>หน้าแรก</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="mx-auto max-w-3xl px-4 py-16 sm:py-24 text-center">
-    <div class="rounded-3xl bg-white p-8 sm:p-14 shadow-sm border border-slate-100">
-      <div class="mx-auto grid place-items-center w-20 h-20 rounded-3xl bg-yellow-100 text-4xl mb-6">
-        🎓
+  <!-- ============================================================== -->
+  <!-- MAIN WORKSPACE -->
+  <!-- ============================================================== -->
+  <main class="mx-auto max-w-[1536px] w-full px-4 sm:px-8 py-8 flex-1">
+    
+    <!-- Student Header Banner -->
+    <div class="bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-amber-400 text-slate-950 font-black text-2xl grid place-items-center shrink-0 shadow-lg">
+          🎓
+        </div>
+        <div>
+          <span class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-bold px-2.5 py-0.5 rounded-full">ปีการศึกษา 2569</span>
+          <h1 class="text-xl sm:text-2xl font-black text-white mt-1">ยินดีต้อนรับสู่ระบบบริการนักเรียน</h1>
+          <p class="text-xs text-emerald-200 mt-0.5">ตรวจสอบคะแนนสอบ ผลการเรียน และส่งงาน/ชิ้นงานที่ได้รับมอบหมาย</p>
+        </div>
       </div>
-      <span class="inline-flex items-center rounded-full bg-yellow-400/80 px-3 py-1 text-xs font-semibold text-green-950 mb-4">
-        Sprint 3 - Student Portal
-      </span>
-      <h1 class="text-3xl sm:text-4xl font-semibold text-slate-900 leading-tight">ระบบบริการนักเรียนออนไลน์</h1>
-      <p class="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed font-light">
-        โมดูลตรวจสอบผลการเรียน คะแนนสอบรายวิชา และตารางเรียนเฉพาะบุคคล อยู่ในระหว่างการพัฒนาและเตรียมเชื่อมโยงกับฐานข้อมูล Supabase RLS
-      </p>
 
-      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="../login.html" class="w-full sm:w-auto rounded-full bg-green-800 px-6 py-3.5 text-sm font-medium text-white shadow-sm hover:bg-green-700 transition-all duration-300">
-          เข้าสู่ระบบด้วย Google (@bcs.ac.th)
-        </a>
-        <a href="../index.html" class="w-full sm:w-auto rounded-full bg-slate-100 px-6 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-all duration-300">
-          กลับสู่หน้าหลัก
-        </a>
+      <!-- Quick GPA Badge -->
+      <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shrink-0">
+        <div class="text-center">
+          <span class="block text-[10px] uppercase font-bold text-amber-400">เกรดเฉลี่ยสะสม (GPA)</span>
+          <span class="text-2xl font-black text-white">3.85</span>
+        </div>
+        <div class="h-8 w-px bg-white/20"></div>
+        <div class="text-center">
+          <span class="block text-[10px] uppercase font-bold text-emerald-300">ชิ้นงานที่ต้องส่ง</span>
+          <span class="text-2xl font-black text-amber-400">2</span>
+        </div>
       </div>
     </div>
+
+    <!-- Tab Buttons -->
+    <div class="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-slate-200/80 w-fit">
+      <button data-student-tab="tab-grades" class="student-tab-btn active px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition bg-emerald-800 text-white shadow flex items-center gap-2">
+        <span>📊</span> ตรวจสอบคะแนน & ผลการเรียน
+      </button>
+      <button data-student-tab="tab-homework" class="student-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>📤</span> ส่งชิ้นงาน & การบ้านที่มอบหมาย
+      </button>
+      <button data-student-tab="tab-history" class="student-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>📋</span> ประวัติการส่งงานและผลตรวจ
+      </button>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: ตรวจสอบคะแนน (Grades & Scores) -->
+    <!-- ============================================================== -->
+    <section id="tab-grades" class="student-tab-content space-y-6">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>📊</span> รายงานผลคะแนนและผลการเรียนรายวิชา
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">คะแนนเก็บระหว่างภาค, คะแนนสอบกลางภาค และผลประเมินรายวิชา</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-slate-600">ภาคเรียน:</span>
+            <select class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white focus:outline-none focus:border-emerald-600">
+              <option>ภาคเรียนที่ 1 / 2569</option>
+              <option>ภาคเรียนที่ 2 / 2568</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4">รหัส / รายวิชา</th>
+                <th class="py-3 px-4">ครูผู้สอน</th>
+                <th class="py-3 px-4 text-center">คะแนนเก็บ (50)</th>
+                <th class="py-3 px-4 text-center">กลางภาค (20)</th>
+                <th class="py-3 px-4 text-center">ปลายภาค (30)</th>
+                <th class="py-3 px-4 text-center">รวม (100)</th>
+                <th class="py-3 px-4 text-center">เกรด</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium">
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">ท11101 ภาษาไทยพื้นฐาน 1</td>
+                <td class="py-3 px-4">ครูวิมลรัตน์</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">48</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">18</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">27</td>
+                <td class="py-3 px-4 text-center font-bold text-emerald-800">93</td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-black rounded-lg">4.0</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">ค11101 คณิตศาสตร์ 1</td>
+                <td class="py-3 px-4">ครูปิยะนันท์</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">45</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">17</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">25</td>
+                <td class="py-3 px-4 text-center font-bold text-emerald-800">87</td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-black rounded-lg">4.0</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">ว11101 วิทยาศาสตร์และเทคโนโลยี 1</td>
+                <td class="py-3 px-4">ครูชญานิน</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">44</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">16</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">24</td>
+                <td class="py-3 px-4 text-center font-bold text-emerald-800">84</td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-black rounded-lg">4.0</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">อ11101 ภาษาอังกฤษ (English Program)</td>
+                <td class="py-3 px-4">ครู Teacher Michael / ครูสุดา</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">42</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">15</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">22</td>
+                <td class="py-3 px-4 text-center font-bold text-blue-800">79</td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-blue-100 text-blue-800 font-black rounded-lg">3.5</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">ส11101 สังคมศึกษา ศาสนา และวัฒนธรรม</td>
+                <td class="py-3 px-4">ครูประคอง</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">46</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">18</td>
+                <td class="py-3 px-4 text-center text-slate-800 font-semibold">26</td>
+                <td class="py-3 px-4 text-center font-bold text-emerald-800">90</td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-black rounded-lg">4.0</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: ส่งชิ้นงาน & การบ้าน (Submit Assignments) -->
+    <!-- ============================================================== -->
+    <section id="tab-homework" class="student-tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- ฝั่งซ้าย: ฟอร์มส่งงาน (อัปโหลดเข้า Google Drive ผ่าน GAS) -->
+        <div class="lg:col-span-6 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
+          <h2 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span>📤</span> ส่งชิ้นงาน / การบ้านออนไลน์
+          </h2>
+          <p class="text-xs text-slate-500 mb-6">ไฟล์รูปภาพหรือเอกสารจะถูกส่งไปเก็บที่ Google Drive ของโรงเรียนผ่าน GAS อัตโนมัติ</p>
+
+          <form id="student-submit-form" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">เลือกชิ้นงานที่ต้องการส่ง</label>
+              <select id="hw-assignment-select" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs focus:border-emerald-600 focus:outline-none bg-white font-medium">
+                <option value="วิทยาศาสตร์: โครงงานพลังงานสะอาด">ว11101 วิทยาศาสตร์ - โครงงานพลังงานสะอาด (กำหนดส่ง 5 พ.ย.)</option>
+                <option value="ภาษาไทย: เรียงความวันแม่แห่งชาติ">ท11101 ภาษาไทย - เขียนเรียงความคุณค่าของภาษา (กำหนดส่ง 7 พ.ย.)</option>
+                <option value="ศิลปะ: ภาพวาดทัศนียภาพโรงเรียน">ศ11101 ศิลปะ - วาดภาพทิวทัศน์สีน้ำ (กำหนดส่ง 10 พ.ย.)</option>
+                <option value="คณิตศาสตร์: แบบฝึกหัดทบทวนบทที่ 3">ค11101 คณิตศาสตร์ - แบบฝึกหัดบทที่ 3 (กำหนดส่ง 12 พ.ย.)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">รหัสนักเรียน</label>
+                <input type="text" id="hw-student-code" required placeholder="เช่น BCS-6901" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">ชื่อ - นามสกุล นักเรียน</label>
+                <input type="text" id="hw-student-name" required placeholder="เช่น ด.ช. ภูมิพัฒน์ สุขใจ" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">ข้อความบันทึกถึงครูผู้สอน (ไม่บังคับ)</label>
+              <textarea id="hw-notes" rows="2" placeholder="เช่น ขอส่งงานแก้ไขโครงงานเพิ่มเติมครับ..." class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">แนบไฟล์ชิ้นงาน (รูปภาพ หรือ PDF)</label>
+              <input type="file" id="hw-file" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
+            </div>
+
+            <button type="submit" id="hw-submit-btn" class="w-full rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-3 text-xs shadow transition flex items-center justify-center gap-2">
+              <span id="hw-btn-text">ส่งชิ้นงานเข้า Google Drive</span>
+              <svg id="hw-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- ฝั่งขวา: รายการการบ้านที่ต้องส่ง -->
+        <div class="lg:col-span-6 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <h3 class="font-bold text-slate-900 text-base">ชิ้นงานที่ได้รับมอบหมายในสัปดาห์นี้</h3>
+            <span class="text-xs text-amber-600 font-bold">2 งานค้างส่ง</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 flex items-start justify-between gap-3">
+              <div>
+                <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-full">ด่วน · ใกล้กำหนดส่ง</span>
+                <h4 class="text-xs font-bold text-slate-900 mt-1">ว11101 วิทยาศาสตร์ - โครงงานพลังงานสะอาด</h4>
+                <p class="text-[11px] text-slate-600 mt-0.5">ให้นักเรียนออกแบบผังความคิดและสรุปการทดลอง พิมพ์หรือเขียนใส่กระดาษแล้วถ่ายรูปส่ง</p>
+                <span class="block text-[10px] text-red-600 font-semibold mt-1">⏰ กำหนดส่ง: 5 พฤศจิกายน 2569 (23:59 น.)</span>
+              </div>
+              <span class="text-xs font-bold text-amber-700 bg-white px-2.5 py-1 rounded-xl shadow-sm border border-amber-100 shrink-0">10 คะแนน</span>
+            </div>
+
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-start justify-between gap-3">
+              <div>
+                <span class="text-[10px] bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded-full">เปิดรับงาน</span>
+                <h4 class="text-xs font-bold text-slate-900 mt-1">ท11101 ภาษาไทย - เขียนเรียงความคุณค่าของภาษา</h4>
+                <p class="text-[11px] text-slate-600 mt-0.5">ความยาวไม่น้อยกว่า 1 หน้ากระดาษ A4</p>
+                <span class="block text-[10px] text-slate-400 font-semibold mt-1">⏰ กำหนดส่ง: 7 พฤศจิกายน 2569</span>
+              </div>
+              <span class="text-xs font-bold text-slate-700 bg-white px-2.5 py-1 rounded-xl shadow-sm border border-slate-100 shrink-0">10 คะแนน</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: ประวัติการส่งงานและผลตรวจ -->
+    <!-- ============================================================== -->
+    <section id="tab-history" class="student-tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200">
+        <h2 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <span>📋</span> ประวัติการส่งชิ้นงานและผลการตรวจจากครู
+        </h2>
+        <p class="text-xs text-slate-500 mb-6">คุณสามารถตรวจสอบคะแนนและข้อเสนอแนะที่ครูผู้สอนประเมินกลับมาได้ที่นี่</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4">วันที่ส่ง / ชิ้นงาน</th>
+                <th class="py-3 px-4">วิชา</th>
+                <th class="py-3 px-4">ไฟล์ผลงาน (Drive)</th>
+                <th class="py-3 px-4 text-center">สถานะ</th>
+                <th class="py-3 px-4 text-center">คะแนน</th>
+                <th class="py-3 px-4">ข้อเสนอแนะจากครู</th>
+              </tr>
+            </thead>
+            <tbody id="student-history-body" class="divide-y divide-slate-100">
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">
+                  แบบฝึกหัดการคำนวณพื้นที่
+                  <div class="text-[10px] text-slate-400">ส่งเมื่อ 28 ต.ค. 2569</div>
+                </td>
+                <td class="py-3 px-4">คณิตศาสตร์</td>
+                <td class="py-3 px-4"><span class="text-emerald-700 font-semibold">📂 math_hw_ex3.pdf</span></td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">ตรวจแล้ว</span></td>
+                <td class="py-3 px-4 text-center font-black text-emerald-700">10 / 10</td>
+                <td class="py-3 px-4 text-slate-700">แสดงวิธีทำได้ถูกต้อง ชัดเจน และเป็นระเบียบเรียบร้อยมาก</td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-900">
+                  แผนผังระบบสุริยะจักรวาล
+                  <div class="text-[10px] text-slate-400">ส่งเมื่อ 22 ต.ค. 2569</div>
+                </td>
+                <td class="py-3 px-4">วิทยาศาสตร์</td>
+                <td class="py-3 px-4"><span class="text-emerald-700 font-semibold">📂 solar_diagram.png</span></td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">ตรวจแล้ว</span></td>
+                <td class="py-3 px-4 text-center font-black text-emerald-700">9.5 / 10</td>
+                <td class="py-3 px-4 text-slate-700">ระบายสีสวยงาม รายละเอียดดวงดาวครบถ้วน ชื่นชมครับ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-200 bg-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-slate-500">
-      © โรงเรียนบางชันปลื้มวิทยานุสรณ์ · bcs.ac.th
-    </div>
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    © โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) · สำนักงานเขตคลองสามวา กรุงเทพมหานคร · BCS Student Portal
   </footer>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script>
+    const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initStudentTabs();
+      initStudentSubmission();
+    });
+
+    function initStudentTabs() {
+      const btns = document.querySelectorAll('.student-tab-btn');
+      const tabs = document.querySelectorAll('.student-tab-content');
+
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          btns.forEach(b => {
+            b.classList.remove('active', 'bg-emerald-800', 'text-white', 'shadow');
+            b.classList.add('text-slate-600', 'hover:bg-slate-100');
+          });
+          btn.classList.add('active', 'bg-emerald-800', 'text-white', 'shadow');
+          btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+
+          const target = btn.dataset.studentTab;
+          tabs.forEach(t => {
+            if (t.id === target) t.classList.remove('hidden');
+            else t.classList.add('hidden');
+          });
+        });
+      });
+    }
+
+    function initStudentSubmission() {
+      const form = document.getElementById('student-submit-form');
+      if (!form) return;
+
+      const fileInput = document.getElementById('hw-file');
+      const submitBtn = document.getElementById('hw-submit-btn');
+      const btnText = document.getElementById('hw-btn-text');
+      const spinner = document.getElementById('hw-spinner');
+      const historyBody = document.getElementById('student-history-body');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const file = fileInput.files[0];
+        if (!file) {
+          alert('กรุณาแนบไฟล์ชิ้นงาน');
+          return;
+        }
+
+        const assignTitle = document.getElementById('hw-assignment-select').value;
+        const studentCode = document.getElementById('hw-student-code').value.trim();
+        const studentName = document.getElementById('hw-student-name').value.trim();
+        const notes = document.getElementById('hw-notes').value.trim();
+
+        try {
+          submitBtn.disabled = true;
+          spinner.classList.remove('hidden');
+          btnText.textContent = 'กำลังส่งไฟล์เข้า Google Drive...';
+
+          // แปลงไฟล์เป็น Base64
+          const reader = new FileReader();
+          const base64 = await new Promise((resolve, reject) => {
+            reader.onload = () => resolve(String(reader.result).split(',')[1]);
+            reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+            reader.readAsDataURL(file);
+          });
+
+          // ส่งเข้า Google Drive ผ่าน GAS
+          const res = await fetch(GAS_UPLOAD_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              base64: base64,
+              fileName: `[${studentCode}]_${file.name}`,
+              mimeType: file.type,
+              category: 'student_submissions'
+            })
+          });
+
+          const result = await res.json();
+          const driveUrl = result.url || result.fileUrl || '';
+
+          // เพิ่มประวัติลงตาราง
+          if (historyBody) {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-50 transition bg-emerald-50/50';
+            tr.innerHTML = `
+              <td class="py-3 px-4 font-bold text-slate-900">
+                ${assignTitle}
+                <div class="text-[10px] text-slate-400">ส่งเมื่อสักครู่ · โดย ${studentName} (${studentCode})</div>
+              </td>
+              <td class="py-3 px-4">ชิ้นงานออนไลน์</td>
+              <td class="py-3 px-4"><a href="${driveUrl}" target="_blank" class="text-emerald-700 font-semibold hover:underline">📂 เปิดดูไฟล์ใน Drive</a></td>
+              <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full font-bold text-[10px]">รอครูตรวจ</span></td>
+              <td class="py-3 px-4 text-center font-bold text-slate-400">-</td>
+              <td class="py-3 px-4 text-slate-500">${notes || 'ส่งงานสำเร็จเรียบร้อย'}</td>
+            `;
+            historyBody.prepend(tr);
+          }
+
+          alert('✅ ส่งชิ้นงานเข้า Google Drive ของโรงเรียนสำเร็จเรียบร้อยแล้ว!');
+          form.reset();
+        } catch (err) {
+          console.error(err);
+          alert('❌ เกิดข้อผิดพลาดในการส่งงาน: ' + err.message);
+        } finally {
+          submitBtn.disabled = false;
+          spinner.classList.add('hidden');
+          btnText.textContent = 'ส่งชิ้นงานเข้า Google Drive';
+        }
+      });
+    }
+  </script>
 </body>
 </html>

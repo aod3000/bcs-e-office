@@ -172,6 +172,20 @@
   <section class="relative -mt-10 sm:-mt-14 z-20 mx-auto max-w-[1536px] px-4 sm:px-8">
     <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
       
+      <a href="pages/student-portal.html" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+        </div>
+        <span class="text-sm font-bold text-slate-800">ระบบนักเรียน (ตรวจคะแนน/ส่งงาน)</span>
+      </a>
+
+      <a href="pages/public-dashboard.html" class="mwe-card rounded-2xl p-5 text-center badge-border-yellow flex flex-col items-center justify-center group">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 grid place-items-center mb-2.5 group-hover:scale-110 transition">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+        </div>
+        <span class="text-sm font-bold text-slate-800">แดชบอร์ดภาพรวม (เปิดเผยข้อมูล)</span>
+      </a>
+
       <a href="#staff-section" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
@@ -560,6 +574,97 @@
         <span id="staff-modal-pos" class="inline-block mt-2 px-4 py-1.5 rounded-xl bg-slate-100 text-xs sm:text-sm font-semibold text-slate-700"></span>
         <p id="staff-modal-dept" class="text-xs text-slate-400 mt-2"></p>
         <div id="staff-modal-socials" class="w-full mt-6 space-y-2.5"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- FLOATING ANNOUNCEMENT WIDGET (กล่องประกาศด่วนลอยมุมขวาล่าง) -->
+  <!-- ============================================================== -->
+  <aside id="announce-widget" role="complementary" aria-label="ประกาศด่วน" class="announce-widget hidden fixed bottom-6 right-6 z-40 max-w-sm rounded-3xl bg-slate-950/95 text-white p-5 shadow-2xl border-2 border-amber-400 backdrop-blur-md">
+    <div class="flex items-start gap-3">
+      <div class="grid place-items-center w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-400 text-xl shrink-0 animate-bounce">
+        🔔
+      </div>
+      <div class="flex-1 min-w-0 pr-6">
+        <span class="inline-block bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full mb-1">ประกาศด่วน</span>
+        <h4 class="text-sm font-bold text-white leading-snug truncate">เปิดรับสมัครนักเรียนใหม่</h4>
+        <p class="text-xs text-slate-300 mt-1 line-clamp-2">ประจำปีการศึกษา ตรวจสอบคุณสมบัติและขั้นตอนการยื่นใบสมัครออนไลน์</p>
+        <button data-news-id="1" class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-amber-400 hover:text-amber-300 hover:underline">
+          อ่านประกาศฉบับเต็ม →
+        </button>
+      </div>
+      <button id="announce-close" type="button" aria-label="ปิดกล่องประกาศ" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg leading-none">
+        &times;
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================================================== -->
+  <!-- INTERACTIVE IMAGE LIGHTBOX & REACTION BOX (ขยายรูป + กล่องตอบโต้) -->
+  <!-- ============================================================== -->
+  <div id="image-lightbox-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md grid place-items-center p-4 overflow-y-auto">
+    <div class="relative max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 my-8">
+      
+      <!-- Top Bar -->
+      <div class="flex items-center justify-between px-6 py-4 bg-slate-900 text-white border-b-2 border-amber-400">
+        <div>
+          <span id="lightbox-category" class="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-full">กิจกรรม</span>
+          <h3 id="lightbox-title" class="font-bold text-base mt-1 text-white"></h3>
+        </div>
+        <button id="lightbox-close" aria-label="ปิดรูปภาพ" class="text-slate-400 hover:text-white text-3xl font-light leading-none p-1">
+          &times;
+        </button>
+      </div>
+
+      <!-- Image Area with Zoom capability -->
+      <div class="relative bg-slate-950 text-center flex items-center justify-center p-2 min-h-[300px] max-h-[65vh] overflow-hidden group">
+        <img id="lightbox-img" src="" alt="ขยายภาพ" class="max-h-[60vh] max-w-full object-contain mx-auto cursor-zoom-in transition-transform duration-300 select-none">
+        <span class="absolute bottom-3 right-4 text-[10px] text-white/70 bg-black/60 px-2 py-1 rounded-md pointer-events-none">🔍 คลิกเพื่อซูมเข้า/ออก</span>
+      </div>
+
+      <!-- Bottom Interactive Area & Reaction Box (กล่องตอบโต้) -->
+      <div class="p-6 bg-slate-50 border-t border-slate-200">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <span id="lightbox-date" class="text-xs text-slate-500 font-medium"></span>
+            <p id="lightbox-desc" class="text-xs text-slate-700 mt-1 max-w-xl"></p>
+          </div>
+
+          <!-- กล่องกดความรู้สึก (Emoji Reactions) -->
+          <div class="flex items-center gap-1.5 shrink-0 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+            <button class="lightbox-react-btn px-2.5 py-1 rounded-xl hover:bg-rose-50 text-xs font-semibold text-slate-700 hover:text-rose-600 transition flex items-center gap-1" data-emoji="love">
+              <span>❤️</span> <span class="react-count" data-emoji-count="love">12</span>
+            </button>
+            <button class="lightbox-react-btn px-2.5 py-1 rounded-xl hover:bg-amber-50 text-xs font-semibold text-slate-700 hover:text-amber-600 transition flex items-center gap-1" data-emoji="clap">
+              <span>👏</span> <span class="react-count" data-emoji-count="clap">8</span>
+            </button>
+            <button class="lightbox-react-btn px-2.5 py-1 rounded-xl hover:bg-yellow-50 text-xs font-semibold text-slate-700 hover:text-yellow-600 transition flex items-center gap-1" data-emoji="idea">
+              <span>💡</span> <span class="react-count" data-emoji-count="idea">5</span>
+            </button>
+            <button class="lightbox-react-btn px-2.5 py-1 rounded-xl hover:bg-emerald-50 text-xs font-semibold text-slate-700 hover:text-emerald-600 transition flex items-center gap-1" data-emoji="like">
+              <span>👍</span> <span class="react-count" data-emoji-count="like">19</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- กล่องความคิดเห็น / ตอบโต้ (Interactive Comment Section) -->
+        <div class="mt-4">
+          <label class="block text-xs font-bold text-slate-800 mb-2">💬 ความคิดเห็นและข้อความร่วมยินดี</label>
+          <div id="lightbox-comments-list" class="space-y-2 max-h-32 overflow-y-auto mb-3 pr-1 text-xs">
+            <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-slate-700">
+              <span class="font-bold text-emerald-800">ผู้ปกครองนักเรียน:</span> ภาพกิจกรรมสวยงามและอบอุ่นมากครับ ชื่นชมคุณครูทุกท่าน
+            </div>
+          </div>
+          <form id="lightbox-comment-form" class="flex gap-2">
+            <input type="text" id="lightbox-comment-input" required placeholder="เขียนข้อความแสดงความยินดีหรือตอบโต้ที่นี่..." class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none bg-white">
+            <button type="submit" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+              ส่งข้อความ
+            </button>
+          </form>
+        </div>
+
       </div>
 
     </div>

@@ -75,6 +75,12 @@
       <button data-tab-target="tab-users" class="admin-tab-btn active px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition bg-emerald-800 text-white shadow flex items-center gap-2">
         <span>👥</span> จัดการผู้ใช้ & สิทธิ์ (Roles)
       </button>
+      <button data-tab-target="tab-attendance" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>🏫</span> สายชั้น & เช็คชื่อนักเรียน
+      </button>
+      <button data-tab-target="tab-onepage" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>📄</span> รายงานหน้าเดียว & ลิ้งค์รูปภาพ
+      </button>
       <button data-tab-target="tab-tasks" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
         <span>📋</span> ตรวจและอนุมัติงาน
       </button>
@@ -168,6 +174,289 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB: ระบบสายชั้น & เช็คชื่อนักเรียน (Grade-Level & Attendance) -->
+    <!-- ============================================================== -->
+    <section id="tab-attendance" class="admin-tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+        
+        <!-- Header & Role Selector -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-full mb-1">
+              <span>🏫</span> กำหนดสิทธิ์ตามสายชั้นและห้องเรียน
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">ระบบเช็คชื่อนักเรียนและบริหารสายชั้น</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              ครูประจำชั้นบันทึกเฉพาะห้องตนเอง (กำหนดได้หลายท่าน) · ประธานสายชั้นตรวจและจัดการนักเรียนทั้งสายชั้น · IT สายชั้นดำเนินการแทนและประกาศข่าวด่วน
+            </p>
+          </div>
+
+          <!-- Role Context Switcher -->
+          <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-200 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">บทบาทที่กำลังปฏิบัติงาน:</label>
+              <select id="att-role-select" class="rounded-xl border border-slate-200 px-3 py-1.5 font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600">
+                <option value="homeroom">👩‍🏫 ครูประจำชั้น (เฉพาะห้องเรียนตนเอง)</option>
+                <option value="chairperson">👔 ประธานสายชั้น (ทุกห้องในสายชั้น + เพิ่มลดนักเรียน)</option>
+                <option value="it_admin">💻 ผู้ดูแลระบบ IT สายชั้น (ดำเนินการแทน + ประกาศข่าว)</option>
+                <option value="executive">👑 ผู้บริหาร / SuperAdmin (เข้าถึงทุกสายชั้น)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ระดับสายชั้น:</label>
+              <select id="att-grade-select" class="rounded-xl border border-slate-200 px-3 py-1.5 font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600">
+                <option value="ป.1">ชั้นประถมศึกษาปีที่ 1 (ป.1)</option>
+                <option value="ป.2">ชั้นประถมศึกษาปีที่ 2 (ป.2)</option>
+                <option value="ป.3">ชั้นประถมศึกษาปีที่ 3 (ป.3)</option>
+                <option value="ป.4">ชั้นประถมศึกษาปีที่ 4 (ป.4)</option>
+                <option value="ป.5">ชั้นประถมศึกษาปีที่ 5 (ป.5)</option>
+                <option value="ป.6">ชั้นประถมศึกษาปีที่ 6 (ป.6)</option>
+                <option value="ม.1">ชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
+                <option value="ม.2">ชั้นมัธยมศึกษาปีที่ 2 (ม.2)</option>
+                <option value="ม.3">ชั้นมัธยมศึกษาปีที่ 3 (ม.3)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ห้องเรียน:</label>
+              <select id="att-room-select" class="rounded-xl border border-slate-200 px-3 py-1.5 font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600">
+                <option value="1">ห้อง 1 (ป.1/1)</option>
+                <option value="2">ห้อง 2 (ป.1/2)</option>
+                <option value="3">ห้อง 3 (ป.1/3 EP)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Toolbar for Chairperson & IT Admin -->
+        <div class="flex flex-wrap items-center justify-between gap-4 py-4 border-b border-slate-100">
+          <div class="flex items-center gap-2 text-xs">
+            <span class="font-bold text-slate-700">ครูประจำชั้นร่วม:</span>
+            <span class="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg font-semibold">ครูนิตยา ขวัญเมือง</span>
+            <span class="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg font-semibold">ครูสมพงษ์ ใจภักดี</span>
+            <span class="text-[11px] text-slate-400">(ระบบรองรับครูประจำชั้นหลายท่าน)</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- ปุ่มเฉพาะประธานสายชั้น และ IT สายชั้น -->
+            <button id="att-manage-students-btn" class="px-3.5 py-1.5 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+              <span>➕</span> <span>เพิ่ม/ลดนักเรียนในสายชั้น</span>
+            </button>
+            <!-- ปุ่มเฉพาะ IT สายชั้น -->
+            <button id="att-grade-broadcast-btn" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+              <span>📢</span> <span>ประกาศข่าวด่วนประจำสายชั้น</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Stats Counters -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4">
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-center">
+            <span class="text-[11px] text-emerald-800 font-bold">🟢 มาเรียน</span>
+            <div id="stat-att-present" class="text-xl font-black text-emerald-800 mt-0.5">34 คน</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-2xl p-3 text-center">
+            <span class="text-[11px] text-red-800 font-bold">🔴 ขาดเรียน</span>
+            <div id="stat-att-absent" class="text-xl font-black text-red-800 mt-0.5">1 คน</div>
+          </div>
+          <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-3 text-center">
+            <span class="text-[11px] text-yellow-800 font-bold">🟡 ลาป่วย/ลากิจ</span>
+            <div id="stat-att-leave" class="text-xl font-black text-yellow-800 mt-0.5">1 คน</div>
+          </div>
+          <div class="bg-purple-50 border border-purple-200 rounded-2xl p-3 text-center">
+            <span class="text-[11px] text-purple-800 font-bold">🟠 มาสาย</span>
+            <div id="stat-att-late" class="text-xl font-black text-purple-800 mt-0.5">0 คน</div>
+          </div>
+        </div>
+
+        <!-- Interactive Attendance Table -->
+        <div class="overflow-x-auto mt-2">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4 w-12 text-center">เลขที่</th>
+                <th class="py-3 px-4 w-28">รหัสนักเรียน</th>
+                <th class="py-3 px-4">ชื่อ - นามสกุล</th>
+                <th class="py-3 px-4 text-center">สถานะการมาเรียนวันนี้</th>
+                <th class="py-3 px-4">หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody id="att-students-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between pt-4 border-t border-slate-200">
+          <span class="text-xs text-slate-400">บันทึกข้อมูลเฉพาะครูประจำชั้นที่ได้รับมอบหมาย หรือผู้มีสิทธิ์ตามโครงสร้างสายชั้น</span>
+          <button id="save-attendance-btn" class="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
+            <span>💾</span> <span>บันทึกผลการเช็คชื่อวันนี้</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB: ระบบรายงานหน้าเดียว & ลิ้งค์รูปภาพ (One-Page Report) -->
+    <!-- ============================================================== -->
+    <section id="tab-onepage" class="admin-tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- ฝั่งซ้าย: ฟอร์มสร้างรายงานหน้าเดียว -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-4">
+          <div class="pb-2 border-b border-slate-200">
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>📄</span> สร้างแบบรายงานหน้าเดียว
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">รายงานผลกิจกรรม / การจัดการเรียนรู้ พร้อมแนบลิ้งค์รูปภาพเด่น</p>
+          </div>
+
+          <form id="onepage-form" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">หัวข้อรายงาน / กิจกรรม</label>
+              <input type="text" id="op-title" required value="รายงานผลการจัดกิจกรรมส่งเสริมทักษะวิชาการและการคิดสร้างสรรค์" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">สายชั้น / กลุ่มงาน</label>
+                <select id="op-dept" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white font-medium">
+                  <option>สายชั้นประถมศึกษาปีที่ 1</option>
+                  <option>สายชั้นประถมศึกษาปีที่ 2</option>
+                  <option>สายชั้นประถมศึกษาปีที่ 3</option>
+                  <option>สายชั้นประถมศึกษาปีที่ 4-6</option>
+                  <option>สายชั้นมัธยมศึกษาปีที่ 1-3</option>
+                  <option>กลุ่มบริหารวิชาการ</option>
+                  <option>กลุ่มบริหารทั่วไป</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">วันที่จัดกิจกรรม</label>
+                <input type="date" id="op-date" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">สรุปสาระสำคัญผลการจัดกิจกรรม (Brief Summary)</label>
+              <textarea id="op-summary" rows="3" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">นักเรียนได้เข้าร่วมกิจกรรมฝึกปฏิบัติการคิดเชิงคำนวณและโครงงานวิทยาศาสตร์ สามารถนำเสนอผลงานได้อย่างมีประสิทธิภาพ บรรลุตามวัตถุประสงค์ 100%</textarea>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ผู้เข้าร่วม</label>
+                <input type="text" id="op-m1" value="120 คน" class="w-full rounded-xl border border-slate-200 px-2 py-1.5 text-xs text-center font-bold">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ความพึงพอใจ</label>
+                <input type="text" id="op-m2" value="98.5%" class="w-full rounded-xl border border-slate-200 px-2 py-1.5 text-xs text-center font-bold text-emerald-700">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ผ่านเกณฑ์</label>
+                <input type="text" id="op-m3" value="100%" class="w-full rounded-xl border border-slate-200 px-2 py-1.5 text-xs text-center font-bold text-blue-700">
+              </div>
+            </div>
+
+            <!-- แนบลิ้งค์รูปภาพเด่น -->
+            <div class="pt-2 border-t border-slate-200 space-y-2.5">
+              <span class="block font-bold text-slate-800">📸 แนบลิ้งค์รูปภาพกิจกรรม (Photo Links)</span>
+              <div>
+                <input type="url" id="op-img1" placeholder="ลิ้งค์รูปภาพเด่น 1 (Google Drive URL หรือ CDN)" value="https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600&auto=format&fit=crop&q=80" class="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+              <div>
+                <input type="url" id="op-img2" placeholder="ลิ้งค์รูปภาพเด่น 2" value="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80" class="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+              <div>
+                <input type="url" id="op-drive-folder" placeholder="ลิ้งค์โฟลเดอร์ภาพฉบับเต็มบน Google Drive (ถ้ามี)" class="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+              <button type="button" id="preview-onepage-btn" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition">
+                🔄 อัปเดตตัวอย่าง
+              </button>
+              <button type="button" onclick="window.print()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                <span>🖨️</span> <span>พิมพ์รายงานหน้าเดียว</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ฝั่งขวา: กล่องแสดงตัวอย่างรายงานหน้าเดียว (Print-Ready Layout) -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-8 shadow-sm border-2 border-slate-300 print:border-none print:shadow-none space-y-6" id="onepage-print-area">
+          
+          <!-- หัวรายงานตราโรงเรียน -->
+          <div class="flex items-center gap-4 pb-4 border-b-2 border-emerald-800">
+            <img src="../assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-16 w-auto">
+            <div>
+              <span class="block text-xs font-bold text-amber-600">แบบรายงานหน้าเดียว (One-Page Summary Report)</span>
+              <h3 class="text-lg font-black text-slate-900">โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</h3>
+              <p class="text-[11px] text-slate-500">สำนักงานเขตคลองสามวา สำนักการศึกษา กรุงเทพมหานคร</p>
+            </div>
+          </div>
+
+          <!-- เนื้อหารายงานหน้าเดียว -->
+          <div>
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span id="prev-dept" class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">สายชั้นประถมศึกษาปีที่ 1</span>
+              <span id="prev-date" class="text-slate-400">วันที่จัดกิจกรรม: 1 พฤศจิกายน 2569</span>
+            </div>
+            <h4 id="prev-title" class="text-base font-extrabold text-slate-900 leading-snug mt-1">
+              รายงานผลการจัดกิจกรรมส่งเสริมทักษะวิชาการและการคิดสร้างสรรค์
+            </h4>
+            <p id="prev-summary" class="text-xs text-slate-700 mt-2 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
+              นักเรียนได้เข้าร่วมกิจกรรมฝึกปฏิบัติการคิดเชิงคำนวณและโครงงานวิทยาศาสตร์ สามารถนำเสนอผลงานได้อย่างมีประสิทธิภาพ บรรลุตามวัตถุประสงค์ 100%
+            </p>
+          </div>
+
+          <!-- 3 ตัวชี้วัดสำคัญ -->
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl">
+              <span class="text-[10px] text-slate-500 font-bold block">ผู้เข้าร่วมกิจกรรม</span>
+              <span id="prev-m1" class="text-lg font-black text-slate-900">120 คน</span>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl">
+              <span class="text-[10px] text-emerald-800 font-bold block">ระดับความพึงพอใจ</span>
+              <span id="prev-m2" class="text-lg font-black text-emerald-800">98.5%</span>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 p-3 rounded-2xl">
+              <span class="text-[10px] text-blue-800 font-bold block">ประเมินผ่านเกณฑ์</span>
+              <span id="prev-m3" class="text-lg font-black text-blue-800">100%</span>
+            </div>
+          </div>
+
+          <!-- ตารางแสดงรูปภาพเด่น 2 ภาพคู่ -->
+          <div>
+            <span class="text-xs font-bold text-slate-700 block mb-2">📸 ภาพถ่ายบรรยากาศการจัดกิจกรรม</span>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="h-44 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <img id="prev-img1" src="https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600&auto=format&fit=crop&q=80" alt="รูปภาพกิจกรรม 1" class="w-full h-full object-cover">
+              </div>
+              <div class="h-44 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <img id="prev-img2" src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80" alt="รูปภาพกิจกรรม 2" class="w-full h-full object-cover">
+              </div>
+            </div>
+          </div>
+
+          <!-- ลายเซ็นต์รับรองท้ายรายงาน -->
+          <div class="grid grid-cols-2 gap-6 pt-6 border-t border-slate-200 text-center text-xs text-slate-700">
+            <div>
+              <p class="mb-8">ลงชื่อ.........................................................</p>
+              <p class="font-bold">ผู้รายงาน / ประธานสายชั้น</p>
+            </div>
+            <div>
+              <p class="mb-8">ลงชื่อ.........................................................</p>
+              <p class="font-bold">ผู้อำนวยการสถานศึกษา</p>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </section>
 
@@ -288,8 +577,9 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1.5">รูปภาพกิจกรรม</label>
-              <input type="file" id="act-file" accept="image/*" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">รูปภาพกิจกรรม (เลือกได้หลายรูป ไม่จำกัดจำนวน - เก็บลง Google Drive ผ่าน GAS)</label>
+              <input type="file" id="act-file" accept="image/*" multiple required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
+              <span class="text-[10px] text-slate-400 mt-1 block">💡 สามารถกดปุ่ม Ctrl หรือ Shift ค้างไว้เพื่อเลือกหลายรูปภาพพร้อมกันได้</span>
             </div>
 
             <button type="submit" id="act-submit-btn" class="w-full rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-semibold py-3 text-sm shadow transition flex items-center justify-center gap-2">
