@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="school">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>โรงเรียนบางชันปลื้มวิทยานุสรณ์ | BCS.ac.th</title>
+
+  <!-- Tailwind CSS (CDN สำหรับช่วงพัฒนา) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // เชื่อมสีเน้นของ Tailwind เข้ากับ CSS variables เพื่อให้สลับธีมได้ทันที
+    tailwind.config = {
+      theme: {
+        extend: {
+          // ฟอนต์หลักของเว็บไซต์ทั้งหมด
+          fontFamily: {
+            sans: ['Prompt', 'sans-serif']
+          },
+          colors: {
+            brand: 'rgb(var(--c-brand) / <alpha-value>)',
+            'brand-soft': 'rgb(var(--c-brand-soft) / <alpha-value>)'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen font-sans leading-relaxed">
+
+  <!-- ===== Top Alert Bar ===== -->
+  <div class="bg-green-800 text-white text-sm">
+    <div class="mx-auto max-w-[1536px] px-4 sm:px-8 lg:px-12 py-2.5 flex items-center justify-between gap-3 overflow-hidden">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span class="shrink-0 inline-flex items-center rounded-full bg-yellow-400 px-2.5 py-0.5 text-xs font-semibold text-green-900 shadow-sm">📢 ประกาศ</span>
+        <span class="truncate leading-relaxed text-xs sm:text-sm text-green-50">เปิดรับสมัครนักเรียนใหม่ ปีการศึกษาถัดไป ตรวจสอบรายละเอียดได้แล้ววันนี้</span>
+      </div>
+      <a href="#news" class="shrink-0 inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-yellow-300 hover:text-yellow-100 hover:underline transition">
+        <span>ดูรายละเอียด</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== Navbar หลัก (พื้นขาว) ===== -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100 shadow-sm">
+    <nav class="mx-auto max-w-[1536px] px-4 sm:px-8 lg:px-12">
+      <div class="flex items-center justify-between h-20">
+        <a href="index.html" class="flex items-center shrink-0">
+          <img src="assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-12 w-auto object-contain mr-3">
+          <span class="leading-tight">
+            <span class="block font-semibold text-base sm:text-lg text-slate-900">บางชันปลื้มวิทยานุสรณ์</span>
+            <span class="block text-xs text-slate-500">Bangchan School</span>
+          </span>
+        </a>
+
+        <!-- เมนูหน้าจอใหญ่ -->
+        <div class="hidden lg:flex items-center gap-1 text-sm font-semibold text-slate-700">
+          <a href="#home" class="flex items-center gap-2 px-4 py-2.5 rounded-full hover:bg-brand-soft hover:text-brand transition-all duration-300">🏠 หน้าแรก</a>
+          <a href="#quick" class="flex items-center gap-2 px-4 py-2.5 rounded-full hover:bg-brand-soft hover:text-brand transition-all duration-300">⚡ เมนูด่วน</a>
+          <a href="#news" class="flex items-center gap-2 px-4 py-2.5 rounded-full hover:bg-brand-soft hover:text-brand transition-all duration-300">📰 ข่าวสาร</a>
+          <a href="pages/student-portal.html" class="flex items-center gap-2 px-4 py-2.5 rounded-full hover:bg-brand-soft hover:text-brand transition-all duration-300">🎓 นักเรียน</a>
+
+          <!-- Dropdown เพิ่มเติม -->
+          <div class="relative">
+            <button id="more-toggle" aria-expanded="false" class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-100 hover:bg-brand-soft hover:text-brand transition-all duration-300">
+              ➕ เพิ่มเติม
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div id="more-panel" class="dropdown-panel absolute right-0 mt-3 w-64 rounded-2xl bg-white p-2 shadow-xl ring-1 ring-slate-100">
+              <a href="pages/teacher-workspace.html" class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-slate-50 transition">👩‍🏫 พื้นที่ครู</a>
+              <a href="pages/teacher-workspace.html" class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-slate-50 transition">📋 คำสั่งโรงเรียน</a>
+              <a href="pages/teacher-workspace.html" class="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-slate-50 transition">🧪 คลังข้อสอบ</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- ปุ่มสลับธีมสีเน้น -->
+          <div class="flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100" role="group" aria-label="เลือกธีมสี">
+            <button data-theme-btn="school" aria-label="ธีมเขียว-เหลือง (โรงเรียน)" class="w-5 h-5 rounded-full bg-gradient-to-br from-green-600 to-yellow-400 ring-green-600 ring-offset-white transition hover:scale-110"></button>
+            <button data-theme-btn="ocean" aria-label="ธีมน้ำเงิน" class="w-5 h-5 rounded-full bg-blue-600 ring-blue-600 ring-offset-white transition hover:scale-110"></button>
+            <button data-theme-btn="blossom" aria-label="ธีมชมพู" class="w-5 h-5 rounded-full bg-pink-600 ring-pink-600 ring-offset-white transition hover:scale-110"></button>
+          </div>
+          <span id="nav-user-email" class="hidden max-w-[14rem] truncate rounded-full bg-slate-100 px-3 py-2 text-xs font-medium text-slate-600"></span>
+          <a href="login.html" data-login-link="button" class="hidden sm:inline-flex items-center rounded-full bg-yellow-400 px-5 py-2.5 text-sm font-semibold text-green-900 shadow-sm hover:bg-yellow-300 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">เข้าสู่ระบบ</a>
+          <!-- ปุ่มเมนูมือถือ -->
+          <button id="menu-toggle" aria-expanded="false" aria-label="เปิดเมนู" class="lg:hidden grid place-items-center w-11 h-11 rounded-full hover:bg-slate-100 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- เมนูมือถือ -->
+      <div id="mobile-menu" class="mobile-menu lg:hidden">
+        <div class="flex flex-col gap-1 pb-5 text-sm font-semibold">
+          <a href="#home" class="rounded-xl px-4 py-3 hover:bg-slate-50">🏠 หน้าแรก</a>
+          <a href="#quick" class="rounded-xl px-4 py-3 hover:bg-slate-50">⚡ เมนูด่วน</a>
+          <a href="#news" class="rounded-xl px-4 py-3 hover:bg-slate-50">📰 ข่าวสาร</a>
+          <a href="pages/student-portal.html" class="rounded-xl px-4 py-3 hover:bg-slate-50">🎓 นักเรียน</a>
+          <a href="pages/teacher-workspace.html" class="rounded-xl px-4 py-3 hover:bg-slate-50">👩‍🏫 พื้นที่ครู</a>
+          <a href="login.html" data-login-link="button" class="mt-2 rounded-full bg-yellow-400 px-4 py-3 text-center text-green-900">เข้าสู่ระบบ</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="mx-auto max-w-[1536px] px-4 sm:px-8 lg:px-12 py-8 sm:py-12 space-y-16 sm:space-y-24">
+
+    <!-- ===== Hero: Carousel + การ์ดข้าง (Bento) ===== -->
+    <section id="home" class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+      <div id="hero-carousel" class="relative lg:col-span-2 overflow-hidden rounded-3xl shadow-md border border-slate-100">
+        <div class="carousel-track flex">
+          <article class="carousel-slide relative min-w-full min-h-[420px] sm:min-h-[520px] lg:min-h-[560px] overflow-hidden bg-gradient-to-br from-green-600 via-green-700 to-green-900 p-8 sm:p-14 flex flex-col justify-end text-white">
+            <span class="float-slow absolute top-10 right-10 w-36 h-36 rounded-full bg-white/10 blur-sm"></span>
+            <span class="float-medium absolute top-32 right-36 w-16 h-16 rounded-full bg-white/15"></span>
+            <p class="text-sm sm:text-base font-semibold tracking-wide text-green-100 uppercase">ยินดีต้อนรับสู่</p>
+            <h1 class="mt-2 text-4xl sm:text-6xl lg:text-7xl font-semibold leading-tight">โรงเรียนบางชัน<br><span class="text-yellow-400">ปลื้มวิทยานุสรณ์</span></h1>
+            <p class="mt-4 max-w-xl text-base sm:text-lg text-green-50 font-light leading-relaxed">พื้นที่แห่งการเรียนรู้ที่อบอุ่น มุ่งมั่นพัฒนาศักยภาพผู้เรียนสู่ความเป็นเลิศในยุคดิจิทัล</p>
+          </article>
+          <article class="carousel-slide relative min-w-full min-h-[420px] sm:min-h-[520px] lg:min-h-[560px] overflow-hidden bg-gradient-to-br from-lime-600 via-emerald-700 to-green-800 p-8 sm:p-14 flex flex-col justify-end text-white">
+            <span class="float-medium absolute top-12 right-12 w-40 h-40 rounded-3xl bg-white/10 blur-sm"></span>
+            <p class="text-sm sm:text-base font-semibold tracking-wide text-green-100 uppercase">ระบบสอบและประเมินผลออนไลน์</p>
+            <h2 class="mt-2 text-4xl sm:text-6xl lg:text-7xl font-semibold leading-tight">สอบง่าย ตรวจไว<br><span class="text-yellow-300">ดูผลได้ทันที</span></h2>
+            <p class="mt-4 max-w-xl text-base sm:text-lg text-green-50 font-light leading-relaxed">นักเรียนสามารถติดตามผลการเรียน ความก้าวหน้า และคะแนนสอบเฉพาะบุคคลได้อย่างแม่นยำ</p>
+          </article>
+          <article class="carousel-slide relative min-w-full min-h-[420px] sm:min-h-[520px] lg:min-h-[560px] overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-700 to-teal-900 p-8 sm:p-14 flex flex-col justify-end text-white">
+            <span class="float-slow absolute top-14 right-14 w-32 h-32 rounded-full bg-white/10 blur-sm"></span>
+            <p class="text-sm sm:text-base font-semibold tracking-wide text-green-100 uppercase">พื้นที่ทำงานดิจิทัลสำหรับครู</p>
+            <h2 class="mt-2 text-4xl sm:text-6xl lg:text-7xl font-semibold leading-tight">ลดภาระงานกระดาษ<br><span class="text-yellow-300">เพิ่มเวลาให้นักเรียน</span></h2>
+            <p class="mt-4 max-w-xl text-base sm:text-lg text-green-50 font-light leading-relaxed">จัดการคำสั่งโรงเรียน ส่งรายงานวิชาการ และระบบลางานออนไลน์ สะดวกรวดเร็วในระบบเดียว</p>
+          </article>
+        </div>
+
+        <button data-carousel-prev aria-label="ก่อนหน้า" class="hidden sm:grid absolute left-5 top-1/2 -translate-y-1/2 place-items-center w-11 h-11 rounded-full bg-white/20 hover:bg-white/40 text-white text-xl backdrop-blur transition-all duration-300">‹</button>
+        <button data-carousel-next aria-label="ถัดไป" class="hidden sm:grid absolute right-5 top-1/2 -translate-y-1/2 place-items-center w-11 h-11 rounded-full bg-white/20 hover:bg-white/40 text-white text-xl backdrop-blur transition-all duration-300">›</button>
+        <div class="absolute bottom-5 left-0 right-0 flex justify-center gap-2">
+          <button class="carousel-dot h-2 w-2 rounded-full bg-white/50" aria-label="สไลด์ 1"></button>
+          <button class="carousel-dot h-2 w-2 rounded-full bg-white/50" aria-label="สไลด์ 2"></button>
+          <button class="carousel-dot h-2 w-2 rounded-full bg-white/50" aria-label="สไลด์ 3"></button>
+        </div>
+      </div>
+
+      <!-- การ์ดข้างเคียง -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 lg:gap-8">
+        <a href="login.html" data-login-link="card" class="group rounded-3xl bg-white p-8 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[200px]">
+          <span class="float-medium grid place-items-center w-14 h-14 rounded-2xl bg-brand-soft text-3xl">🎓</span>
+          <div>
+            <h3 class="text-xl font-semibold text-slate-900">เข้าสู่ระบบนักเรียน</h3>
+            <p class="mt-1 text-sm text-slate-500">ด้วยบัญชี @bcs.ac.th</p>
+          </div>
+        </a>
+        <a href="pages/teacher-workspace.html" class="group rounded-3xl bg-white p-8 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[200px]">
+          <span class="float-slow grid place-items-center w-14 h-14 rounded-2xl bg-brand-soft text-3xl">👩‍🏫</span>
+          <div>
+            <h3 class="text-xl font-semibold text-slate-900">พื้นที่ทำงานครู</h3>
+            <p class="mt-1 text-sm text-slate-500">คำสั่ง รายงาน และข้อสอบ</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== Quick Action Cards ===== -->
+    <section id="quick">
+      <div class="mb-8">
+        <h2 class="text-3xl sm:text-4xl font-semibold text-slate-900">เมนูด่วน</h2>
+        <p class="mt-2 text-slate-500">เข้าถึงสิ่งที่ใช้บ่อยได้ในคลิกเดียว</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <a href="pages/student-portal.html" class="rounded-3xl bg-white p-6 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5">
+          <span class="shrink-0 grid place-items-center w-16 h-16 rounded-2xl bg-brand-soft text-3xl">📊</span>
+          <span>
+            <span class="block text-lg font-semibold text-slate-900">ผลสอบนักเรียน</span>
+            <span class="block mt-0.5 text-sm text-slate-500">ดูคะแนนและความก้าวหน้า</span>
+          </span>
+        </a>
+        <a href="pages/teacher-workspace.html" class="rounded-3xl bg-white p-6 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5">
+          <span class="shrink-0 grid place-items-center w-16 h-16 rounded-2xl bg-brand-soft text-3xl">📋</span>
+          <span>
+            <span class="block text-lg font-semibold text-slate-900">คำสั่งโรงเรียน</span>
+            <span class="block mt-0.5 text-sm text-slate-500">รับทราบคำสั่งดิจิทัล</span>
+          </span>
+        </a>
+        <a href="pages/teacher-workspace.html" class="rounded-3xl bg-white p-6 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5">
+          <span class="shrink-0 grid place-items-center w-16 h-16 rounded-2xl bg-brand-soft text-3xl">📝</span>
+          <span>
+            <span class="block text-lg font-semibold text-slate-900">ส่งรายงานวิชาการ</span>
+            <span class="block mt-0.5 text-sm text-slate-500">สายชั้น / กลุ่มสาระ / พิเศษ</span>
+          </span>
+        </a>
+        <a href="pages/teacher-workspace.html" class="rounded-3xl bg-white p-6 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 flex items-center gap-5">
+          <span class="shrink-0 grid place-items-center w-16 h-16 rounded-2xl bg-brand-soft text-3xl">🧪</span>
+          <span>
+            <span class="block text-lg font-semibold text-slate-900">คลังข้อสอบ</span>
+            <span class="block mt-0.5 text-sm text-slate-500">สร้างและวิเคราะห์ข้อสอบ</span>
+          </span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== News Cards ===== -->
+    <section id="news">
+      <div class="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <h2 class="text-3xl sm:text-4xl font-semibold text-slate-900">ข่าวสารและกิจกรรม</h2>
+          <p class="mt-2 text-slate-500">ติดตามความเคลื่อนไหวล่าสุดของโรงเรียน</p>
+        </div>
+        <a href="#news" class="hidden sm:inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-brand shadow-sm hover:shadow-lg transition-all duration-300">ดูทั้งหมด →</a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <article data-news-id="1" role="button" tabindex="0" class="cursor-pointer group overflow-hidden rounded-3xl bg-white shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300">
+          <div class="h-48 bg-gradient-to-br from-green-500 to-green-800 grid place-items-center text-6xl">🏫</div>
+          <div class="p-6">
+            <h3 class="text-xl font-semibold text-slate-900 leading-snug">เปิดรับสมัครนักเรียนใหม่ ประจำปีการศึกษา</h3>
+            <p class="mt-2 text-sm text-slate-500 line-clamp-2">ผู้ปกครองสามารถตรวจสอบคุณสมบัติและขั้นตอนการสมัครได้ที่หน้าเว็บไซต์ของโรงเรียน</p>
+            <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+              <span>📅 30 ต.ค. 2569</span><span>👁 1,240 ครั้ง</span>
+            </div>
+          </div>
+        </article>
+        <article data-news-id="2" role="button" tabindex="0" class="cursor-pointer group overflow-hidden rounded-3xl bg-white shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300">
+          <div class="h-48 bg-gradient-to-br from-yellow-400 to-amber-500 grid place-items-center text-6xl">🏆</div>
+          <div class="p-6">
+            <h3 class="text-xl font-semibold text-slate-900 leading-snug">ขอแสดงความยินดีกับนักเรียนที่ได้รับรางวัล</h3>
+            <p class="mt-2 text-sm text-slate-500 line-clamp-2">ผลงานของนักเรียนในการแข่งขันทักษะวิชาการ ระดับเขตพื้นที่การศึกษา</p>
+            <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+              <span>📅 28 ต.ค. 2569</span><span>👁 860 ครั้ง</span>
+            </div>
+          </div>
+        </article>
+        <article data-news-id="3" role="button" tabindex="0" class="cursor-pointer group overflow-hidden rounded-3xl bg-white shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300 md:col-span-2 lg:col-span-1">
+          <div class="h-48 bg-gradient-to-br from-emerald-500 to-teal-700 grid place-items-center text-6xl">📚</div>
+          <div class="p-6">
+            <h3 class="text-xl font-semibold text-slate-900 leading-snug">ประกาศตารางสอบปลายภาคเรียน</h3>
+            <p class="mt-2 text-sm text-slate-500 line-clamp-2">นักเรียนสามารถเข้าสู่ระบบเพื่อดูตารางสอบและผลคะแนนของตนเองได้</p>
+            <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+              <span>📅 25 ต.ค. 2569</span><span>👁 2,015 ครั้ง</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== ข้อมูลองค์กร (กรอบน้ำเงินเข้ม) ===== -->
+    <section class="rounded-3xl bg-green-800 p-8 sm:p-12 text-white shadow-sm">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+        <div><p class="text-4xl sm:text-5xl font-semibold">1,200+</p><p class="mt-2 text-sm text-green-100">นักเรียน</p></div>
+        <div><p class="text-4xl sm:text-5xl font-semibold">80+</p><p class="mt-2 text-sm text-green-100">บุคลากรครู</p></div>
+        <div><p class="text-4xl sm:text-5xl font-semibold">40</p><p class="mt-2 text-sm text-green-100">ห้องเรียน</p></div>
+        <div><p class="text-4xl sm:text-5xl font-semibold">100%</p><p class="mt-2 text-sm text-green-100">ระบบดิจิทัล</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto max-w-[1536px] px-4 sm:px-8 lg:px-12 py-8 text-center text-sm text-slate-500">
+      © โรงเรียนบางชันปลื้มวิทยานุสรณ์ · bcs.ac.th
+    </div>
+  </footer>
+
+  <!-- ===== Floating Widget: ประกาศด่วน (Fixed Bottom Right) ===== -->
+  <aside id="announce-widget" class="announce-widget fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl bg-gradient-to-br from-green-700 to-green-900 shadow-2xl overflow-hidden border border-green-600/30 hidden" role="complementary" aria-label="ประกาศด่วน">
+    <!-- ส่วนหัวกล่อง -->
+    <div class="flex items-center justify-between bg-green-800/90 backdrop-blur-sm px-5 py-3.5 border-b border-green-700/50">
+      <h2 class="flex items-center gap-2 text-sm sm:text-base font-medium text-white tracking-wide">
+        <svg class="w-5 h-5 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
+        <span>ประกาศด่วน</span>
+      </h2>
+      <button id="announce-close" aria-label="ปิดประกาศด่วน" class="grid place-items-center w-8 h-8 rounded-full text-white hover:bg-white/20 transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <!-- รายการประกาศ -->
+    <ul class="space-y-2.5 p-3.5 sm:p-4 max-h-[60vh] overflow-y-auto">
+      <li data-news-id="1" role="button" tabindex="0" class="cursor-pointer flex items-start gap-3 rounded-xl bg-white p-3.5 shadow-sm hover:bg-yellow-50 hover:shadow-md transition-all duration-300">
+        <span class="text-lg leading-none shrink-0" aria-hidden="true">⭐</span>
+        <p class="text-xs sm:text-sm font-normal leading-relaxed text-slate-700 break-words flex-1">เปิดรับสมัครนักเรียนใหม่ ปีการศึกษาถัดไป</p>
+      </li>
+      <li data-news-id="3" role="button" tabindex="0" class="cursor-pointer flex items-start gap-3 rounded-xl bg-white p-3.5 shadow-sm hover:bg-yellow-50 hover:shadow-md transition-all duration-300">
+        <span class="text-lg leading-none shrink-0" aria-hidden="true">📌</span>
+        <p class="text-xs sm:text-sm font-normal leading-relaxed text-slate-700 break-words flex-1">ประกาศตารางสอบปลายภาคเรียน ดูได้ในระบบนักเรียน</p>
+      </li>
+      <li data-news-id="4" role="button" tabindex="0" class="cursor-pointer flex items-start gap-3 rounded-xl bg-white p-3.5 shadow-sm hover:bg-yellow-50 hover:shadow-md transition-all duration-300">
+        <span class="text-lg leading-none shrink-0" aria-hidden="true">📢</span>
+        <p class="text-xs sm:text-sm font-normal leading-relaxed text-slate-700 break-words flex-1">ครูส่งรายงานวิชาการผ่านพื้นที่ทำงานครู</p>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== Slide-over Panel: รายละเอียดประกาศและข่าวสาร ===== -->
+  <!-- Backdrop: คลิกเพื่อปิด -->
+  <div id="slideover-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-500 ease-in-out" aria-hidden="true"></div>
+
+    <aside id="slideover-panel" class="invisible fixed top-0 right-0 h-screen w-full z-50 bg-white shadow-2xl flex flex-col transform transition-transform duration-500 ease-in-out translate-x-full" role="dialog" aria-modal="true" aria-labelledby="slideover-title" aria-hidden="true">
+    <!-- ปุ่มปิด (X): ยึดมุมขวาบนสุดของจอ ไม่เลื่อนตามเนื้อหา -->
+    <button id="slideover-close" type="button" aria-label="ปิดรายละเอียด" class="absolute top-4 right-4 z-10 grid place-items-center w-12 h-12 rounded-full bg-white text-green-900 shadow-lg ring-1 ring-slate-200 hover:bg-yellow-400 hover:rotate-90 transition-all duration-300">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
+    <!-- Header -->
+    <div class="shrink-0 bg-green-800">
+      <div class="mx-auto max-w-5xl px-8 py-6 pr-20">
+        <p class="text-sm font-medium text-yellow-400">ประกาศและข่าวสาร</p>
+        <h2 id="slideover-title" class="mt-1 text-2xl sm:text-3xl font-medium leading-snug text-white"></h2>
+      </div>
+    </div>
+
+    <!-- Body: เลื่อนดูเฉพาะในกล่องนี้ -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="mx-auto max-w-5xl p-8">
+        <div id="slideover-image" class="relative h-64 sm:h-96 w-full overflow-hidden rounded-3xl grid place-items-center text-8xl">
+          <img id="slideover-photo" src="" alt="" class="hidden absolute inset-0 h-full w-full object-cover">
+        </div>
+        <p id="slideover-date" class="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-100 px-4 py-1.5 text-sm font-medium text-green-900"></p>
+        <div id="slideover-content" class="mt-6 max-w-3xl space-y-5 text-lg font-light leading-loose text-slate-700"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Supabase JS (CDN) ต้องโหลดก่อน supabase-client.js และ session.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/session.js"></script>
+</body>
+</html>

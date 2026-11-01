@@ -1,0 +1,61 @@
+/* ============================================
+   style.css - Custom CSS ส่วนที่ Tailwind ครอบคลุมไม่ถึง
+   (พื้นหลัง bg-slate-50 และการ์ดสีขาวกำหนดด้วย Tailwind ใน index.html)
+   ============================================ */
+
+/* ---------- สีเน้น (Accent) สำหรับ Theme Switcher ----------
+   เปลี่ยนเฉพาะสีเน้น เพื่อคงพื้นเทาอ่อนและการ์ดขาวตาม Design System */
+:root,
+[data-theme="school"]  { --c-brand: 21 128 61;  --c-brand-soft: 254 249 195; } /* เขียวโรงเรียน + เหลืองอ่อน */
+[data-theme="ocean"]   { --c-brand: 37 99 235;  --c-brand-soft: 219 234 254; } /* น้ำเงิน */
+[data-theme="blossom"] { --c-brand: 219 39 119; --c-brand-soft: 252 231 243; } /* ชมพู */
+
+body {
+  font-family: 'Prompt', sans-serif;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* สีเน้นเปลี่ยนแบบนุ่มนวลเมื่อสลับธีม */
+.bg-brand, .bg-brand-soft, .text-brand, .ring-brand, .border-brand {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ---------- เอฟเฟกต์ Floating ---------- */
+@keyframes floating {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-14px) rotate(3deg); }
+}
+.float-slow   { animation: floating 6s ease-in-out infinite; }
+.float-medium { animation: floating 4.5s ease-in-out infinite; animation-delay: -1.5s; }
+
+/* ---------- Hero Carousel ---------- */
+.carousel-track { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.carousel-dot { transition: width 0.3s ease, background-color 0.3s ease; }
+.carousel-dot.active { width: 2rem; background-color: #fff; }
+
+/* ---------- Dropdown "เพิ่มเติม" ---------- */
+.dropdown-panel {
+  opacity: 0; visibility: hidden; transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+.dropdown-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+
+/* ---------- Floating Widget ประกาศด่วน ---------- */
+.announce-widget { transition: opacity 0.4s ease, transform 0.4s ease; }
+.announce-widget.is-closing { opacity: 0; transform: translateY(24px); pointer-events: none; }
+.announce-widget.is-entering { animation: widget-in 0.5s ease both; }
+@keyframes widget-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ล็อกการเลื่อนหน้าเว็บหลักขณะเปิด Slide-over */
+body.no-scroll { overflow: hidden; }
+
+/* ---------- เมนูมือถือ ---------- */
+.mobile-menu { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.mobile-menu.open { max-height: 480px; }
+
+/* เคารพผู้ใช้ที่ปิดแอนิเมชันในระบบ */
+@media (prefers-reduced-motion: reduce) {
+  .float-slow, .float-medium { animation: none; }
+  .carousel-track { transition: none; }
+}
