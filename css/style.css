@@ -80,11 +80,13 @@ body {
 .modal-backdrop {
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 .modal-backdrop.open {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 .modal-box {
   transform: scale(0.92) translateY(12px);

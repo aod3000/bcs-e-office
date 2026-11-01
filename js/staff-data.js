@@ -66,3 +66,8 @@ const STAFF_DATA = [
     ]
   }
 ];
+
+// แนบตัวแปรเข้า window ให้เรียกใช้ได้แบบ Global
+if (typeof window !== 'undefined') {
+  window.STAFF_DATA = STAFF_DATA;
+}

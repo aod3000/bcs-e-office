@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAnnounceWidget();
   initSlideOver();
   initStaffModal();
+  initDepartmentsSection();
   initGalleryFilter();
   initNavDropdowns();
   initImageLightbox();
@@ -23,22 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
 function initStaffModal() {
   const modal = document.getElementById('staff-modal');
   const closeBtn = document.getElementById('staff-modal-close');
-  if (!modal || !closeBtn) return;
+  if (!modal) return;
 
-  // ผูกคลิกกับการ์ดบุคลากร
+  // ผูกคลิกกับการ์ดบุคลากรทั้งหมด
   document.querySelectorAll('[data-staff-id]').forEach(card => {
     card.addEventListener('click', () => {
       const id = parseInt(card.dataset.staffId, 10);
-      openStaffModal(id);
+      window.openStaffModal(id);
     });
   });
 
   const closeModal = () => {
     modal.classList.remove('open');
+    modal.style.display = '';
+    modal.style.pointerEvents = 'none';
     document.body.classList.remove('no-scroll');
   };
 
-  closeBtn.addEventListener('click', closeModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
@@ -48,53 +51,94 @@ function initStaffModal() {
 }
 
 /** เปิด Modal แสดงรายละเอียดบุคลากรและโซเชียลมีเดีย */
-function openStaffModal(id) {
-  if (typeof STAFF_DATA === 'undefined') return;
-  const staff = STAFF_DATA.find(s => s.id === id);
+window.openStaffModal = function(id) {
+  const data = (typeof window.STAFF_DATA !== 'undefined' && window.STAFF_DATA.length) 
+    ? window.STAFF_DATA 
+    : (typeof STAFF_DATA !== 'undefined' ? STAFF_DATA : []);
+  
+  const staff = data.find(s => s.id === id);
   const modal = document.getElementById('staff-modal');
   if (!staff || !modal) return;
 
-  document.getElementById('staff-modal-header-name').textContent = staff.name;
-  document.getElementById('staff-modal-name').textContent = staff.name;
-  document.getElementById('staff-modal-pos').textContent = staff.position;
-  document.getElementById('staff-modal-dept').textContent = staff.department;
+  const headerName = document.getElementById('staff-modal-header-name');
+  const nameEl = document.getElementById('staff-modal-name');
+  const posEl = document.getElementById('staff-modal-pos');
+  const deptEl = document.getElementById('staff-modal-dept');
+
+  if (headerName) headerName.textContent = staff.name;
+  if (nameEl) nameEl.textContent = staff.name;
+  if (posEl) posEl.textContent = staff.position;
+  if (deptEl) deptEl.textContent = staff.department;
 
   const avatarContainer = document.getElementById('staff-modal-avatar');
-  if (staff.image) {
-    avatarContainer.innerHTML = `<img src="${staff.image}" alt="${staff.name}" class="h-28 w-28 rounded-full object-cover shadow-inner ring-4 ring-slate-100">`;
-  } else {
-    avatarContainer.innerHTML = `
-      <div class="grid place-items-center h-28 w-28 rounded-full bg-slate-100 text-slate-400 ring-4 ring-slate-50 shadow-inner">
-        <svg class="w-14 h-14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-      </div>`;
+  if (avatarContainer) {
+    if (staff.image) {
+      avatarContainer.innerHTML = `<img src="${staff.image}" alt="${escapeHtml(staff.name)}" class="h-28 w-28 rounded-full object-cover shadow-inner ring-4 ring-slate-100">`;
+    } else {
+      avatarContainer.innerHTML = `
+        <div class="grid place-items-center h-28 w-28 rounded-full bg-slate-100 text-slate-400 ring-4 ring-slate-50 shadow-inner">
+          <svg class="w-14 h-14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>`;
+    }
   }
 
   // แสดงช่องทางโซเชียลมีเดียหลากหลายช่องทาง
   const socialsContainer = document.getElementById('staff-modal-socials');
-  socialsContainer.innerHTML = '';
-  if (staff.socials && staff.socials.length > 0) {
-    staff.socials.forEach(item => {
-      const a = document.createElement('a');
-      a.href = item.url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.className = `flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-xl border text-sm font-medium transition-all duration-300 shadow-sm ${item.color}`;
-      
-      let icon = '🔗';
-      if (item.type === 'facebook') icon = '🔵 Facebook';
-      else if (item.type === 'line') icon = '🟢 LINE';
-      else if (item.type === 'email') icon = '✉️ อีเมล';
-      else if (item.type === 'phone') icon = '📞 โทรศัพท์';
-      
-      a.innerHTML = `<span>${icon}</span> <span class="truncate">${item.label}</span>`;
-      socialsContainer.appendChild(a);
-    });
-  } else {
-    socialsContainer.innerHTML = '<p class="text-sm text-slate-400 text-center py-2">ไม่มีข้อมูลช่องทางติดต่อเพิ่มเติม</p>';
+  if (socialsContainer) {
+    socialsContainer.innerHTML = '';
+    if (staff.socials && staff.socials.length > 0) {
+      staff.socials.forEach(item => {
+        const a = document.createElement('a');
+        a.href = item.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = `flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-xl border text-sm font-medium transition-all duration-300 shadow-sm ${item.color}`;
+        
+        let icon = '🔗';
+        if (item.type === 'facebook') icon = '🔵 Facebook';
+        else if (item.type === 'line') icon = '🟢 LINE';
+        else if (item.type === 'email') icon = '✉️ อีเมล';
+        else if (item.type === 'phone') icon = '📞 โทรศัพท์';
+        
+        a.innerHTML = `<span>${icon}</span> <span class="truncate">${escapeHtml(item.label)}</span>`;
+        socialsContainer.appendChild(a);
+      });
+    } else {
+      socialsContainer.innerHTML = '<p class="text-sm text-slate-400 text-center py-2">ไม่มีข้อมูลช่องทางติดต่อเพิ่มเติม</p>';
+    }
   }
 
   modal.classList.add('open');
+  modal.style.display = 'grid';
+  modal.style.pointerEvents = 'auto';
   document.body.classList.add('no-scroll');
+};
+
+/* ---------- ตัวกรองและแท็บในหมวดกลุ่มงาน/กลุ่มสาระ ---------- */
+function initDepartmentsSection() {
+  const filterBtns = document.querySelectorAll('.dept-filter-btn');
+  const cards = document.querySelectorAll('.dept-card-item');
+  if (!filterBtns.length || !cards.length) return;
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.classList.remove('bg-emerald-800', 'text-white', 'shadow-sm');
+        b.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+      });
+      btn.classList.add('bg-emerald-800', 'text-white', 'shadow-sm');
+      btn.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+
+      const filter = btn.dataset.deptFilter;
+      cards.forEach(card => {
+        if (filter === 'all' || card.dataset.deptCategory === filter) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
 }
 
 /* ---------- ตัวกรองภาพกิจกรรม (Gallery Filter) ---------- */
@@ -356,7 +400,7 @@ function initCarousel() {
 
   // เรนเดอร์สไลด์พร้อมภาพพื้นหลังจริงและ Overlay กราเดียนต์เพื่อให้อ่านง่าย
   track.innerHTML = bannerList.map((b) => `
-    <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 text-white">
+    <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 pb-24 sm:pb-32 text-white">
       <img src="${b.img}" alt="${escapeHtml(b.title)}" class="absolute inset-0 w-full h-full object-cover">
       <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
       <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/40 to-transparent"></div>
@@ -370,11 +414,11 @@ function initCarousel() {
         <p class="mt-4 max-w-2xl text-sm sm:text-base text-emerald-100 font-light leading-relaxed drop-shadow">
           ${escapeHtml(b.tagline || '')}
         </p>
-        <div class="mt-8 flex flex-wrap gap-4">
+        <div class="mt-8 flex flex-wrap gap-4 relative z-30 pointer-events-auto">
           <a href="${b.btnLink || '#vision'}" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-7 py-3 text-sm shadow-lg hover:-translate-y-0.5 transition">
             ${escapeHtml(b.btnText || 'ดูข้อมูลเพิ่มเติม →')}
           </a>
-          <a href="#admissions" class="rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
+          <a href="#admissions" class="carousel-admissions-btn rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
             📝 สมัครเรียนออนไลน์
           </a>
         </div>
@@ -425,15 +469,45 @@ function initCarousel() {
 
   goTo(0);
   start();
+  checkAdmissionsStatusOnHomepage();
 }
 
 /* ---------- ตรวจสอบสถานะเปิด/ปิดรับสมัครเรียนบนหน้าแรก ---------- */
 async function checkAdmissionsStatusOnHomepage() {
   const section = document.getElementById('admissions');
-  if (!section) return;
 
   function applyAdmissionsUI(status) {
     const isClosed = status === 'closed';
+
+    // 1. ซิงก์ลิงก์/ปุ่มรับสมัครบนแถบเมนูด้านบน (Desktop & Mobile)
+    const navLinks = document.querySelectorAll('a[href="#admissions"]');
+    navLinks.forEach(link => {
+      if (link.classList.contains('carousel-admissions-btn') || link.closest('.carousel-slide')) {
+        // ปุ่มใน Hero Carousel
+        if (isClosed) {
+          link.innerHTML = '<span>🔒</span> <span>ปิดรับสมัครชั่วคราว</span>';
+          link.className = 'carousel-admissions-btn rounded-xl bg-red-950/80 hover:bg-red-900/90 text-red-200 border border-red-500/40 backdrop-blur px-6 py-3 text-sm font-semibold transition shadow';
+        } else {
+          link.innerHTML = '<span>📝</span> <span>สมัครเรียนออนไลน์</span>';
+          link.className = 'carousel-admissions-btn rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition';
+        }
+      } else if (link.closest('nav') || link.closest('#mobile-menu') || link.id === 'nav-admissions-link' || link.id === 'mobile-nav-admissions-link') {
+        // ลิงก์บน Header Navigation
+        if (isClosed) {
+          link.innerHTML = '<span>🔒</span> <span>ปิดรับสมัคร</span>';
+          link.classList.remove('text-amber-300');
+          link.classList.add('text-rose-300');
+        } else {
+          link.innerHTML = '<span>📝</span> <span>รับสมัครเรียน</span>';
+          link.classList.remove('text-rose-300');
+          link.classList.add('text-amber-300');
+        }
+      }
+    });
+
+    if (!section) return;
+
+    // 2. ปรับปรุงการ์ดและแบบฟอร์มในส่วน #admissions
     const formContainer = section.querySelector('.lg\\:col-span-7');
     const badgeContainer = section.querySelector('.lg\\:col-span-5 .inline-flex');
 

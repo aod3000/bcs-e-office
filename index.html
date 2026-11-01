@@ -62,8 +62,9 @@
         <nav class="hidden xl:flex items-center gap-1.5 text-sm font-medium text-emerald-50">
           <a href="#home" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">หน้าแรก</a>
           <a href="#vision" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">เกี่ยวกับโรงเรียน</a>
+          <a href="#departments-section" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition font-medium">🏛️ กลุ่มงาน/กลุ่มสาระ</a>
           <a href="#director" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">สารจาก ผอ.</a>
-          <a href="#admissions" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition text-amber-300 font-bold">📝 รับสมัครเรียน</a>
+          <a href="#admissions" id="nav-admissions-link" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition text-amber-300 font-bold">📝 รับสมัครเรียน</a>
           <a href="#staff-section" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">ทำเนียบบุคลากร</a>
           <a href="#gallery" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">ภาพกิจกรรม</a>
           <a href="pages/public-dashboard.html" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">📊 แดชบอร์ด</a>
@@ -97,9 +98,12 @@
         <div class="flex flex-col gap-1 py-4 text-slate-200">
           <a href="#home" class="px-3 py-2 rounded-lg hover:bg-white/10">หน้าแรก</a>
           <a href="#vision" class="px-3 py-2 rounded-lg hover:bg-white/10">เกี่ยวกับโรงเรียน</a>
+          <a href="#departments-section" class="px-3 py-2 rounded-lg hover:bg-white/10">🏛️ กลุ่มงาน/กลุ่มสาระ</a>
           <a href="#director" class="px-3 py-2 rounded-lg hover:bg-white/10">สารจากผู้อำนวยการ</a>
+          <a href="#admissions" id="mobile-nav-admissions-link" class="px-3 py-2 rounded-lg hover:bg-white/10 text-amber-300 font-bold">📝 รับสมัครเรียน</a>
           <a href="#staff-section" class="px-3 py-2 rounded-lg hover:bg-white/10">ทำเนียบบุคลากร</a>
           <a href="#gallery" class="px-3 py-2 rounded-lg hover:bg-white/10">ภาพกิจกรรม</a>
+          <a href="pages/public-dashboard.html" class="px-3 py-2 rounded-lg hover:bg-white/10">📊 แดชบอร์ด</a>
           <a href="#contact" class="px-3 py-2 rounded-lg hover:bg-white/10">ติดต่อเรา</a>
           <a href="login.html" data-login-link="button" class="mt-2 text-center bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl">เข้าสู่ระบบ</a>
         </div>
@@ -116,7 +120,7 @@
       <div class="carousel-track flex">
         
         <!-- Slide 1: อัตลักษณ์และความเป็นเลิศ -->
-        <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 text-white">
+        <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 pb-24 sm:pb-32 text-white">
           <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&auto=format&fit=crop&q=80" alt="โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)" class="absolute inset-0 w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/40 to-transparent"></div>
@@ -130,11 +134,11 @@
             <p class="mt-4 max-w-2xl text-base sm:text-lg text-emerald-100 font-light leading-relaxed drop-shadow">
               น้อมนำหลักปรัชญาของเศรษฐกิจพอเพียง พัฒนาศักยภาพผู้เรียนรอบด้านสู่สังคมยุคดิจิทัลอย่างยั่งยืน
             </p>
-            <div class="mt-8 flex flex-wrap gap-4">
+            <div class="mt-8 flex flex-wrap gap-4 relative z-30 pointer-events-auto">
               <a href="#director" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-7 py-3 text-sm shadow-lg hover:-translate-y-0.5 transition">
                 สารจากผู้อำนวยการ →
               </a>
-              <a href="#admissions" class="rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
+              <a href="#admissions" class="carousel-admissions-btn rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
                 📝 รับสมัครเรียนออนไลน์
               </a>
             </div>
@@ -142,7 +146,7 @@
         </article>
 
         <!-- Slide 2: English Program (EP) -->
-        <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 text-white">
+        <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 pb-24 sm:pb-32 text-white">
           <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&auto=format&fit=crop&q=80" alt="English Program โรงเรียนบางชัน" class="absolute inset-0 w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/40 to-transparent"></div>
@@ -156,11 +160,11 @@
             <p class="mt-4 max-w-2xl text-base sm:text-lg text-slate-200 font-light leading-relaxed drop-shadow">
               จัดการเรียนการสอนภาษาอังกฤษกับครูเจ้าของภาษา เสริมสร้างทักษะสากลและการคิดวิเคราะห์ในทุกระดับชั้น
             </p>
-            <div class="mt-8 flex flex-wrap gap-4">
+            <div class="mt-8 flex flex-wrap gap-4 relative z-30 pointer-events-auto">
               <a href="#vision" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-7 py-3 text-sm shadow-lg hover:-translate-y-0.5 transition">
                 ดูหลักสูตรการศึกษา →
               </a>
-              <a href="#admissions" class="rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
+              <a href="#admissions" class="carousel-admissions-btn rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
                 📝 รับสมัครเรียนออนไลน์
               </a>
             </div>
@@ -170,9 +174,9 @@
       </div>
 
       <!-- Controls -->
-      <button data-carousel-prev aria-label="ก่อนหน้า" class="hidden sm:grid absolute left-6 top-1/2 -translate-y-1/2 place-items-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 text-white text-2xl backdrop-blur transition">‹</button>
-      <button data-carousel-next aria-label="ถัดไป" class="hidden sm:grid absolute right-6 top-1/2 -translate-y-1/2 place-items-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 text-white text-2xl backdrop-blur transition">›</button>
-      <div class="absolute bottom-6 left-0 right-0 flex justify-center gap-2.5">
+      <button data-carousel-prev aria-label="ก่อนหน้า" class="hidden sm:grid absolute left-6 top-1/2 -translate-y-1/2 place-items-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 text-white text-2xl backdrop-blur transition z-20">‹</button>
+      <button data-carousel-next aria-label="ถัดไป" class="hidden sm:grid absolute right-6 top-1/2 -translate-y-1/2 place-items-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 text-white text-2xl backdrop-blur transition z-20">›</button>
+      <div class="absolute bottom-6 left-0 right-0 flex justify-center gap-2.5 z-20">
         <button class="carousel-dot h-2.5 w-2.5 rounded-full bg-white/40" aria-label="สไลด์ 1"></button>
         <button class="carousel-dot h-2.5 w-2.5 rounded-full bg-white/40" aria-label="สไลด์ 2"></button>
       </div>
@@ -180,10 +184,10 @@
   </section>
 
   <!-- ============================================================== -->
-  <!-- 3. QUICK ACTION BENTO (7 หมวดเมนูด่วนสไตล์ MakeWebEasy) -->
+  <!-- 3. QUICK ACTION BENTO (8 หมวดเมนูด่วนสไตล์ MakeWebEasy) -->
   <!-- ============================================================== -->
-  <section class="relative -mt-10 sm:-mt-14 z-20 mx-auto max-w-[1536px] px-4 sm:px-8">
-    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+  <section class="relative -mt-10 sm:-mt-14 z-20 pointer-events-none mx-auto max-w-[1536px] px-4 sm:px-8">
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4 pointer-events-auto">
       
       <a href="pages/student-portal.html" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
@@ -199,49 +203,42 @@
         <span class="text-sm font-bold text-slate-800">แดชบอร์ดภาพรวม (เปิดเผยข้อมูล)</span>
       </a>
 
-      <a href="#staff-section" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
+      <a href="#departments-section" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
+          <span class="text-2xl">🏛️</span>
+        </div>
+        <span class="text-sm font-bold text-slate-800">กลุ่มงาน/กลุ่มสาระ</span>
+      </a>
+
+      <a href="#staff-section" class="mwe-card rounded-2xl p-5 text-center badge-border-yellow flex flex-col items-center justify-center group">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 grid place-items-center mb-2.5 group-hover:scale-110 transition">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
         </div>
         <span class="text-sm font-bold text-slate-800">ทำเนียบบุคลากร</span>
       </a>
 
-      <a href="#vision" class="mwe-card rounded-2xl p-5 text-center badge-border-yellow flex flex-col items-center justify-center group">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 grid place-items-center mb-2.5 group-hover:scale-110 transition">
+      <a href="#vision" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
         </div>
         <span class="text-sm font-bold text-slate-800">โครงสร้างหลักสูตร</span>
       </a>
 
-      <a href="#gallery" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center group">
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
+      <a href="#gallery" class="mwe-card rounded-2xl p-5 text-center badge-border-yellow flex flex-col items-center justify-center group">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 grid place-items-center mb-2.5 group-hover:scale-110 transition">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
         </div>
         <span class="text-sm font-bold text-slate-800">ภาพกิจกรรม</span>
       </a>
 
-      <a href="#vision" class="mwe-card rounded-2xl p-5 text-center badge-border-dark flex flex-col items-center justify-center group">
+      <a href="#news" class="mwe-card rounded-2xl p-5 text-center badge-border-dark flex flex-col items-center justify-center group">
         <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-800 grid place-items-center mb-2.5 group-hover:scale-110 transition">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1c1.86-.48 3.27-2.03 3.61-4.06C19.08 11.63 21 9.55 21 7V5h-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
-        </div>
-        <span class="text-sm font-bold text-slate-800">เกียรติยศรางวัล</span>
-      </a>
-
-      <a href="#news" class="mwe-card rounded-2xl p-5 text-center badge-border-yellow flex flex-col items-center justify-center group">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 grid place-items-center mb-2.5 group-hover:scale-110 transition">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z"/></svg>
         </div>
         <span class="text-sm font-bold text-slate-800">ข่าวประชาสัมพันธ์</span>
       </a>
 
-      <a href="login.html" class="mwe-card rounded-2xl p-5 text-center badge-border-dark flex flex-col items-center justify-center group">
-        <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-800 grid place-items-center mb-2.5 group-hover:scale-110 transition">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-        </div>
-        <span class="text-sm font-bold text-slate-800">คำสั่งโรงเรียน</span>
-      </a>
-
-      <a href="#contact" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center col-span-2 sm:col-span-2 lg:col-span-1 group">
+      <a href="#contact" class="mwe-card rounded-2xl p-5 text-center badge-border-green flex flex-col items-center justify-center col-span-2 sm:col-span-1 lg:col-span-1 group">
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mb-2.5 group-hover:scale-110 transition">
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
         </div>
@@ -251,7 +248,7 @@
     </div>
 
     <!-- Social Media Quick Pills -->
-    <div class="flex flex-wrap items-center justify-center gap-3 pt-6">
+    <div class="flex flex-wrap items-center justify-center gap-3 pt-6 pointer-events-auto">
       <a href="https://google.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-white px-5 py-2 rounded-full border border-slate-200 text-xs sm:text-sm font-medium text-slate-700 shadow-sm hover:border-emerald-500 hover:text-emerald-700 transition">
         <span>🌐</span> <span>Google Workspace</span>
       </a>
@@ -371,6 +368,414 @@
   </section>
 
   <!-- ============================================================== -->
+  <!-- 5. โครงสร้างกลุ่มงานและกลุ่มสาระการเรียนรู้ (DEPARTMENTS & SUBJECT GROUPS) -->
+  <!-- ============================================================== -->
+  <section id="departments-section" class="mx-auto max-w-[1536px] px-4 sm:px-8 py-16 scroll-mt-24">
+    <div class="text-center max-w-3xl mx-auto mb-10">
+      <span class="inline-block px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold uppercase mb-2">
+        Departments & Learning Areas
+      </span>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        โครงสร้างกลุ่มงานและกลุ่มสาระการเรียนรู้
+      </h2>
+      <p class="mt-2 text-slate-500 text-sm font-light">
+        โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) มุ่งเน้นการบริหารจัดการอย่างเป็นระบบ พัฒนาผู้เรียนรอบด้านผ่าน 4 กลุ่มบริหารสถานศึกษา 8 กลุ่มสาระการเรียนรู้ และกลุ่มการศึกษาพิเศษ
+      </p>
+
+      <!-- Category Filter Tabs -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mt-6">
+        <button class="dept-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm bg-emerald-800 text-white" data-dept-filter="all">
+          ✨ ทั้งหมด (14 กลุ่มงาน/กลุ่มสาระ)
+        </button>
+        <button class="dept-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm bg-white text-slate-600 hover:bg-slate-50 border border-slate-200" data-dept-filter="admin">
+          🏛️ 4 กลุ่มบริหารสถานศึกษา
+        </button>
+        <button class="dept-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm bg-white text-slate-600 hover:bg-slate-50 border border-slate-200" data-dept-filter="subject">
+          📚 8 กลุ่มสาระการเรียนรู้
+        </button>
+        <button class="dept-filter-btn px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm bg-white text-slate-600 hover:bg-slate-50 border border-slate-200" data-dept-filter="special">
+          🌟 การศึกษาพิเศษ & ปฐมวัย
+        </button>
+      </div>
+    </div>
+
+    <!-- Departments Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="departments-cards-grid">
+      
+      <!-- 1) กลุ่มบริหารวิชาการ -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="admin">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 grid place-items-center text-2xl font-bold shadow-inner">
+              📖
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-50 text-emerald-800 font-bold text-[10px] rounded-full border border-emerald-200">
+              กลุ่มบริหารงาน
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มบริหารวิชาการ</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            พัฒนาหลักสูตรสถานศึกษา ยกระดับผลสัมฤทธิ์ทางการเรียน โครงการ English Program (EP) งานทะเบียนวัดผล และนวัตกรรมสื่อการสอน
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-emerald-700 font-bold">●</span> หัวหน้า: นางสาวกัญญาภัทร นวลเพ็ญ (รอง ผอ.)</div>
+            <div class="flex items-center gap-1.5"><span class="text-emerald-700 font-bold">●</span> จุดเด่น: Smart Classroom, Active Learning, EP</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูครูผู้สอนในสังกัด →
+          </a>
+        </div>
+      </div>
+
+      <!-- 2) กลุ่มบริหารงบประมาณและแผนงาน -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="admin">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 grid place-items-center text-2xl font-bold shadow-inner">
+              💰
+            </div>
+            <span class="px-2.5 py-1 bg-amber-50 text-amber-800 font-bold text-[10px] rounded-full border border-amber-200">
+              กลุ่มบริหารงาน
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มบริหารงบประมาณและแผนงาน</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            จัดทำแผนปฏิบัติการประจำปี บริหารการเงิน บัญชี พัสดุ สินทรัพย์โรงเรียน และการระดมทรัพยากรเพื่อการศึกษาอย่างคุ้มค่าโปร่งใส
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-amber-700 font-bold">●</span> การกำกับดูแล: แผนงานและงบประมาณโรงเรียน</div>
+            <div class="flex items-center gap-1.5"><span class="text-amber-700 font-bold">●</span> จุดเด่น: เบิกจ่ายโปร่งใส ตรวจสอบได้ตามระเบียบ กทม.</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+          <a href="#staff-section" class="text-xs text-amber-700 hover:text-amber-900 font-bold inline-flex items-center gap-1">
+            ดูบุคลากรในสังกัด →
+          </a>
+        </div>
+      </div>
+
+      <!-- 3) กลุ่มบริหารงานบุคคล -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="admin">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-800 grid place-items-center text-2xl font-bold shadow-inner">
+              👥
+            </div>
+            <span class="px-2.5 py-1 bg-blue-50 text-blue-800 font-bold text-[10px] rounded-full border border-blue-200">
+              กลุ่มบริหารงาน
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มบริหารงานบุคคล</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            วางแผนอัตรากำลังครูและบุคลากร พัฒนาวิชาชีพครูสู่มาตรฐาน วินัย จรรยาบรรณ และสวัสดิการครูเพื่อความเป็นอยู่ที่ดี
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-blue-700 font-bold">●</span> หัวหน้า: นายสมชาย รัตนวิเชียร (รอง ผอ.)</div>
+            <div class="flex items-center gap-1.5"><span class="text-blue-700 font-bold">●</span> จุดเด่น: พัฒนาครูมืออาชีพ อบรมทักษะดิจิทัลต่อเนื่อง</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+          <a href="#staff-section" class="text-xs text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1">
+            ดูบุคลากรในสังกัด →
+          </a>
+        </div>
+      </div>
+
+      <!-- 4) กลุ่มบริหารทั่วไป -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="admin">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-800 grid place-items-center text-2xl font-bold shadow-inner">
+              🏢
+            </div>
+            <span class="px-2.5 py-1 bg-rose-50 text-rose-800 font-bold text-[10px] rounded-full border border-rose-200">
+              กลุ่มบริหารงาน
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มบริหารทั่วไป & กิจการนักเรียน</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            ดูแลอาคารสถานที่ สภาพแวดล้อมความปลอดภัย กิจการนักเรียน วินัยจราจร อนามัยโรงเรียน โภชนาการ และการประชาสัมพันธ์ชุมชน
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-rose-700 font-bold">●</span> กิจการนักเรียน: ระบบดูแลช่วยเหลือนักเรียน 100%</div>
+            <div class="flex items-center gap-1.5"><span class="text-rose-700 font-bold">●</span> จุดเด่น: โรงเรียนปลอดภัย สะอาด น่าอยู่ ร่มรื่น</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+          <a href="#staff-section" class="text-xs text-rose-700 hover:text-rose-900 font-bold inline-flex items-center gap-1">
+            ดูบุคลากรในสังกัด →
+          </a>
+        </div>
+      </div>
+
+      <!-- 5) ภาษาไทย -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🇹🇭
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระการเรียนรู้ภาษาไทย</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            สืบสานเอกลักษณ์และภาษาของชาติ มุ่งเน้นการฟัง พูด อ่าน เขียน การคิดวิเคราะห์ วรรณคดี และการสื่อสารอย่างถูกต้อง
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-amber-600 font-bold">●</span> กิจกรรมเด่น: สัปดาห์วันภาษาไทยแห่งชาติ, การคัดลายมือ</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 6) คณิตศาสตร์ -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🔢
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระการเรียนรู้คณิตศาสตร์</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            พัฒนาทักษะการคิดคำนวณ ตรรกะ เหตุผล และการแก้ปัญหาผ่านโจทย์สถานการณ์จริง เสริมสร้างการคิดแบบเป็นระบบ
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-blue-600 font-bold">●</span> กิจกรรมเด่น: คณิตคิดเร็ว, โครงงานคณิตศาสตร์สัญจร</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 7) วิทยาศาสตร์และเทคโนโลยี -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🔬
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระฯ วิทยาศาสตร์และเทคโนโลยี</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            จัดการเรียนรู้สะเต็มศึกษา (STEM Education) โค้ดดิ้ง (Coding) และการทดลองวิทยาศาสตร์ในห้องปฏิบัติการที่ทันสมัย
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-cyan-600 font-bold">●</span> กิจกรรมเด่น: สัปดาห์วันวิทยาศาสตร์, ชุมนุมหุ่นยนต์และ AI</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 8) สังคมศึกษาฯ -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🌏
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระฯ สังคมศึกษา ศาสนา และวัฒนธรรม</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            ปลูกฝังคุณธรรม จริยธรรม หน้าที่พลเมือง ประวัติศาสตร์ ภูมิศาสตร์ และการปฏิบัติตามหลักปรัชญาของเศรษฐกิจพอเพียง
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-emerald-600 font-bold">●</span> กิจกรรมเด่น: ค่ายคุณธรรม, มารยาทไทย, ประชาธิปไตยในโรงเรียน</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 9) สุขศึกษาและพลศึกษา -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-700 grid place-items-center text-2xl font-bold shadow-inner">
+              ⚽
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            เสริมสร้างสุขนิสัย สุขภาพร่างกายที่แข็งแรง ทักษะการเล่นกีฬา ความมีน้ำใจนักกีฬา และการป้องกันตนเองจากสิ่งเสพติด
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-orange-600 font-bold">●</span> กิจกรรมเด่น: การแข่งขันกีฬาภายใน (กีฬาสี), กรีฑานักเรียน</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 10) ศิลปะ -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🎨
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระการเรียนรู้ศิลปะ</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            ส่งเสริมจินตนาการ ความคิดสร้างสรรค์ ทัศนศิลป์ ดนตรีไทย ดนตรีสากล และนาฏศิลป์ สืบสานวัฒนธรรมอย่างงดงาม
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-purple-600 font-bold">●</span> กิจกรรมเด่น: วงดนตรีสากล/อังกะลุง, นิทรรศการศิลปะเด็ก</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 11) การงานอาชีพ -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🛠️
+            </div>
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold text-[10px] rounded-full">
+              กลุ่มสาระหลัก
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระการเรียนรู้การงานอาชีพ</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            เน้นทักษะชีวิต การทำงานเป็นทีม การทำอาหาร งานประดิษฐ์ งานช่าง เกษตรอินทรีย์ และพื้นฐานสู่การเป็นผู้ประกอบการ
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-teal-600 font-bold">●</span> กิจกรรมเด่น: แปลงผักเกษตรพอเพียง, ตลาดนัดอาชีพนักเรียน</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 12) ภาษาต่างประเทศ & EP -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="subject">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🇬🇧
+            </div>
+            <span class="px-2.5 py-1 bg-amber-100 text-amber-900 font-bold text-[10px] rounded-full border border-amber-300">
+              English Program (EP)
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">กลุ่มสาระฯ ภาษาต่างประเทศ & EP</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            พัฒนาทักษะภาษาอังกฤษเพื่อการสื่อสารสากลกับครูเจ้าของภาษา Native Speakers และหลักสูตรสองภาษา English Program ที่เข้มข้น
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-indigo-600 font-bold">●</span> กิจกรรมเด่น: English Camp, Public Speaking, วันคริสต์มาส</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูผู้สอน →
+          </a>
+        </div>
+      </div>
+
+      <!-- 13) การศึกษาปฐมวัย (อนุบาล 1-3) -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="special">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-pink-50 text-pink-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🧸
+            </div>
+            <span class="px-2.5 py-1 bg-pink-100 text-pink-800 font-bold text-[10px] rounded-full">
+              ระดับปฐมวัย
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">ระดับการศึกษาปฐมวัย (อนุบาล 1 - 3)</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            เตรียมความพร้อมและพัฒนาการ 4 ด้าน ร่างกาย อารมณ์-จิตใจ สังคม และสติปัญญา ผ่านการเล่นและการจัดกิจกรรมแบบบูรณาการ
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-pink-600 font-bold">●</span> ขนาดห้องเรียน: 9 ห้องเรียน (อ.1 - อ.3)</div>
+            <div class="flex items-center gap-1.5"><span class="text-pink-600 font-bold">●</span> จุดเด่น: สื่อทันสมัย ห้องเรียนปรับอากาศ อาหารกลางวันคุณภาพ</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูปฐมวัย →
+          </a>
+        </div>
+      </div>
+
+      <!-- 14) การศึกษาพิเศษ (ห้องเรียนคู่ขนาน) -->
+      <div class="dept-card-item mwe-card rounded-3xl p-6 border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-all" data-dept-category="special">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 grid place-items-center text-2xl font-bold shadow-inner">
+              🌟
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-full">
+              การศึกษาพิเศษ
+            </span>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1">งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน)</h3>
+          <p class="text-xs text-slate-500 mb-3 leading-relaxed">
+            จัดการศึกษาแบบเรียนรวมและห้องเรียนคู่ขนาน แผนการจัดการศึกษาเฉพาะบุคคล (IEP) พัฒนาศักยภาพและฟื้นฟูสมรรถภาพอย่างอบอุ่น
+          </p>
+          <div class="space-y-1.5 text-[11px] text-slate-600 border-t border-slate-100 pt-3">
+            <div class="flex items-center gap-1.5"><span class="text-emerald-700 font-bold">●</span> รูปแบบ: แผนการสอน IEP เฉพาะบุคคล, ครูการศึกษาพิเศษเฉพาะทาง</div>
+            <div class="flex items-center gap-1.5"><span class="text-emerald-700 font-bold">●</span> จำนวนห้อง: 3 ห้องเรียนคู่ขนาน</div>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+          <a href="#staff-section" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold inline-flex items-center gap-1">
+            ดูคณะครูการศึกษาพิเศษ →
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
   <!-- 6. ทำเนียบบุคลากร (STAFF DIRECTORY WITH INTERACTIVE POPUP) -->
   <!-- ============================================================== -->
   <section id="staff-section" class="mx-auto max-w-[1536px] px-4 sm:px-8 py-14">
@@ -385,53 +790,53 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
       
       <!-- ผู้อำนวยการโรงเรียน -->
-      <div data-staff-id="1" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group">
+      <div data-staff-id="1" onclick="openStaffModal(1)" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group hover:scale-[1.02] transition-all">
         <div class="w-24 h-24 rounded-full bg-slate-100 text-slate-400 grid place-items-center mb-4 group-hover:scale-105 transition shadow-inner">
           <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <h3 class="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition">นางชลตวรรณ ขุมเพ็ชร</h3>
         <p class="text-xs text-emerald-700 font-bold mt-1">ผู้อำนวยการสถานศึกษา</p>
-        <span class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700">คลิกดูโปรไฟล์ →</span>
+        <button type="button" onclick="openStaffModal(1); event.stopPropagation();" class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700 font-medium cursor-pointer">คลิกดูโปรไฟล์ →</button>
       </div>
 
       <!-- รองผู้อำนวยการ วิชาการ -->
-      <div data-staff-id="2" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group">
+      <div data-staff-id="2" onclick="openStaffModal(2)" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group hover:scale-[1.02] transition-all">
         <div class="w-24 h-24 rounded-full bg-slate-100 text-slate-400 grid place-items-center mb-4 group-hover:scale-105 transition shadow-inner">
           <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <h3 class="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition">นางสาวกัญญาภัทร นวลเพ็ญ</h3>
         <p class="text-xs text-slate-500 font-medium mt-1">รองผู้อำนวยการ (วิชาการ)</p>
-        <span class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700">คลิกดูโปรไฟล์ →</span>
+        <button type="button" onclick="openStaffModal(2); event.stopPropagation();" class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700 font-medium cursor-pointer">คลิกดูโปรไฟล์ →</button>
       </div>
 
       <!-- รองผู้อำนวยการ ทั่วไป -->
-      <div data-staff-id="3" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group">
+      <div data-staff-id="3" onclick="openStaffModal(3)" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group hover:scale-[1.02] transition-all">
         <div class="w-24 h-24 rounded-full bg-slate-100 text-slate-400 grid place-items-center mb-4 group-hover:scale-105 transition shadow-inner">
           <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <h3 class="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition">นายสมชาย รัตนวิเชียร</h3>
         <p class="text-xs text-slate-500 font-medium mt-1">รองผู้อำนวยการ (ทั่วไป/บุคคล)</p>
-        <span class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700">คลิกดูโปรไฟล์ →</span>
+        <button type="button" onclick="openStaffModal(3); event.stopPropagation();" class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700 font-medium cursor-pointer">คลิกดูโปรไฟล์ →</button>
       </div>
 
       <!-- หัวหน้ากลุ่ม EP -->
-      <div data-staff-id="4" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group">
+      <div data-staff-id="4" onclick="openStaffModal(4)" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group hover:scale-[1.02] transition-all">
         <div class="w-24 h-24 rounded-full bg-slate-100 text-slate-400 grid place-items-center mb-4 group-hover:scale-105 transition shadow-inner">
           <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <h3 class="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition">ครูหัวหน้ากลุ่ม EP</h3>
         <p class="text-xs text-slate-500 font-medium mt-1">กลุ่มสาระภาษาต่างประเทศ</p>
-        <span class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700">คลิกดูโปรไฟล์ →</span>
+        <button type="button" onclick="openStaffModal(4); event.stopPropagation();" class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700 font-medium cursor-pointer">คลิกดูโปรไฟล์ →</button>
       </div>
 
       <!-- หัวหน้าฝ่ายปกครอง -->
-      <div data-staff-id="5" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group">
+      <div data-staff-id="5" onclick="openStaffModal(5)" class="cursor-pointer mwe-card rounded-3xl p-6 text-center flex flex-col items-center group hover:scale-[1.02] transition-all">
         <div class="w-24 h-24 rounded-full bg-slate-100 text-slate-400 grid place-items-center mb-4 group-hover:scale-105 transition shadow-inner">
           <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <h3 class="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition">ครูฝ่ายปกครอง</h3>
         <p class="text-xs text-slate-500 font-medium mt-1">งานกิจการนักเรียน</p>
-        <span class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700">คลิกดูโปรไฟล์ →</span>
+        <button type="button" onclick="openStaffModal(5); event.stopPropagation();" class="mt-4 text-xs inline-flex items-center gap-1 text-slate-400 group-hover:text-emerald-700 font-medium cursor-pointer">คลิกดูโปรไฟล์ →</button>
       </div>
 
     </div>
