@@ -1,45 +1,101 @@
-/* ============================================
-   admin-cms.js - ควบคุมหน้าระบบจัดการหลังบ้าน (Admin CMS)
-   ตรวจสอบสิทธิ์ Admin / IT, สลับแท็บ, และอัปโหลดไฟล์ผ่าน GAS สู่ Google Drive
-   ============================================ */
+/* =====================================================================
+   admin-cms.js - ระบบบริหารจัดการหลังบ้าน (BCS SuperAdmin Control Center)
+   โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)
+   - จัดการสิทธิ์และบทบาทผู้ใช้ (User & Role Management)
+   - ตรวจและอนุมัติภาระงาน / รายงานครู (Task Approval Workflow)
+   - ตรวจและอนุมัติใบลาออนไลน์ (Leave Approval Workflow)
+   - ระบบเพิ่ม/ลบ ภาพกิจกรรมและข่าวสาร ผ่าน GAS ลง Google Drive (CMS)
+   - จัดการทำเนียบบุคลากรและช่องทางติดต่อโซเชียลมีเดีย
+   ===================================================================== */
 
 const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
 
-document.addEventListener('DOMContentLoaded', () => {
-  initAdminAuth();
+// หน่วยความจำชั่วคราวสำหรับข้อมูลหน้าหลังบ้าน
+let currentUser = null;
+let currentProfile = null;
+let allUsers = [];
+let allDepartments = [];
+let allTasks = [];
+let currentFilterRole = 'all';
+let currentSearchTerm = '';
+let pendingRevisionTaskId = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
   initAdminTabs();
+  await initAdminAuth();
+  await loadDepartments();
+  await loadUsers();
+  await loadTasks();
+  await loadLeaveRequests();
+  await loadActivities();
+  loadStaffDirectory();
   initActivityUpload();
+  initRevisionModal();
 });
 
-/** ตรวจสอบสิทธิ์ผู้ดูแลระบบ */
+/* =====================================================================
+   1. AUTH & PERMISSIONS
+   ===================================================================== */
 async function initAdminAuth() {
   const emailBadge = document.getElementById('admin-user-email');
+  const roleBadge = document.getElementById('admin-user-role-tag');
   const logoutBtn = document.getElementById('admin-logout-btn');
 
-  try {
-    if (!window.supabase || !isSupabaseConfigured()) return;
-    const { data } = await getSupabase().auth.getSession();
-    const user = data.session && data.session.user;
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      if (window.supabase && isSupabaseConfigured()) {
+        await getSupabase().auth.signOut();
+      }
+      window.location.replace('../index.html');
+    });
+  }
 
-    if (!user) {
+  try {
+    if (!window.supabase || !isSupabaseConfigured()) {
+      showToast('⚠️ กรุณาตั้งค่า Supabase URL และ Key', 'warning');
+      return;
+    }
+
+    const { data } = await getSupabase().auth.getSession();
+    currentUser = data.session && data.session.user;
+
+    if (!currentUser) {
       window.location.replace('../login.html');
       return;
     }
 
-    if (emailBadge) emailBadge.textContent = '👤 ' + user.email;
+    const isSuperAdminEmail = currentUser.email.toLowerCase() === 'admin@bcs.ac.th';
 
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        await getSupabase().auth.signOut();
-        window.location.replace('../index.html');
-      });
+    // ดึงข้อมูลโปรไฟล์จาก Supabase
+    const { data: profile } = await getSupabase()
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+
+    currentProfile = profile;
+
+    // ตรวจสอบสิทธิ์การเข้าใช้งาน
+    const isAuthorized = isSuperAdminEmail || (profile && ['admin', 'executive'].includes(profile.role));
+
+    if (!isAuthorized) {
+      alert('ขออภัย คุณไม่มีสิทธิ์เข้าถึงระบบจัดการหลังบ้าน (เฉพาะผู้ดูแลระบบและผู้บริหารเท่านั้น)');
+      window.location.replace('teacher-workspace.html');
+      return;
+    }
+
+    if (emailBadge) emailBadge.textContent = currentUser.email;
+    if (roleBadge) {
+      roleBadge.textContent = isSuperAdminEmail ? '👑 SuperAdmin' : (profile ? profile.role.toUpperCase() : 'ADMIN');
     }
   } catch (err) {
     console.warn('ตรวจสอบสิทธิ์แอดมินล้มเหลว', err);
   }
 }
 
-/** ควบคุมการสลับแท็บเมนู */
+/* =====================================================================
+   2. TAB SWITCHING
+   ===================================================================== */
 function initAdminTabs() {
   const tabBtns = document.querySelectorAll('.admin-tab-btn');
   const tabContents = document.querySelectorAll('.admin-tab-content');
@@ -47,10 +103,11 @@ function initAdminTabs() {
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       tabBtns.forEach(b => {
-        b.classList.remove('bg-blue-900', 'text-white', 'shadow');
+        b.classList.remove('active', 'bg-emerald-800', 'text-white', 'shadow');
         b.classList.add('text-slate-600', 'hover:bg-slate-100');
       });
-      btn.classList.add('bg-blue-900', 'text-white', 'shadow');
+
+      btn.classList.add('active', 'bg-emerald-800', 'text-white', 'shadow');
       btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
 
       const target = btn.dataset.tabTarget;
@@ -65,7 +122,556 @@ function initAdminTabs() {
   });
 }
 
-/** ฟอร์มอัปโหลดภาพกิจกรรม ส่งตรงเข้า Google Drive ผ่าน GAS */
+/* =====================================================================
+   3. DEPARTMENTS & USERS MANAGEMENT (สิทธิ์ & บทบาท)
+   ===================================================================== */
+async function loadDepartments() {
+  try {
+    if (!window.supabase || !isSupabaseConfigured()) return;
+    const { data, error } = await getSupabase().from('departments').select('*').order('id');
+    if (!error && data) {
+      allDepartments = data;
+    }
+  } catch (err) {
+    console.warn('โหลดรายชื่อกลุ่มงานไม่สำเร็จ:', err);
+  }
+}
+
+async function loadUsers() {
+  const tbody = document.getElementById('users-table-body');
+  if (!tbody) return;
+
+  try {
+    if (!window.supabase || !isSupabaseConfigured()) {
+      tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400">ยังไม่ได้เชื่อมต่อ Supabase</td></tr>';
+      return;
+    }
+
+    const { data: users, error } = await getSupabase()
+      .from('profiles')
+      .select('*, departments(id, name)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allUsers = users || [];
+    updateUserStats(allUsers);
+    renderUsersTable(allUsers);
+
+    // Bind Filter & Search
+    const searchInput = document.getElementById('user-search-input');
+    const roleFilter = document.getElementById('user-role-filter');
+    const refreshBtn = document.getElementById('refresh-users-btn');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value.toLowerCase().trim();
+        applyUserFilters();
+      });
+    }
+
+    if (roleFilter) {
+      roleFilter.addEventListener('change', (e) => {
+        currentFilterRole = e.target.value;
+        applyUserFilters();
+      });
+    }
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '⏳ กำลังโหลด...';
+        await loadUsers();
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = '🔄 รีเฟรช';
+      });
+    }
+  } catch (err) {
+    console.error('โหลดรายชื่อผู้ใช้ล้มเหลว', err);
+    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-red-500">เกิดข้อผิดพลาดในการโหลดผู้ใช้: ${err.message}</td></tr>`;
+  }
+}
+
+function updateUserStats(users) {
+  const totalEl = document.getElementById('stat-users-total');
+  const adminEl = document.getElementById('stat-users-admin');
+  const execEl = document.getElementById('stat-users-exec');
+  const headEl = document.getElementById('stat-users-head');
+  const teacherEl = document.getElementById('stat-users-teacher');
+  const studentEl = document.getElementById('stat-users-student');
+
+  if (totalEl) totalEl.textContent = users.length;
+  if (adminEl) adminEl.textContent = users.filter(u => u.role === 'admin' || u.email === 'admin@bcs.ac.th').length;
+  if (execEl) execEl.textContent = users.filter(u => u.role === 'executive').length;
+  if (headEl) headEl.textContent = users.filter(u => u.role === 'head').length;
+  if (teacherEl) teacherEl.textContent = users.filter(u => u.role === 'teacher').length;
+  if (studentEl) studentEl.textContent = users.filter(u => u.role === 'student').length;
+}
+
+function applyUserFilters() {
+  let filtered = allUsers;
+
+  if (currentFilterRole !== 'all') {
+    filtered = filtered.filter(u => u.role === currentFilterRole);
+  }
+
+  if (currentSearchTerm) {
+    filtered = filtered.filter(u => {
+      const email = (u.email || '').toLowerCase();
+      const name = (u.full_name || '').toLowerCase();
+      return email.includes(currentSearchTerm) || name.includes(currentSearchTerm);
+    });
+  }
+
+  renderUsersTable(filtered);
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('users-table-body');
+  if (!tbody) return;
+
+  if (users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">ไม่พบรายชื่อผู้ใช้งานตามเงื่อนไข</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = users.map(user => {
+    const isSuperAdmin = user.email.toLowerCase() === 'admin@bcs.ac.th';
+    const deptId = user.department_id || (user.departments && user.departments.id) || '';
+
+    // สร้างตัวเลือกกลุ่มงาน
+    const deptOptions = allDepartments.map(d => `
+      <option value="${d.id}" ${deptId == d.id ? 'selected' : ''}>${escapeHtml(d.name)}</option>
+    `).join('');
+
+    return `
+      <tr class="hover:bg-slate-50 transition" data-user-id="${user.id}">
+        <!-- ข้อมูลผู้ใช้ -->
+        <td class="py-3 px-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold grid place-items-center text-xs shrink-0">
+              ${(user.full_name || user.email || 'U')[0].toUpperCase()}
+            </div>
+            <div>
+              <div class="font-bold text-slate-900">${escapeHtml(user.full_name || 'ไม่ระบุชื่อ')}</div>
+              <div class="text-[11px] text-slate-400">${escapeHtml(user.email)}</div>
+            </div>
+          </div>
+        </td>
+
+        <!-- กำหนดสิทธิ์ Role -->
+        <td class="py-3 px-4">
+          ${isSuperAdmin ? `
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-800 border border-amber-300 font-bold text-xs rounded-xl shadow-sm">
+              <span>👑</span> SuperAdmin (ถาวร)
+            </span>
+          ` : `
+            <select class="user-role-select w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-none bg-white font-medium">
+              <option value="student" ${user.role === 'student' ? 'selected' : ''}>🎒 นักเรียน (Student)</option>
+              <option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>👩‍🏫 ครูผู้สอน (Teacher)</option>
+              <option value="head" ${user.role === 'head' ? 'selected' : ''}>👔 หัวหน้ากลุ่ม/ฝ่าย (Head)</option>
+              <option value="executive" ${user.role === 'executive' ? 'selected' : ''}>🏛️ ผู้บริหาร (Executive)</option>
+              <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>👑 ผู้ดูแลระบบ (Admin)</option>
+            </select>
+          `}
+        </td>
+
+        <!-- สังกัดกลุ่มงาน Department -->
+        <td class="py-3 px-4">
+          <select class="user-dept-select w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-none bg-white">
+            <option value="">-- ไม่ระบุกลุ่มงาน --</option>
+            ${deptOptions}
+          </select>
+        </td>
+
+        <!-- สถานะ Active -->
+        <td class="py-3 px-4 text-center">
+          ${isSuperAdmin ? `
+            <span class="text-[11px] font-bold text-emerald-600">● ปกติ</span>
+          ` : `
+            <select class="user-status-select rounded-xl border border-slate-200 px-2 py-1 text-xs bg-white ${user.is_active ? 'text-emerald-700 font-medium' : 'text-red-600 font-medium'}">
+              <option value="true" ${user.is_active ? 'selected' : ''}>● เปิดใช้งาน</option>
+              <option value="false" ${!user.is_active ? 'selected' : ''}>✕ ระงับใช้งาน</option>
+            </select>
+          `}
+        </td>
+
+        <!-- ปุ่มบันทึก -->
+        <td class="py-3 px-4 text-right">
+          ${isSuperAdmin ? `
+            <span class="text-xs text-slate-400">ระบบคุ้มครอง</span>
+          ` : `
+            <button onclick="saveUserProfile('${user.id}')" class="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+              💾 บันทึก
+            </button>
+          `}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/** บันทึกการเปลี่ยนแปลงสิทธิ์ของผู้ใช้งาน */
+window.saveUserProfile = async function(userId) {
+  const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+  if (!row) return;
+
+  const roleSelect = row.querySelector('.user-role-select');
+  const deptSelect = row.querySelector('.user-dept-select');
+  const statusSelect = row.querySelector('.user-status-select');
+
+  const newRole = roleSelect ? roleSelect.value : null;
+  const newDept = deptSelect && deptSelect.value ? parseInt(deptSelect.value, 10) : null;
+  const newStatus = statusSelect ? statusSelect.value === 'true' : true;
+
+  try {
+    const updates = {
+      is_active: newStatus,
+      updated_at: new Date().toISOString()
+    };
+    if (newRole) updates.role = newRole;
+    updates.department_id = newDept;
+
+    const { error } = await getSupabase()
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    showToast('✅ อัปเดตสิทธิ์ผู้ใช้งานเรียบร้อยแล้ว');
+    
+    // อัปเดตข้อมูลใน local array
+    const target = allUsers.find(u => u.id === userId);
+    if (target) {
+      if (newRole) target.role = newRole;
+      target.department_id = newDept;
+      target.is_active = newStatus;
+      updateUserStats(allUsers);
+    }
+  } catch (err) {
+    console.error('บันทึกสิทธิ์ล้มเหลว', err);
+    showToast('❌ บันทึกสิทธิ์ล้มเหลว: ' + err.message, 'error');
+  }
+};
+
+/* =====================================================================
+   4. TASK & REPORT APPROVALS (ตรวจและอนุมัติงาน)
+   ===================================================================== */
+async function loadTasks() {
+  const tbody = document.getElementById('tasks-table-body');
+  if (!tbody) return;
+
+  try {
+    if (!window.supabase || !isSupabaseConfigured()) {
+      tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">ยังไม่ได้เชื่อมต่อ Supabase</td></tr>';
+      return;
+    }
+
+    const { data: tasks, error } = await getSupabase()
+      .from('tasks')
+      .select('*, profiles:owner_id(full_name, email)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allTasks = tasks || [];
+    renderTasksTable(allTasks);
+
+    // Bind Filter Buttons
+    document.querySelectorAll('.task-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.task-filter-btn').forEach(b => {
+          b.classList.remove('active', 'bg-emerald-800', 'text-white', 'shadow-sm');
+          b.classList.add('bg-slate-100', 'text-slate-600');
+        });
+        btn.classList.add('active', 'bg-emerald-800', 'text-white', 'shadow-sm');
+        btn.classList.remove('bg-slate-100', 'text-slate-600');
+
+        const filter = btn.dataset.taskFilter;
+        if (filter === 'all') {
+          renderTasksTable(allTasks);
+        } else {
+          renderTasksTable(allTasks.filter(t => t.status === filter));
+        }
+      });
+    });
+  } catch (err) {
+    console.warn('โหลดรายงานภาระงานไม่สำเร็จ:', err);
+    tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-red-500">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
+  }
+}
+
+function renderTasksTable(tasks) {
+  const tbody = document.getElementById('tasks-table-body');
+  if (!tbody) return;
+
+  if (tasks.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">ไม่พบรายการงานหรือรายงานในหมวดนี้</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = tasks.map(task => {
+    const ownerName = task.profiles ? (task.profiles.full_name || task.profiles.email) : 'ไม่ระบุผู้ส่ง';
+    const dateStr = new Date(task.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+
+    let statusBadge = '';
+    if (task.status === 'pending') {
+      statusBadge = '<span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full font-bold text-[10px]">รอตรวจ</span>';
+    } else if (task.status === 'reviewed') {
+      statusBadge = '<span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full font-bold text-[10px]">ผ่านการตรวจเบื้องต้น</span>';
+    } else if (task.status === 'approved') {
+      statusBadge = '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">อนุมัติแล้ว</span>';
+    } else if (task.status === 'revision_requested') {
+      statusBadge = '<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full font-bold text-[10px]">ตีกลับแก้ไข</span>';
+    }
+
+    const driveLink = task.file_url ? `
+      <a href="${task.file_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 font-semibold underline">
+        <span>📂</span> ดูไฟล์ Drive
+      </a>
+    ` : '<span class="text-slate-400">-</span>';
+
+    return `
+      <tr class="hover:bg-slate-50 transition">
+        <td class="py-3 px-4">
+          <div class="font-bold text-slate-900">${escapeHtml(task.title)}</div>
+          <div class="text-[11px] text-slate-400">วันที่ส่ง: ${dateStr}</div>
+          ${task.reviewer_comment ? `<div class="text-[11px] text-red-600 mt-1">💬 ความเห็น: ${escapeHtml(task.reviewer_comment)}</div>` : ''}
+        </td>
+        <td class="py-3 px-4 font-medium text-slate-800">${escapeHtml(ownerName)}</td>
+        <td class="py-3 px-4"><span class="px-2 py-0.5 bg-slate-100 rounded text-slate-600 text-[11px]">${escapeHtml(task.category)}</span></td>
+        <td class="py-3 px-4">${driveLink}</td>
+        <td class="py-3 px-4 text-center">${statusBadge}</td>
+        <td class="py-3 px-4 text-right">
+          <div class="inline-flex items-center gap-1.5">
+            ${task.status !== 'approved' ? `
+              <button onclick="approveTask(${task.id})" class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition" title="อนุมัติงาน">
+                ✓ อนุมัติ
+              </button>
+            ` : ''}
+            ${task.status === 'pending' ? `
+              <button onclick="reviewTask(${task.id})" class="px-2.5 py-1 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-[11px] font-semibold transition" title="ผ่านการตรวจของหัวหน้า">
+                ตรวจแล้ว
+              </button>
+            ` : ''}
+            ${task.status !== 'revision_requested' ? `
+              <button onclick="openRevisionDialog(${task.id})" class="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-[11px] font-semibold transition" title="ตีกลับให้แก้ไข">
+                ตีกลับ
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.approveTask = async function(taskId) {
+  try {
+    const { error } = await getSupabase()
+      .from('tasks')
+      .update({
+        status: 'approved',
+        approved_by: currentUser.id,
+        approved_at: new Date().toISOString()
+      })
+      .eq('id', taskId);
+
+    if (error) throw error;
+    showToast('✅ อนุมัติงานสำเร็จเรียบร้อย');
+    await loadTasks();
+  } catch (err) {
+    showToast('❌ เกิดข้อผิดพลาด: ' + err.message, 'error');
+  }
+};
+
+window.reviewTask = async function(taskId) {
+  try {
+    const { error } = await getSupabase()
+      .from('tasks')
+      .update({
+        status: 'reviewed',
+        reviewed_by: currentUser.id,
+        reviewed_at: new Date().toISOString()
+      })
+      .eq('id', taskId);
+
+    if (error) throw error;
+    showToast('✅ บันทึกสถานะผ่านการตรวจเรียบร้อย');
+    await loadTasks();
+  } catch (err) {
+    showToast('❌ เกิดข้อผิดพลาด: ' + err.message, 'error');
+  }
+};
+
+function initRevisionModal() {
+  const modal = document.getElementById('revision-modal');
+  const cancelBtn = document.getElementById('cancel-revision-btn');
+  const confirmBtn = document.getElementById('confirm-revision-btn');
+  const commentInput = document.getElementById('revision-comment-input');
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      pendingRevisionTaskId = null;
+    });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async () => {
+      const comment = commentInput.value.trim();
+      if (!comment) {
+        alert('กรุณาระบุความคิดเห็นหรือจุดที่ต้องแก้ไข');
+        return;
+      }
+
+      if (!pendingRevisionTaskId) return;
+
+      try {
+        confirmBtn.disabled = true;
+        const { error } = await getSupabase()
+          .from('tasks')
+          .update({
+            status: 'revision_requested',
+            reviewer_comment: comment,
+            reviewed_by: currentUser.id,
+            reviewed_at: new Date().toISOString()
+          })
+          .eq('id', pendingRevisionTaskId);
+
+        if (error) throw error;
+
+        modal.classList.add('hidden');
+        commentInput.value = '';
+        pendingRevisionTaskId = null;
+        showToast('🔄 ตีกลับงานให้แก้ไขเรียบร้อยแล้ว');
+        await loadTasks();
+      } catch (err) {
+        showToast('❌ เกิดข้อผิดพลาด: ' + err.message, 'error');
+      } finally {
+        confirmBtn.disabled = false;
+      }
+    });
+  }
+}
+
+window.openRevisionDialog = function(taskId) {
+  pendingRevisionTaskId = taskId;
+  const modal = document.getElementById('revision-modal');
+  const commentInput = document.getElementById('revision-comment-input');
+  if (commentInput) commentInput.value = '';
+  if (modal) modal.classList.remove('hidden');
+};
+
+/* =====================================================================
+   5. LEAVE REQUESTS APPROVAL (ตรวจและอนุมัติใบลา)
+   ===================================================================== */
+async function loadLeaveRequests() {
+  const tbody = document.getElementById('leaves-table-body');
+  if (!tbody) return;
+
+  try {
+    if (!window.supabase || !isSupabaseConfigured()) {
+      tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">ยังไม่ได้เชื่อมต่อ Supabase</td></tr>';
+      return;
+    }
+
+    const { data: leaves, error } = await getSupabase()
+      .from('leave_requests')
+      .select('*, requester:requester_id(full_name, email)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!leaves || leaves.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">ยังไม่มีรายการยื่นใบลาในระบบ</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = leaves.map(leave => {
+      const requesterName = leave.requester ? (leave.requester.full_name || leave.requester.email) : 'ไม่ระบุ';
+      const startDate = new Date(leave.start_at).toLocaleDateString('th-TH');
+      const endDate = new Date(leave.end_at).toLocaleDateString('th-TH');
+      
+      const typeThai = {
+        sick: '🤒 ลาป่วย',
+        personal: '📋 ลากิจ',
+        out_of_school: '🚗 ขอออกนอกสถานศึกษา'
+      }[leave.leave_type] || leave.leave_type;
+
+      let statusBadge = '';
+      if (leave.status === 'submitted') {
+        statusBadge = '<span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full font-bold text-[10px]">รอการอนุมัติ</span>';
+      } else if (leave.status === 'approved') {
+        statusBadge = '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">อนุมัติแล้ว</span>';
+      } else if (leave.status === 'rejected') {
+        statusBadge = '<span class="px-2.5 py-1 bg-red-100 text-red-800 rounded-full font-bold text-[10px]">ไม่อนุมัติ</span>';
+      }
+
+      return `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(requesterName)}</td>
+          <td class="py-3 px-4 font-medium">${typeThai}</td>
+          <td class="py-3 px-4 text-slate-600">${startDate} - ${endDate}</td>
+          <td class="py-3 px-4 text-slate-600">${escapeHtml(leave.reason)}</td>
+          <td class="py-3 px-4 text-center">${statusBadge}</td>
+          <td class="py-3 px-4 text-right">
+            ${leave.status === 'submitted' ? `
+              <button onclick="approveLeave(${leave.id})" class="px-2.5 py-1 bg-emerald-800 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold mr-1">อนุมัติ</button>
+              <button onclick="rejectLeave(${leave.id})" class="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-semibold">ปฏิเสธ</button>
+            ` : '<span class="text-xs text-slate-400">เสร็จสิ้น</span>'}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    console.warn('โหลดใบลาไม่สำเร็จ:', err);
+    tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-red-500">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
+  }
+}
+
+window.approveLeave = async function(leaveId) {
+  try {
+    const { error } = await getSupabase()
+      .from('leave_requests')
+      .update({
+        status: 'approved',
+        exec_id: currentUser.id,
+        exec_at: new Date().toISOString()
+      })
+      .eq('id', leaveId);
+
+    if (error) throw error;
+    showToast('✅ อนุมัติใบลาสำเร็จ');
+    await loadLeaveRequests();
+  } catch (err) {
+    showToast('❌ ไม่สามารถอนุมัติได้: ' + err.message, 'error');
+  }
+};
+
+window.rejectLeave = async function(leaveId) {
+  try {
+    const { error } = await getSupabase()
+      .from('leave_requests')
+      .update({
+        status: 'rejected',
+        exec_id: currentUser.id,
+        exec_at: new Date().toISOString()
+      })
+      .eq('id', leaveId);
+
+    if (error) throw error;
+    showToast('❌ บันทึกการปฏิเสธใบลาแล้ว');
+    await loadLeaveRequests();
+  } catch (err) {
+    showToast('❌ ไม่สามารถดำเนินการได้: ' + err.message, 'error');
+  }
+};
+
+/* =====================================================================
+   6. NEWS & ACTIVITIES CMS (อัปโหลด GAS สู่ Google Drive & บันทึกงาน)
+   ==================================================================== */
 function initActivityUpload() {
   const form = document.getElementById('activity-form');
   if (!form) return;
@@ -95,7 +701,7 @@ function initActivityUpload() {
       // 1. แปลงไฟล์เป็น Base64
       const base64 = await fileToBase64(file);
 
-      // 2. ส่งไปยัง Google Apps Script (บันทึกลงโฟลเดอร์ Google Drive)
+      // 2. ส่งไปยัง Google Apps Script (บันทึก Google Drive)
       const res = await fetch(GAS_UPLOAD_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -108,11 +714,12 @@ function initActivityUpload() {
       });
 
       const result = await res.json();
-      const driveUrl = result.url || result.fileUrl;
+      const driveUrl = result.url || result.fileUrl || '';
 
-      // 3. บันทึกข้อมูลลงตาราง Supabase (tasks หรือ activities)
-      if (isSupabaseConfigured() && window.supabase) {
+      // 3. บันทึกข้อมูลลงตาราง Supabase tasks (category = 'ภาพกิจกรรม_' + category)
+      if (isSupabaseConfigured() && window.supabase && currentUser) {
         await getSupabase().from('tasks').insert([{
+          owner_id: currentUser.id,
           title: title,
           category: 'ภาพกิจกรรม_' + category,
           description: desc,
@@ -123,11 +730,21 @@ function initActivityUpload() {
         }]);
       }
 
-      alert('✅ เพิ่มภาพกิจกรรมและเก็บไฟล์ลง Google Drive สำเร็จเรียบร้อยแล้ว!');
+      // 4. บันทึกลง local storage เผื่อใช้งานแบบออฟไลน์
+      saveLocalActivity({
+        title,
+        category,
+        description: desc,
+        file_url: driveUrl,
+        date: new Date().toISOString()
+      });
+
+      showToast('✅ เพิ่มภาพกิจกรรมและเก็บไฟล์ลง Google Drive เรียบร้อยแล้ว!');
       form.reset();
+      await loadActivities();
     } catch (err) {
       console.error(err);
-      alert('❌ เกิดข้อผิดพลาด: ' + err.message);
+      showToast('❌ เกิดข้อผิดพลาด: ' + err.message, 'error');
     } finally {
       submitBtn.disabled = false;
       spinner.classList.add('hidden');
@@ -136,7 +753,105 @@ function initActivityUpload() {
   });
 }
 
-/** แปลงไฟล์เป็น Base64 */
+function saveLocalActivity(act) {
+  try {
+    const list = JSON.parse(localStorage.getItem('bcs_dynamic_activities') || '[]');
+    list.unshift(act);
+    localStorage.setItem('bcs_dynamic_activities', JSON.stringify(list.slice(0, 20)));
+  } catch (e) { /* ignore */ }
+}
+
+async function loadActivities() {
+  const container = document.getElementById('admin-activities-list');
+  if (!container) return;
+
+  try {
+    let activities = [];
+
+    if (window.supabase && isSupabaseConfigured()) {
+      const { data } = await getSupabase()
+        .from('tasks')
+        .select('*')
+        .like('category', 'ภาพกิจกรรม_%')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (data && data.length > 0) activities = data;
+    }
+
+    if (activities.length === 0) {
+      activities = JSON.parse(localStorage.getItem('bcs_dynamic_activities') || '[]');
+    }
+
+    if (activities.length === 0) {
+      container.innerHTML = '<div class="text-center py-8 text-slate-400 text-xs">ยังไม่มีรายการภาพกิจกรรมที่อัปโหลด</div>';
+      return;
+    }
+
+    container.innerHTML = activities.map((act, idx) => `
+      <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+        <div class="w-16 h-12 bg-emerald-100 text-emerald-800 rounded-lg grid place-items-center text-lg shrink-0">📷</div>
+        <div class="flex-1 min-w-0">
+          <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">${escapeHtml(act.category.replace('ภาพกิจกรรม_', ''))}</span>
+          <h4 class="text-xs font-bold text-slate-800 truncate mt-0.5">${escapeHtml(act.title)}</h4>
+          <p class="text-[10px] text-slate-400">${act.created_at ? new Date(act.created_at).toLocaleDateString('th-TH') : 'เพิ่งเพิ่ม'}</p>
+        </div>
+        ${act.file_url ? `
+          <a href="${act.file_url}" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-700 hover:underline px-2 py-1">เปิดดู</a>
+        ` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = '<div class="text-center py-4 text-slate-400 text-xs">กำลังเตรียมแสดงผลภาพกิจกรรม</div>';
+  }
+}
+
+/* =====================================================================
+   7. STAFF DIRECTORY CMS (จัดการทำเนียบบุคลากร)
+   ===================================================================== */
+function loadStaffDirectory() {
+  const tbody = document.getElementById('staff-table-body');
+  if (!tbody) return;
+
+  const staffList = (window.STAFF_MEMBERS && window.STAFF_MEMBERS.length) ? window.STAFF_MEMBERS : [
+    {
+      name: 'นางชลตวรรณ ขุมเพ็ชร',
+      position: 'ผู้อำนวยการสถานศึกษา',
+      group: 'ผู้บริหารสถานศึกษา',
+      socials: { facebook: 'https://facebook.com', line: 'https://line.me', email: 'director@bcs.ac.th' }
+    },
+    {
+      name: 'นางสาวกัญญาภัทร นวลเพ็ญ',
+      position: 'รองผู้อำนวยการสถานศึกษา',
+      group: 'กลุ่มบริหารวิชาการ',
+      socials: { facebook: 'https://facebook.com', email: 'academic@bcs.ac.th' }
+    }
+  ];
+
+  tbody.innerHTML = staffList.map((member, i) => {
+    const socials = member.socials || {};
+    const socialBadges = [];
+    if (socials.facebook) socialBadges.push('<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">Facebook</span>');
+    if (socials.line) socialBadges.push('<span class="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-[10px]">LINE</span>');
+    if (socials.email) socialBadges.push('<span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">Email</span>');
+    if (socials.phone) socialBadges.push('<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[10px]">โทร</span>');
+
+    return `
+      <tr class="hover:bg-slate-50 transition">
+        <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(member.name)}</td>
+        <td class="py-3 px-4">${escapeHtml(member.position)}</td>
+        <td class="py-3 px-4">${escapeHtml(member.group || '-')}</td>
+        <td class="py-3 px-4 flex flex-wrap gap-1">${socialBadges.join(' ')}</td>
+        <td class="py-3 px-4 text-right">
+          <button onclick="alert('ข้อมูลบุคลากรเชื่อมโยงกับ js/staff-data.js')" class="text-emerald-700 hover:underline text-xs font-semibold">ดูข้อมูล</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* =====================================================================
+   8. UTILITIES (TOAST & HELPERS)
+   ===================================================================== */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -144,4 +859,30 @@ function fileToBase64(file) {
     reader.onerror = () => reject(new Error('อ่านไฟล์รูปภาพไม่สำเร็จ'));
     reader.readAsDataURL(file);
   });
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('admin-toast');
+  const msgEl = document.getElementById('toast-msg');
+  const iconEl = document.getElementById('toast-icon');
+  if (!toast || !msgEl) return;
+
+  msgEl.textContent = message;
+  iconEl.textContent = type === 'error' ? '❌' : (type === 'warning' ? '⚠️' : '✅');
+
+  toast.classList.remove('hidden');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    toast.classList.add('hidden');
+  }, 3500);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

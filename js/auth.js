@@ -152,6 +152,15 @@ async function redirectByRole(user) {
       await getSupabase().auth.signOut();
       throw new Error('บัญชีนี้ถูกระงับการใช้งาน');
     }
+
+    // หากเป็น SuperAdmin (admin@bcs.ac.th) หรือได้รับสิทธิ์ admin ให้เปิดหน้า Admin Control Center
+    const isSuperAdmin = user.email && user.email.toLowerCase() === 'admin@bcs.ac.th';
+    const isAdmin = isSuperAdmin || (profile && profile.role === 'admin');
+
+    if (isAdmin) {
+      window.location.href = 'pages/admin-panel.html';
+      return;
+    }
   } catch (err) {
     redirecting = false;
     throw err;

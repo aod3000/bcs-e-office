@@ -1,15 +1,17 @@
 /* ============================================
    style.css - Design System โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)
-   Modern Bento Grid, Soft Glassmorphism, Premium Shadows
+   ธีมองค์กรโมเดิร์น สไตล์ MakeWebEasy Template: เขียว - เหลือง - ดำ - ขาว
    ============================================ */
 
 :root {
-  --bcs-green: #15803d;
-  --bcs-green-dark: #14532d;
-  --bcs-green-light: #22c55e;
-  --bcs-yellow: #f59e0b;
-  --bcs-yellow-gold: #fbbf24;
-  --bcs-blue-navy: #1e3a8a;
+  --bcs-green-dark: #064e3b;    /* เขียวเข้มพรีเมียม */
+  --bcs-green: #047857;         /* เขียวโรงเรียน */
+  --bcs-green-light: #10b981;
+  --bcs-yellow: #f59e0b;        /* เหลืองทอง */
+  --bcs-yellow-light: #fef3c7;
+  --bcs-dark: #0f172a;          /* ดำกราไฟต์ */
+  --bcs-dark-surface: #1e293b;
+  --bcs-gray-light: #f8fafc;
 }
 
 body {
@@ -17,62 +19,40 @@ body {
   word-break: break-word;
   overflow-wrap: break-word;
   background-color: #f8fafc;
-  color: #1e293b;
+  color: #0f172a;
 }
 
-/* Glassmorphism Effect */
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+/* MakeWebEasy Bento & Card Elevations */
+.mwe-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+.mwe-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -4px rgba(4, 120, 87, 0.12);
+  border-color: #f59e0b;
 }
 
-.glass-dark {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Contrast Headers */
+.header-dark {
+  background: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
+  border-bottom: 2px solid #f59e0b;
 }
 
-/* Modern Card Glow & Hover */
-.modern-card {
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
-}
-.modern-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 24px 45px -12px rgba(21, 128, 61, 0.15);
-}
-
-/* 7 Quick Action Cards Border Accents */
-.card-border-blue    { border-bottom: 4px solid #2563eb; }
-.card-border-amber   { border-bottom: 4px solid #f59e0b; }
-.card-border-emerald { border-bottom: 4px solid #10b981; }
-.card-border-purple  { border-bottom: 4px solid #8b5cf6; }
-.card-border-sky     { border-bottom: 4px solid #0284c7; }
-.card-border-orange  { border-bottom: 4px solid #ea580c; }
-.card-border-yellow  { border-bottom: 4px solid #eab308; }
+/* Quick Action Badges */
+.badge-border-green  { border-bottom: 4px solid #047857; }
+.badge-border-yellow { border-bottom: 4px solid #f59e0b; }
+.badge-border-dark   { border-bottom: 4px solid #0f172a; }
+.badge-border-amber  { border-bottom: 4px solid #d97706; }
 
 /* Carousel */
 .carousel-track { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
 .carousel-dot { transition: width 0.3s ease, background-color 0.3s ease; }
-.carousel-dot.active { width: 2.2rem; background-color: #fbbf24; }
+.carousel-dot.active { width: 2.2rem; background-color: #f59e0b; }
 
-/* Subtle Floating Animations */
-@keyframes soft-float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50%      { transform: translateY(-10px) rotate(1.5deg); }
-}
-.float-subtle { animation: soft-float 5s ease-in-out infinite; }
-.float-delay-1 { animation: soft-float 6s ease-in-out 1s infinite; }
-.float-delay-2 { animation: soft-float 7s ease-in-out 2s infinite; }
-
-/* Mobile Menu Slide */
-.mobile-menu { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; }
-.mobile-menu.open { max-height: 600px; }
-
-/* Staff Modal */
+/* Modal & Popups */
 .modal-backdrop {
   opacity: 0;
   visibility: hidden;
@@ -90,16 +70,10 @@ body {
   transform: scale(1) translateY(0);
 }
 
-/* Floating Widget */
+body.no-scroll { overflow: hidden; }
+
+/* Announcement Floating Widget */
 .announce-widget { transition: opacity 0.4s ease, transform 0.4s ease; }
 .announce-widget.is-closing { opacity: 0; transform: translateY(24px); pointer-events: none; }
 .announce-widget.is-entering { animation: widget-in 0.5s ease both; }
 @keyframes widget-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-
-body.no-scroll { overflow: hidden; }
-
-/* Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  .float-subtle, .float-delay-1, .float-delay-2 { animation: none; }
-  .carousel-track, .modern-card { transition: none; }
-}

@@ -12,13 +12,33 @@ create type public.task_status  as enum ('pending', 'revision_requested', 'revie
 create type public.leave_type   as enum ('sick', 'personal', 'out_of_school');   -- ลาป่วย, ลากิจ, ออกนอกสถานที่
 create type public.leave_status as enum ('submitted', 'head_approved', 'approved', 'rejected');
 
--- ---------- 2) departments: สายชั้น / กลุ่มสาระ / กลุ่มพิเศษ ----------
+-- ---------- 2) departments: สายชั้น / กลุ่มสาระ / ฝ่ายงานบริหาร ----------
 create table public.departments (
   id         bigint generated always as identity primary key,
   name       text not null unique,
   kind       text not null check (kind in ('grade_level', 'subject_group', 'special')),
   created_at timestamptz not null default now()
 );
+
+-- ข้อมูลตั้งต้นสำหรับกลุ่มงานและกลุ่มสาระของโรงเรียนบางชัน
+insert into public.departments (name, kind) values
+  ('ฝ่ายบริหารวิชาการ', 'special'),
+  ('ฝ่ายบริหารงานบุคคล', 'special'),
+  ('ฝ่ายบริหารงบประมาณ', 'special'),
+  ('ฝ่ายบริหารทั่วไป', 'special'),
+  ('กลุ่มสาระการเรียนรู้ภาษาไทย', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้คณิตศาสตร์', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้สังคมศึกษา ศาสนา และวัฒนธรรม', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้ศิลปะ', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้การงานอาชีพ', 'subject_group'),
+  ('กลุ่มสาระการเรียนรู้ภาษาต่างประเทศ', 'subject_group'),
+  ('ระดับชั้นปฐมวัย (อนุบาล)', 'grade_level'),
+  ('ระดับชั้นประถมศึกษาปีที่ 1-3', 'grade_level'),
+  ('ระดับชั้นประถมศึกษาปีที่ 4-6', 'grade_level'),
+  ('ระดับชั้นมัธยมศึกษาปีที่ 1-3', 'grade_level')
+on conflict (name) do nothing;
 
 -- ---------- 3) profiles: ผู้ใช้ + Role (ผูก 1:1 กับ Supabase Auth) ----------
 create table public.profiles (
@@ -126,16 +146,31 @@ create trigger tasks_updated    before update on public.tasks    for each row ex
 create trigger leave_updated    before update on public.leave_requests for each row execute function public.set_updated_at();
 
 -- สร้าง profile อัตโนมัติเมื่อสมัคร/ล็อกอินครั้งแรก และบล็อกอีเมลนอกโดเมน @bcs.ac.th
--- (ถ้า raise exception การสร้างบัญชีจะถูกยกเลิกทั้งหมด)
+-- หากเป็นบัญชี SuperAdmin (admin@bcs.ac.th) จะได้รับสิทธิ์ 'admin' อัตโนมัติทันที
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  v_role public.user_role := 'student';
 begin
   if lower(split_part(new.email, '@', 2)) <> 'bcs.ac.th' then
     raise exception 'อนุญาตเฉพาะอีเมล @bcs.ac.th เท่านั้น';
   end if;
-  insert into public.profiles (id, email, full_name)
-  values (new.id, lower(new.email),
-          coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)));
+
+  -- บัญชี SuperAdmin หลักของโรงเรียน
+  if lower(new.email) = 'admin@bcs.ac.th' then
+    v_role := 'admin';
+  end if;
+
+  insert into public.profiles (id, email, full_name, role)
+  values (
+    new.id, 
+    lower(new.email),
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    v_role
+  )
+  on conflict (id) do update set
+    role = case when lower(excluded.email) = 'admin@bcs.ac.th' then 'admin'::public.user_role else profiles.role end;
+
   return new;
 end $$;
 
@@ -331,6 +366,7 @@ where l.status = 'approved'
   and l.end_at   >= ((now() at time zone 'Asia/Bangkok')::date::timestamp at time zone 'Asia/Bangkok');
 
 -- =====================================================================
--- หลังรันเสร็จ: ตั้ง Admin คนแรกด้วยตนเอง (หลังล็อกอินด้วย Google ครั้งแรก)
---   update public.profiles set role = 'admin' where email = 'your.name@bcs.ac.th';
+-- หลังรันเสร็จ: ตั้ง SuperAdmin ให้กับ admin@bcs.ac.th
+--   update public.profiles set role = 'admin' where lower(email) = 'admin@bcs.ac.th';
 -- =====================================================================
+update public.profiles set role = 'admin' where lower(email) = 'admin@bcs.ac.th';

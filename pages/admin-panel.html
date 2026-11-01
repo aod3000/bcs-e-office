@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการหลังบ้าน (Admin CMS & Media Hub) | โรงเรียนบางชัน</title>
+  <title>ระบบจัดการหลังบ้าน (BCS Admin & Control Center) | โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,8 +13,9 @@
         extend: {
           fontFamily: { sans: ['Prompt', 'sans-serif'] },
           colors: {
-            brand: '#15803d',
-            'brand-dark': '#14532d'
+            brand: '#047857',
+            'brand-dark': '#064e3b',
+            'brand-gold': '#f59e0b'
           }
         }
       }
@@ -25,47 +26,237 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col justify-between">
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col justify-between antialiased">
 
-  <!-- Top Admin Navbar -->
-  <header class="bg-blue-950 text-white border-b border-blue-900 sticky top-0 z-40 shadow-md">
+  <!-- ============================================================== -->
+  <!-- 1. TOP NAVBAR (เขียวเข้มขลิบทอง สไตล์ MakeWebEasy) -->
+  <!-- ============================================================== -->
+  <header class="bg-[#0f172a] text-white border-b-2 border-amber-400 sticky top-0 z-40 shadow-lg">
     <div class="mx-auto max-w-[1536px] px-4 sm:px-8 h-20 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <img src="../assets/logo.png" alt="โลโก้" class="h-10 w-auto">
-        <div>
-          <span class="block font-bold text-base text-white">BCS Admin CMS & Control Center</span>
-          <span class="block text-xs text-amber-400">ระบบจัดการหลังบ้าน โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</span>
-        </div>
+        <a href="../index.html" class="flex items-center gap-3 hover:opacity-95 transition">
+          <img src="../assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-12 w-auto drop-shadow">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="block font-bold text-base text-white tracking-wide">BCS Control Center</span>
+              <span class="bg-amber-400 text-slate-900 text-[10px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">SuperAdmin</span>
+            </div>
+            <span class="block text-xs text-amber-300">ระบบบริหารจัดการหลังบ้าน โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)</span>
+          </div>
+        </a>
       </div>
 
-      <div class="flex items-center gap-4">
-        <span id="admin-user-email" class="text-xs bg-blue-900 px-3 py-1.5 rounded-full text-blue-200 border border-blue-800"></span>
-        <a href="../index.html" class="rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2 text-xs font-medium text-white transition">← ไปหน้าแรก</a>
-        <button id="admin-logout-btn" class="rounded-xl bg-red-600/80 hover:bg-red-600 px-4 py-2 text-xs font-medium text-white transition">ออกจากระบบ</button>
+      <div class="flex items-center gap-3">
+        <div id="admin-user-badge" class="hidden sm:flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3.5 py-1.5 rounded-full text-xs text-slate-200">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="admin-user-email">admin@bcs.ac.th</span>
+          <span id="admin-user-role-tag" class="bg-amber-400/20 text-amber-300 font-bold px-2 py-0.5 rounded-full text-[10px]">SuperAdmin</span>
+        </div>
+        <a href="teacher-workspace.html" class="rounded-xl bg-emerald-800 hover:bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>📝</span> <span class="hidden md:inline">พื้นที่ทำงานส่งงาน</span>
+        </a>
+        <a href="../index.html" class="rounded-xl bg-slate-800 hover:bg-slate-700 px-3.5 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>🏠</span> <span class="hidden md:inline">หน้าแรกเว็บ</span>
+        </a>
+        <button id="admin-logout-btn" class="rounded-xl bg-red-600/90 hover:bg-red-600 px-3.5 py-2 text-xs font-semibold text-white transition flex items-center gap-1 shadow-sm">
+          <span>🚪</span> <span class="hidden md:inline">ออกจากระบบ</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Workspace -->
+  <!-- ============================================================== -->
+  <!-- 2. MAIN WORKSPACE -->
+  <!-- ============================================================== -->
   <main class="mx-auto max-w-[1536px] w-full px-4 sm:px-8 py-8 flex-1">
     
-    <!-- Tab Controls -->
+    <!-- Tab Controls Menu -->
     <div class="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-slate-200/80 w-fit">
-      <button data-tab-target="tab-activities" class="admin-tab-btn active px-5 py-2.5 rounded-xl font-medium text-sm transition bg-blue-900 text-white shadow">
-        📷 จัดการภาพกิจกรรม & ข่าวสาร
+      <button data-tab-target="tab-users" class="admin-tab-btn active px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition bg-emerald-800 text-white shadow flex items-center gap-2">
+        <span>👥</span> จัดการผู้ใช้ & สิทธิ์ (Roles)
       </button>
-      <button data-tab-target="tab-banners" class="admin-tab-btn px-5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 transition">
-        🖼️ จัดการแบนเนอร์สไลด์ (Hero)
+      <button data-tab-target="tab-tasks" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>📋</span> ตรวจและอนุมัติงาน
       </button>
-      <button data-tab-target="tab-staff" class="admin-tab-btn px-5 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 transition">
-        👥 จัดการทำเนียบบุคลากร
+      <button data-tab-target="tab-leaves" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>🏖️</span> ตรวจและอนุมัติใบลา
+      </button>
+      <button data-tab-target="tab-activities" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>📷</span> จัดการภาพกิจกรรม & ข่าว
+      </button>
+      <button data-tab-target="tab-staff" class="admin-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+        <span>👤</span> จัดการทำเนียบบุคลากร
       </button>
     </div>
 
-    <!-- ========================================== -->
-    <!-- TAB 1: จัดการภาพกิจกรรม & ข่าวสาร -->
-    <!-- ========================================== -->
-    <section id="tab-activities" class="admin-tab-content space-y-6">
+    <!-- ============================================================== -->
+    <!-- TAB 1: จัดการผู้ใช้งานและกำหนดสิทธิ์ (User & Role Management) -->
+    <!-- ============================================================== -->
+    <section id="tab-users" class="admin-tab-content space-y-6">
+      
+      <!-- Counter Stats Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-slate-500 font-medium">ผู้ใช้ทั้งหมด</span>
+          <div id="stat-users-total" class="text-2xl font-black text-slate-900 mt-1">...</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-amber-600 font-medium">👑 ผู้ดูแลระบบ</span>
+          <div id="stat-users-admin" class="text-2xl font-black text-amber-600 mt-1">...</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-purple-600 font-medium">🏛️ ผู้บริหาร</span>
+          <div id="stat-users-exec" class="text-2xl font-black text-purple-600 mt-1">...</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-blue-600 font-medium">👔 หัวหน้าฝ่าย/กลุ่ม</span>
+          <div id="stat-users-head" class="text-2xl font-black text-blue-600 mt-1">...</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-emerald-600 font-medium">👩‍🏫 ครูผู้สอน</span>
+          <div id="stat-users-teacher" class="text-2xl font-black text-emerald-600 mt-1">...</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-slate-400 font-medium">🎒 นักเรียน</span>
+          <div id="stat-users-student" class="text-2xl font-black text-slate-700 mt-1">...</div>
+        </div>
+      </div>
+
+      <!-- User List Card -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>👥</span> กำหนดสิทธิ์และบทบาทผู้ใช้งาน (Role & Permission Management)
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">กำหนดว่าผู้ใช้รายใดเป็น ผู้บริหาร, หัวหน้ากลุ่มสาระ, ครูผู้สอน หรือนักเรียน เพื่อดำเนินการตรวจหรืออนุมัติงาน</p>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="flex flex-wrap items-center gap-3">
+            <input type="text" id="user-search-input" placeholder="🔍 ค้นหาชื่อ หรือ อีเมล..." class="rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none w-56">
+            <select id="user-role-filter" class="rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none bg-white">
+              <option value="all">ทุกสิทธิ์ (All Roles)</option>
+              <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+              <option value="executive">ผู้บริหาร (Executive)</option>
+              <option value="head">หัวหน้ากลุ่ม/ฝ่าย (Head)</option>
+              <option value="teacher">ครูผู้สอน (Teacher)</option>
+              <option value="student">นักเรียน (Student)</option>
+            </select>
+            <button id="refresh-users-btn" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition">
+              🔄 รีเฟรช
+            </button>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4">ผู้ใช้งาน (User Profile)</th>
+                <th class="py-3 px-4">กำหนดบทบาท (Role)</th>
+                <th class="py-3 px-4">กลุ่มงาน / กลุ่มสาระ (Department)</th>
+                <th class="py-3 px-4 text-center">สถานะ</th>
+                <th class="py-3 px-4 text-right">ดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="5" class="py-8 text-center text-slate-400">กำลังโหลดรายชื่อผู้ใช้งานจากฐานข้อมูล...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: ตรวจและอนุมัติงาน / รายงาน (Task Approval) -->
+    <!-- ============================================================== -->
+    <section id="tab-tasks" class="admin-tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>📋</span> ศูนย์ตรวจและอนุมัติงาน / รายงานครู
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">หัวหน้าฝ่ายสามารถตรวจกลั่นกรอง และผู้บริหาร/แอดมินสามารถอนุมัติงานขั้นสุดท้ายหรือตีกลับให้แก้ไขได้</p>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button data-task-filter="all" class="task-filter-btn active px-3 py-1.5 rounded-full bg-emerald-800 text-white text-xs font-semibold shadow-sm transition">ทั้งหมด</button>
+            <button data-task-filter="pending" class="task-filter-btn px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition">รอตรวจ</button>
+            <button data-task-filter="reviewed" class="task-filter-btn px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition">ผ่านการตรวจแล้ว</button>
+            <button data-task-filter="approved" class="task-filter-btn px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition">อนุมัติแล้ว</button>
+            <button data-task-filter="revision_requested" class="task-filter-btn px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition">ตีกลับแก้ไข</button>
+          </div>
+        </div>
+
+        <!-- Tasks Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4">วันที่ส่ง / หัวข้อรายงาน</th>
+                <th class="py-3 px-4">ผู้ส่ง (ครู)</th>
+                <th class="py-3 px-4">ประเภท</th>
+                <th class="py-3 px-4">ไฟล์แนบ (Google Drive)</th>
+                <th class="py-3 px-4 text-center">สถานะ</th>
+                <th class="py-3 px-4 text-right">ดำเนินการตรวจ/อนุมัติ</th>
+              </tr>
+            </thead>
+            <tbody id="tasks-table-body" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400">กำลังโหลดรายการงาน...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: ตรวจและอนุมัติใบลา (Leave Requests) -->
+    <!-- ============================================================== -->
+    <section id="tab-leaves" class="admin-tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>🏖️</span> ศูนย์ตรวจและอนุมัติใบลาออนไลน์
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">อนุมัติการลาป่วย ลากิจ และขออนุญาตออกนอกสถานศึกษาของบุคลากร</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4">วันที่ยื่น / ผู้ขอลา</th>
+                <th class="py-3 px-4">ประเภทการลา</th>
+                <th class="py-3 px-4">ช่วงเวลาที่ลา</th>
+                <th class="py-3 px-4">เหตุผลการลา</th>
+                <th class="py-3 px-4 text-center">สถานะ</th>
+                <th class="py-3 px-4 text-right">การอนุมัติ</th>
+              </tr>
+            </thead>
+            <tbody id="leaves-table-body" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400">กำลังโหลดรายการใบลา...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: จัดการภาพกิจกรรม & ข่าวสาร (News & Activities CMS) -->
+    <!-- ============================================================== -->
+    <section id="tab-activities" class="admin-tab-content hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <!-- ฝั่งซ้าย: ฟอร์มเพิ่มกิจกรรมใหม่ -->
@@ -78,12 +269,12 @@
           <form id="activity-form" class="space-y-4">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1.5">หัวข้อกิจกรรม / ข่าว</label>
-              <input type="text" id="act-title" required placeholder="เช่น กิจกรรมวันเด็กแห่งชาติ ประจำปี 2569" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none">
+              <input type="text" id="act-title" required placeholder="เช่น กิจกรรมวันเด็กแห่งชาติ ประจำปี 2569" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:outline-none">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1.5">หมวดหมู่กิจกรรม</label>
-              <select id="act-category" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none bg-white">
+              <select id="act-category" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:outline-none bg-white">
                 <option value="general">ทั่วไป (General)</option>
                 <option value="academic">วิชาการ (Academic & EP)</option>
                 <option value="sports">กีฬา & กรีฑา (Sports)</option>
@@ -93,15 +284,15 @@
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1.5">รายละเอียดกิจกรรม</label>
-              <textarea id="act-desc" rows="3" placeholder="เขียนรายละเอียดสั้นๆ เกี่ยวกับกิจกรรม..." class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-blue-600 focus:outline-none"></textarea>
+              <textarea id="act-desc" rows="3" placeholder="เขียนรายละเอียดสั้นๆ เกี่ยวกับกิจกรรม..." class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-emerald-600 focus:outline-none"></textarea>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1.5">รูปภาพกิจกรรม</label>
-              <input type="file" id="act-file" accept="image/*" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+              <input type="file" id="act-file" accept="image/*" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
             </div>
 
-            <button type="submit" id="act-submit-btn" class="w-full rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 text-sm shadow transition flex items-center justify-center gap-2">
+            <button type="submit" id="act-submit-btn" class="w-full rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-semibold py-3 text-sm shadow transition flex items-center justify-center gap-2">
               <span id="act-btn-text">อัปโหลดและบันทึกข้อมูล</span>
               <svg id="act-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
             </button>
@@ -111,81 +302,34 @@
         <!-- ฝั่งขวา: รายการกิจกรรมที่แสดงบนหน้าเว็บ -->
         <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold text-slate-900 text-base">รายการภาพกิจกรรมบนหน้าเว็บ</h3>
-            <span class="text-xs text-slate-400">ซิงก์เรียลไทม์กับหน้าแรก</span>
+            <h3 class="font-bold text-slate-900 text-base">รายการภาพกิจกรรมบนหน้าแรก</h3>
+            <span class="text-xs text-slate-400">ซิงก์อัตโนมัติกับหน้าแรกของโรงเรียน</span>
           </div>
 
           <div id="admin-activities-list" class="space-y-3">
-            <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-              <div class="w-16 h-12 bg-blue-100 rounded-lg grid place-items-center text-xl shrink-0">📷</div>
-              <div class="flex-1 min-w-0">
-                <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">วิชาการ</span>
-                <h4 class="text-sm font-semibold text-slate-800 truncate mt-0.5">การแข่งขันทักษะวิชาการระดับเขต</h4>
-                <p class="text-xs text-slate-400">30 ตุลาคม 2569</p>
-              </div>
-              <button class="text-xs text-red-600 hover:underline px-2 py-1">ลบ</button>
-            </div>
-            
-            <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-              <div class="w-16 h-12 bg-green-100 rounded-lg grid place-items-center text-xl shrink-0">🏫</div>
-              <div class="flex-1 min-w-0">
-                <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">ทั่วไป</span>
-                <h4 class="text-sm font-semibold text-slate-800 truncate mt-0.5">กิจกรรมปฐมนิเทศนักเรียนใหม่</h4>
-                <p class="text-xs text-slate-400">พฤษภาคม 2569</p>
-              </div>
-              <button class="text-xs text-red-600 hover:underline px-2 py-1">ลบ</button>
-            </div>
+            <div class="text-center py-8 text-slate-400 text-xs">กำลังโหลดกิจกรรมล่าสุด...</div>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 2: จัดการแบนเนอร์สไลด์ (Hero Banner) -->
-    <!-- ========================================== -->
-    <section id="tab-banners" class="admin-tab-content hidden space-y-6">
-      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
-        <h2 class="text-xl font-bold text-slate-900 mb-2">จัดการภาพสไลด์แบนเนอร์หน้าแรก (Hero Carousel)</h2>
-        <p class="text-xs text-slate-500 mb-6">คุณสามารถเพิ่มรูปภาพแบนเนอร์ขนาดใหญ่ เพื่อต้อนรับผู้มาเยือนหน้าแรกของโรงเรียนได้</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="p-4 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center bg-slate-50">
-            <span class="text-3xl mb-2">🖼️</span>
-            <span class="text-sm font-semibold text-slate-700">อัปโหลดแบนเนอร์ใหม่</span>
-            <span class="text-xs text-slate-400 mt-1">แนะนำขนาด 1920 x 700 px (เก็บลง Google Drive อัตโนมัติ)</span>
-            <input type="file" accept="image/*" class="mt-4 text-xs text-slate-500">
-            <button class="mt-4 px-4 py-2 bg-blue-900 text-white text-xs font-medium rounded-xl hover:bg-blue-800 transition">เพิ่มแบนเนอร์</button>
-          </div>
-
-          <div class="space-y-3">
-            <h4 class="text-xs font-bold text-slate-700 uppercase">แบนเนอร์ปัจจุบันที่กำลังเปิดใช้งาน</h4>
-            <div class="p-3 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
-              <div>
-                <span class="block text-xs font-semibold text-slate-800">สไลด์ที่ 1: อัตลักษณ์ & ความเป็นเลิศทางวิชาการ</span>
-                <span class="block text-[10px] text-green-700">● กำลังแสดงผล</span>
-              </div>
-              <button class="text-xs text-slate-400 hover:text-red-600">ปิดการแสดง</button>
-            </div>
-            <div class="p-3 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
-              <div>
-                <span class="block text-xs font-semibold text-slate-800">สไลด์ที่ 2: หลักสูตร English Program (EP)</span>
-                <span class="block text-[10px] text-green-700">● กำลังแสดงผล</span>
-              </div>
-              <button class="text-xs text-slate-400 hover:text-red-600">ปิดการแสดง</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- TAB 3: จัดการทำเนียบบุคลากร -->
-    <!-- ========================================== -->
+    <!-- ============================================================== -->
+    <!-- TAB 5: จัดการทำเนียบบุคลากร (Staff Directory CMS) -->
+    <!-- ============================================================== -->
     <section id="tab-staff" class="admin-tab-content hidden space-y-6">
       <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
-        <h2 class="text-xl font-bold text-slate-900 mb-2">จัดการรายชื่อบุคลากร & ลิงก์โซเชียลมีเดีย</h2>
-        <p class="text-xs text-slate-500 mb-6">แก้ไขข้อมูลตำแหน่ง หรือเพิ่มช่องทางติดต่อ (Facebook / LINE / อีเมล) ที่จะแสดงในหน้า Popup</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>👤</span> จัดการรายชื่อบุคลากร & ช่องทางโซเชียลมีเดีย
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">ข้อมูลที่แสดงบนหน้าเว็บและหน้าต่าง Popup รายละเอียดบุคลากร (Facebook, LINE, Email, เบอร์โทร)</p>
+          </div>
+          <button id="add-staff-modal-btn" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+            <span>➕</span> เพิ่มบุคลากรใหม่
+          </button>
+        </div>
 
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-600">
@@ -194,25 +338,12 @@
                 <th class="py-3 px-4">ชื่อ - นามสกุล</th>
                 <th class="py-3 px-4">ตำแหน่ง</th>
                 <th class="py-3 px-4">กลุ่มงาน / กลุ่มสาระ</th>
-                <th class="py-3 px-4">ช่องทางติดต่อ</th>
+                <th class="py-3 px-4">ช่องทางติดต่อโซเชียล</th>
                 <th class="py-3 px-4 text-right">การจัดการ</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr>
-                <td class="py-3 px-4 font-semibold text-slate-900">นางชลตวรรณ ขุมเพ็ชร</td>
-                <td class="py-3 px-4">ผู้อำนวยการสถานศึกษา</td>
-                <td class="py-3 px-4">ผู้บริหารสถานศึกษา</td>
-                <td class="py-3 px-4 text-blue-600">Facebook, LINE, Email</td>
-                <td class="py-3 px-4 text-right"><button class="text-blue-900 hover:underline">แก้ไข</button></td>
-              </tr>
-              <tr>
-                <td class="py-3 px-4 font-semibold text-slate-900">นางสาวกัญญาภัทร นวลเพ็ญ</td>
-                <td class="py-3 px-4">รองผู้อำนวยการ</td>
-                <td class="py-3 px-4">กลุ่มบริหารวิชาการ</td>
-                <td class="py-3 px-4 text-blue-600">Facebook, Email</td>
-                <td class="py-3 px-4 text-right"><button class="text-blue-900 hover:underline">แก้ไข</button></td>
-              </tr>
+            <tbody id="staff-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
             </tbody>
           </table>
         </div>
@@ -221,13 +352,43 @@
 
   </main>
 
+  <!-- ============================================================== -->
+  <!-- MODAL: ตีกลับให้แก้ไขงาน (Revision Comment Dialog) -->
+  <!-- ============================================================== -->
+  <div id="revision-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm grid place-items-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+        <span class="text-red-600">🔄</span> ตีกลับรายงานให้แก้ไข
+      </h3>
+      <p class="text-xs text-slate-500 mt-1">กรุณาระบุข้อเสนอแนะหรือจุดที่ต้องปรับปรุงเพื่อให้ครูผู้ส่งดำเนินการแก้ไข</p>
+      
+      <div class="mt-4">
+        <label class="block text-xs font-semibold text-slate-700 mb-1">ข้อความคอมเมนต์ / จุดที่ต้องแก้ไข</label>
+        <textarea id="revision-comment-input" rows="3" placeholder="เช่น ขอให้เพิ่มตารางสรุปผลสัมฤทธิ์ทางการเรียนภาคเรียนที่ 1..." class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-red-600 focus:outline-none"></textarea>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button id="cancel-revision-btn" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">ยกเลิก</button>
+        <button id="confirm-revision-btn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition shadow-sm">ยืนยันตีกลับ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="admin-toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm rounded-2xl bg-slate-900 text-white px-5 py-3.5 shadow-2xl text-xs font-medium border border-slate-700 flex items-center gap-3 transition">
+    <span id="toast-icon">✅</span>
+    <span id="toast-msg">บันทึกข้อมูลสำเร็จ</span>
+  </div>
+
+  <!-- Footer -->
   <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-    © โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) · BCS Admin Panel
+    © โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) · สำนักงานเขตคลองสามวา กรุงเทพมหานคร · BCS Control Center
   </footer>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-client.js"></script>
+  <script src="../js/staff-data.js"></script>
   <script src="../js/admin-cms.js"></script>
 </body>
 </html>

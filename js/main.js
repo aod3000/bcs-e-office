@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initStaffModal();
   initGalleryFilter();
   initNavDropdowns();
+  loadDynamicActivities();
 });
 
 /* ---------- ทำเนียบบุคลากร Popup Modal ---------- */
@@ -343,6 +344,68 @@ function initCarousel() {
 
   goTo(0);
   start();
+}
+
+/* ---------- โหลดภาพกิจกรรมล่าสุดแบบไดนามิกจากระบบหลังบ้าน (Admin CMS) ---------- */
+async function loadDynamicActivities() {
+  const grid = document.getElementById('gallery-grid');
+  if (!grid) return;
+
+  try {
+    let items = [];
+
+    // ลองดึงจาก Supabase
+    if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+      try {
+        const { data } = await getSupabase()
+          .from('tasks')
+          .select('*')
+          .like('category', 'ภาพกิจกรรม_%')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(4);
+        if (data && data.length > 0) items = data;
+      } catch (e) { /* ignore */ }
+    }
+
+    // หากไม่มีใน Supabase ให้ดึงจาก local storage
+    if (items.length === 0) {
+      try {
+        items = JSON.parse(localStorage.getItem('bcs_dynamic_activities') || '[]');
+      } catch (e) { /* ignore */ }
+    }
+
+    if (!items || items.length === 0) return;
+
+    // สร้างการ์ดแสดงผลกิจกรรมใหม่
+    items.forEach(act => {
+      const cat = (act.category || '').replace('ภาพกิจกรรม_', '') || 'general';
+      const catThai = cat === 'academic' ? 'วิชาการ' : (cat === 'sports' ? 'กีฬา' : 'ทั่วไป');
+      const dateStr = act.created_at ? new Date(act.created_at).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' }) : 'กิจกรรมใหม่';
+      const imgHtml = act.file_url 
+        ? `<img src="${act.file_url}" alt="${escapeHtml(act.title)}" class="h-44 w-full object-cover">`
+        : `<div class="h-44 bg-gradient-to-br from-emerald-800 to-green-950 grid place-items-center text-5xl">📷</div>`;
+
+      const card = document.createElement('article');
+      card.setAttribute('data-gallery-category', cat);
+      card.className = 'group bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-lg transition';
+      card.innerHTML = `
+        ${imgHtml}
+        <div class="p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-600">${dateStr}</span>
+            <span class="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">${catThai}</span>
+          </div>
+          <h3 class="font-bold text-slate-900 mt-1 leading-snug group-hover:text-emerald-700">${escapeHtml(act.title)}</h3>
+          <p class="text-xs text-slate-500 mt-2 line-clamp-2">${escapeHtml(act.description || '')}</p>
+        </div>
+      `;
+
+      grid.prepend(card);
+    });
+  } catch (err) {
+    console.warn('โหลดภาพกิจกรรมแบบไดนามิกไม่สำเร็จ:', err);
+  }
 }
 
 /* ---------- เมนูมือถือ (Hamburger) ---------- */
