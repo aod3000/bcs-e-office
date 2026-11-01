@@ -2294,35 +2294,31 @@ function initSupabaseDiagnosticsModule() {
 
     // Test 3: Table 'profiles' & Columns check
     try {
-      const { data: profData, error: profErr } = await getSupabase()
+      const { data: colTest, error: colErr } = await getSupabase()
         .from('profiles')
-        .select('*')
+        .select('id, is_active, updated_at')
         .limit(1);
 
-      if (profErr) {
+      if (colErr && (colErr.message.includes('is_active') || colErr.message.includes('updated_at'))) {
+        results.push({
+          title: '3. ตารางข้อมูลผู้ใช้งาน (profiles)',
+          status: 'warn',
+          detail: `เชื่อมต่อตารางได้ปกติ | ตาราง profiles ยังไม่มีคอลัมน์ [is_active updated_at] (แต่ระบบรองรับ Auto-Fallback ให้บันทึกสิทธิ์ได้ตามปกติ)`,
+          tip: 'สามารถรันคำสั่ง ALTER TABLE ใน SQL Editor เพื่อเพิ่มคอลัมน์ได้'
+        });
+      } else if (colErr) {
         results.push({
           title: '3. ตารางข้อมูลผู้ใช้งาน (profiles)',
           status: 'error',
-          detail: profErr.message,
-          tip: 'แนะนำให้รัน SQL ใน patch_update.sql'
+          detail: colErr.message,
+          tip: 'แนะนำให้ตรวจสอบสิทธิ์ RLS หรือรัน SQL patch_update.sql'
         });
       } else {
-        const sample = profData && profData[0] ? profData[0] : null;
-        const hasIsActive = sample ? sample.hasOwnProperty('is_active') : false;
-        const hasUpdatedAt = sample ? sample.hasOwnProperty('updated_at') : false;
-
-        let colStatus = 'ok';
-        let colNote = 'พบคอลัมน์ครบถ้วน';
-        if (!hasIsActive || !hasUpdatedAt) {
-          colStatus = 'warn';
-          colNote = `ตาราง profiles ยังไม่มีคอลัมน์ [${!hasIsActive ? 'is_active ' : ''}${!hasUpdatedAt ? 'updated_at' : ''}] (แต่ระบบรองรับ Auto-Fallback ให้บันทึกสิทธิ์ได้ตามปกติ)`;
-        }
-
         results.push({
           title: '3. ตารางข้อมูลผู้ใช้งาน (profiles)',
-          status: colStatus,
-          detail: `เชื่อมต่อตารางได้ปกติ | ${colNote}`,
-          tip: colStatus === 'ok' ? 'โครงสร้างสมบูรณ์' : 'สามารถรันคำสั่ง ALTER TABLE ใน SQL Editor เพื่อเพิ่มคอลัมน์ได้'
+          status: 'ok',
+          detail: 'เชื่อมต่อตารางได้ปกติ | พบคอลัมน์ครบถ้วนสมบูรณ์ [is_active, updated_at]',
+          tip: 'โครงสร้างสมบูรณ์ พร้อมใช้งาน 100%'
         });
       }
     } catch (e) {
