@@ -36,6 +36,9 @@
         <span class="hidden sm:block font-bold text-white text-base">บางชันปลื้มวิทยานุสรณ์</span>
       </a>
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <a href="admin-panel.html" class="shrink-0 rounded-full bg-amber-400 hover:bg-amber-300 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-950 shadow-sm transition flex items-center gap-1.5">
+          <span>🛠️</span> <span class="hidden md:inline">ระบบหลังบ้าน (CMS)</span>
+        </a>
         <div class="flex items-center gap-2 min-w-0 rounded-full bg-slate-100 px-3 sm:px-4 py-2 text-sm">
           <span aria-hidden="true">👤</span>
           <span id="user-email" class="truncate max-w-[9rem] sm:max-w-xs font-medium text-slate-700"></span>
@@ -70,20 +73,20 @@
       </a>
 
       <!-- การ์ด: ระบบลางานออนไลน์ (ตาราง leave_requests) -->
-      <div class="rounded-3xl bg-white p-8 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300">
+      <a href="#leave-section" class="group rounded-3xl bg-white p-8 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl hover:shadow-green-900/10 hover:-translate-y-1 transition-all duration-300">
         <div class="flex items-start justify-between">
           <span class="grid place-items-center w-16 h-16 rounded-2xl bg-green-100 text-3xl">🏖️</span>
-          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">ฟอร์มยื่นลา กำลังพัฒนา</span>
+          <span class="text-sm font-medium text-green-700 group-hover:underline">ยื่นใบลาออนไลน์ →</span>
         </div>
         <h2 class="mt-6 text-2xl font-semibold text-slate-900">ระบบลางานออนไลน์</h2>
-        <p class="mt-1 text-sm text-slate-500">ลาป่วย ลากิจ และขออนุญาตออกนอกสถานที่</p>
+        <p class="mt-1 text-sm text-slate-500">ลาป่วย ลากิจ และขออนุญาตไปราชการ/ออกนอกสถานที่</p>
         <dl class="mt-6 grid grid-cols-4 gap-3 text-center">
           <div class="rounded-2xl bg-slate-50 py-3"><dd id="leave-total" class="text-2xl font-semibold text-slate-900">…</dd><dt class="text-xs text-slate-500">ทั้งหมด</dt></div>
           <div class="rounded-2xl bg-yellow-50 py-3"><dd id="leave-submitted" class="text-2xl font-semibold text-yellow-600">…</dd><dt class="text-xs text-slate-500">รอหัวหน้า</dt></div>
           <div class="rounded-2xl bg-blue-50 py-3"><dd id="leave-head" class="text-2xl font-semibold text-blue-600">…</dd><dt class="text-xs text-slate-500">รอผู้บริหาร</dt></div>
           <div class="rounded-2xl bg-green-50 py-3"><dd id="leave-approved" class="text-2xl font-semibold text-green-700">…</dd><dt class="text-xs text-slate-500">อนุมัติ</dt></div>
         </dl>
-      </div>
+      </a>
     </div>
   </section>
 
@@ -139,6 +142,46 @@
       </button>
     </form>
   </main>
+
+  <!-- ===== ฟอร์มยื่นใบลาออนไลน์สำหรับครูและบุคลากร ===== -->
+  <section id="leave-section" class="mx-auto max-w-2xl px-4 sm:px-6 pb-16 scroll-mt-24">
+    <div class="mb-6">
+      <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900">🏖️ ยื่นใบลา / ขออนุญาตไปราชการออนไลน์</h2>
+      <p class="mt-1 text-sm text-slate-500">ข้อมูลใบลาจะถูกส่งไปยังหัวหน้ากลุ่มสาระ/ฝ่าย และผู้อำนวยการเพื่อพิจารณาอนุมัติตามลำดับขั้น</p>
+    </div>
+
+    <form id="leave-form" class="rounded-3xl bg-white p-6 sm:p-10 shadow-sm border border-transparent hover:border-yellow-300 hover:shadow-xl transition-all duration-300 space-y-5">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">ประเภทการลา</label>
+          <select id="leave-type" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-green-600 focus:bg-white focus:outline-none">
+            <option value="ลาป่วย">🤒 ลาป่วย</option>
+            <option value="ลากิจส่วนตัว">📝 ลากิจส่วนตัว</option>
+            <option value="ไปราชการ/อบรม">🏛️ ไปราชการ / อบรม</option>
+            <option value="ลาคลอดบุตร">👶 ลาคลอดบุตร</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">ตั้งแต่วันที่</label>
+          <input type="date" id="leave-start" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-green-600 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">ถึงวันที่</label>
+          <input type="date" id="leave-end" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-green-600 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">เหตุผลการลา / สถานที่ไปราชการ</label>
+        <textarea id="leave-reason" rows="2" required placeholder="ระบุสาเหตุการลา และครูผู้สอนแทนระหว่างลา (ถ้ามี)..."
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-green-600 focus:bg-white focus:outline-none"></textarea>
+      </div>
+
+      <button type="submit" id="leave-submit-btn" class="w-full rounded-full bg-emerald-800 hover:bg-emerald-700 text-white font-medium py-3.5 text-sm shadow transition">
+        📤 ส่งใบลาออนไลน์
+      </button>
+    </form>
+  </section>
 
   <!-- Supabase JS (CDN) ต้องโหลดก่อน supabase-client.js -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

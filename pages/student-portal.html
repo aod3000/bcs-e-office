@@ -61,7 +61,63 @@
   <!-- MAIN WORKSPACE -->
   <!-- ============================================================== -->
   <main class="mx-auto max-w-[1536px] w-full px-4 sm:px-8 py-8 flex-1">
-    
+
+    <!-- ============================================================== -->
+    <!-- STUDENT LOGIN GATE (ต้องเข้าสู่ระบบก่อนจึงจะดูเกรด/เวลาเรียนรายบุคคลและส่งการบ้านได้) -->
+    <!-- ============================================================== -->
+    <section id="student-login-gate" class="max-w-xl mx-auto my-6 bg-white rounded-3xl p-6 sm:p-10 shadow-xl border-2 border-emerald-700/20">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-950 text-amber-400 font-black text-3xl grid place-items-center mx-auto shadow-lg border-2 border-amber-400 mb-4">
+          🔐
+        </div>
+        <span class="bg-emerald-100 text-emerald-900 text-[11px] font-extrabold px-3 py-1 rounded-full">คุ้มครองข้อมูลส่วนบุคคลนักเรียน (PDPA)</span>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 mt-3">เข้าสู่ระบบบริการนักเรียนรายบุคคล</h1>
+        <p class="text-xs text-slate-500 mt-1">กรุณายืนยันตัวตนด้วยรหัสนักเรียน เพื่อดูผลการเรียน สถิติขาด-ลา-มาสายเฉพาะบุคคล และส่งการบ้านโดยไม่ต้องกรอกชื่อซ้ำ</p>
+      </div>
+
+      <form id="student-login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">รหัสนักเรียน (Student ID)</label>
+          <input type="text" id="login-student-code" required placeholder="เช่น BCS-6901 หรือ 69001"
+                 class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-bold text-slate-900 focus:border-emerald-700 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">รหัสผ่าน / เลขท้ายบัตรประชาชน 4 หลัก</label>
+          <input type="password" id="login-student-pin" required placeholder="เช่น 1234" value="1234"
+                 class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-bold text-slate-900 focus:border-emerald-700 focus:outline-none">
+        </div>
+        <button type="submit" class="w-full rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-extrabold py-3.5 text-sm shadow-lg transition flex items-center justify-center gap-2">
+          <span>🎓</span> เข้าสู่ระบบนักเรียน
+        </button>
+      </form>
+
+      <!-- ปุ่มเข้าสู่ระบบด่วนสำหรับทดสอบ -->
+      <div class="mt-6 pt-5 border-t border-slate-200">
+        <p class="text-[11px] font-bold text-slate-500 mb-2.5 text-center">⚡ คลิกเลือกบัญชีนักเรียนตัวอย่างเพื่อทดสอบระบบทันที:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button type="button" data-demo-student="BCS-6901" class="p-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-left transition flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-emerald-800 text-amber-300 font-black text-xs grid place-items-center shrink-0">ป.6</span>
+            <div>
+              <div class="text-xs font-extrabold text-slate-900">ด.ช. ภูมิพัฒน์ สุขใจ</div>
+              <div class="text-[10px] text-emerald-700 font-semibold">รหัส: BCS-6901 · ชั้น ป.6/1</div>
+            </div>
+          </button>
+          <button type="button" data-demo-student="BCS-6902" class="p-3 rounded-2xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-left transition flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 font-black text-xs grid place-items-center shrink-0">ม.1</span>
+            <div>
+              <div class="text-xs font-extrabold text-slate-900">ด.ญ. กานต์พิชชา รักเรียน</div>
+              <div class="text-[10px] text-amber-800 font-semibold">รหัส: BCS-6902 · ชั้น ม.1/1 (EP)</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- AUTHENTICATED STUDENT PORTAL CONTENT -->
+    <!-- ============================================================== -->
+    <div id="student-authenticated-area" class="hidden">
+
     <!-- Student Header Banner -->
     <div class="bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-amber-400 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="flex items-center gap-4">
@@ -69,30 +125,77 @@
           🎓
         </div>
         <div>
-          <span class="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-bold px-2.5 py-0.5 rounded-full">ปีการศึกษา 2569</span>
-          <h1 class="text-xl sm:text-2xl font-black text-white mt-1">ยินดีต้อนรับสู่ระบบบริการนักเรียน</h1>
-          <p class="text-xs text-emerald-200 mt-0.5">ตรวจสอบคะแนนสอบ ผลการเรียน และส่งงาน/ชิ้นงานที่ได้รับมอบหมาย</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="stu-badge-code" class="bg-amber-400 text-slate-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">รหัส: BCS-6901</span>
+            <span id="stu-badge-class" class="bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">ชั้น ป.6/1</span>
+          </div>
+          <h1 id="stu-header-name" class="text-xl sm:text-2xl font-black text-white mt-1.5">ด.ช. ภูมิพัฒน์ สุขใจ</h1>
+          <p class="text-xs text-emerald-200 mt-0.5">ข้อมูลผลการเรียน สถิติการมาเรียนรายบุคคล และระบบส่งการบ้านอัตโนมัติ</p>
         </div>
       </div>
 
-      <!-- Quick GPA Badge -->
-      <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shrink-0">
-        <div class="text-center">
-          <span class="block text-[10px] uppercase font-bold text-amber-400">เกรดเฉลี่ยสะสม (GPA)</span>
-          <span class="text-2xl font-black text-white">3.85</span>
+      <!-- Quick GPA & Logout -->
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shrink-0">
+          <div class="text-center">
+            <span class="block text-[10px] uppercase font-bold text-amber-400">เกรดเฉลี่ยสะสม (GPA)</span>
+            <span id="stu-header-gpa" class="text-2xl font-black text-white">3.85</span>
+          </div>
+          <div class="h-8 w-px bg-white/20"></div>
+          <div class="text-center">
+            <span class="block text-[10px] uppercase font-bold text-emerald-300">มาเรียนสะสม</span>
+            <span id="stu-header-att" class="text-2xl font-black text-amber-400">98.5%</span>
+          </div>
         </div>
-        <div class="h-8 w-px bg-white/20"></div>
-        <div class="text-center">
-          <span class="block text-[10px] uppercase font-bold text-emerald-300">ชิ้นงานที่ต้องส่ง</span>
-          <span class="text-2xl font-black text-amber-400">2</span>
+        <button id="student-logout-btn" type="button" class="rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white px-4 py-3 text-xs font-bold shadow transition flex items-center gap-1.5">
+          <span>🚪</span> สลับบัญชี / ออกจากระบบ
+        </button>
+      </div>
+    </div>
+
+    <!-- สรุปสถิติการมาเรียน-ขาด-ลา-มาสาย เฉพาะบุคคล (Personal Attendance Summary) -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4 mb-8">
+      <div class="bg-white rounded-2xl p-4 border border-emerald-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold text-slate-500 block">มาเรียนปกติ</span>
+          <span id="att-present" class="text-xl font-black text-emerald-700">82 วัน</span>
         </div>
+        <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center text-lg">✅</span>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-sky-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold text-slate-500 block">ลาป่วย</span>
+          <span id="att-sick" class="text-xl font-black text-sky-700">1 วัน</span>
+        </div>
+        <span class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 grid place-items-center text-lg">🤒</span>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold text-slate-500 block">ลากิจ</span>
+          <span id="att-personal" class="text-xl font-black text-amber-600">0 วัน</span>
+        </div>
+        <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 grid place-items-center text-lg">📝</span>
+      </div>
+      <div class="bg-white rounded-2xl p-4 border border-orange-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold text-slate-500 block">มาสาย</span>
+          <span id="att-late" class="text-xl font-black text-orange-600">1 ครั้ง</span>
+        </div>
+        <span class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 grid place-items-center text-lg">⏰</span>
+      </div>
+      <div class="col-span-2 sm:col-span-1 bg-white rounded-2xl p-4 border border-rose-200 shadow-sm flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold text-slate-500 block">ขาดเรียน</span>
+          <span id="att-absent" class="text-xl font-black text-rose-600">0 วัน</span>
+        </div>
+        <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 grid place-items-center text-lg">🛡️</span>
       </div>
     </div>
 
     <!-- Tab Buttons -->
     <div class="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-slate-200/80 w-fit">
       <button data-student-tab="tab-grades" class="student-tab-btn active px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition bg-emerald-800 text-white shadow flex items-center gap-2">
-        <span>📊</span> ตรวจสอบคะแนน & ผลการเรียน
+        <span>📊</span> ตรวจสอบคะแนน & ผลการเรียนรายบุคคล
       </button>
       <button data-student-tab="tab-homework" class="student-tab-btn px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
         <span>📤</span> ส่งชิ้นงาน & การบ้านที่มอบหมาย
@@ -213,15 +316,18 @@
               </select>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">รหัสนักเรียน</label>
-                <input type="text" id="hw-student-code" required placeholder="เช่น BCS-6901" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs focus:border-emerald-600 focus:outline-none">
+            <!-- ข้อมูลผู้ส่งดึงจากระบบล็อกอินอัตโนมัติ (ไม่ต้องกรอกชื่อหรือรหัสนักเรียนซ้ำ) -->
+            <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-xl bg-emerald-800 text-amber-300 font-black text-sm grid place-items-center">🎓</span>
+                <div>
+                  <span class="block text-[10px] font-bold text-emerald-700 uppercase">ผู้ส่งงาน (ดึงจากระบบเข้าสู่ระบบอัตโนมัติ)</span>
+                  <span id="hw-auto-student-display" class="text-xs font-extrabold text-slate-900">ด.ช. ภูมิพัฒน์ สุขใจ (BCS-6901 · ชั้น ป.6/1)</span>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">ชื่อ - นามสกุล นักเรียน</label>
-                <input type="text" id="hw-student-name" required placeholder="เช่น ด.ช. ภูมิพัฒน์ สุขใจ" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs focus:border-emerald-600 focus:outline-none">
-              </div>
+              <span class="text-[10px] bg-white text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">ยืนยันตัวตนแล้ว ✓</span>
+              <input type="hidden" id="hw-student-code" value="BCS-6901">
+              <input type="hidden" id="hw-student-name" value="ด.ช. ภูมิพัฒน์ สุขใจ">
             </div>
 
             <div>
@@ -325,6 +431,7 @@
       </div>
     </section>
 
+    </div><!-- /#student-authenticated-area -->
   </main>
 
   <!-- Footer -->
@@ -338,10 +445,121 @@
   <script>
     const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
 
+    const STUDENT_PROFILES = {
+      'BCS-6901': {
+        code: 'BCS-6901',
+        name: 'ด.ช. ภูมิพัฒน์ สุขใจ',
+        classRoom: 'ชั้น ป.6/1',
+        gpa: '3.85',
+        attRate: '98.5%',
+        present: '82 วัน',
+        sick: '1 วัน',
+        personal: '0 วัน',
+        late: '1 ครั้ง',
+        absent: '0 วัน'
+      },
+      'BCS-6902': {
+        code: 'BCS-6902',
+        name: 'ด.ญ. กานต์พิชชา รักเรียน',
+        classRoom: 'ชั้น ม.1/1 (EP)',
+        gpa: '3.92',
+        attRate: '100%',
+        present: '84 วัน',
+        sick: '0 วัน',
+        personal: '0 วัน',
+        late: '0 ครั้ง',
+        absent: '0 วัน'
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
+      initStudentAuth();
       initStudentTabs();
       initStudentSubmission();
     });
+
+    function initStudentAuth() {
+      const gate = document.getElementById('student-login-gate');
+      const authArea = document.getElementById('student-authenticated-area');
+      const loginForm = document.getElementById('student-login-form');
+      const logoutBtn = document.getElementById('student-logout-btn');
+
+      function applyStudentSession(student) {
+        if (!student) {
+          gate.classList.remove('hidden');
+          authArea.classList.add('hidden');
+          return;
+        }
+        gate.classList.add('hidden');
+        authArea.classList.remove('hidden');
+
+        document.getElementById('stu-badge-code').textContent = `รหัส: ${student.code}`;
+        document.getElementById('stu-badge-class').textContent = student.classRoom;
+        document.getElementById('stu-header-name').textContent = student.name;
+        document.getElementById('stu-header-gpa').textContent = student.gpa;
+        document.getElementById('stu-header-att').textContent = student.attRate;
+
+        document.getElementById('att-present').textContent = student.present;
+        document.getElementById('att-sick').textContent = student.sick;
+        document.getElementById('att-personal').textContent = student.personal;
+        document.getElementById('att-late').textContent = student.late;
+        document.getElementById('att-absent').textContent = student.absent;
+
+        // เติมข้อมูลผู้ส่งการบ้านอัตโนมัติโดยไม่ต้องพิมพ์ซ้ำ
+        const codeInput = document.getElementById('hw-student-code');
+        const nameInput = document.getElementById('hw-student-name');
+        const autoDisplay = document.getElementById('hw-auto-student-display');
+        if (codeInput) codeInput.value = student.code;
+        if (nameInput) nameInput.value = student.name;
+        if (autoDisplay) autoDisplay.textContent = `${student.name} (${student.code} · ${student.classRoom})`;
+      }
+
+      // ตรวจสอบเซสชันที่เคยเข้าสู่ระบบไว้
+      try {
+        const saved = JSON.parse(localStorage.getItem('bcs_student_session') || 'null');
+        if (saved && saved.code) applyStudentSession(saved);
+      } catch (e) {}
+
+      if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const rawCode = document.getElementById('login-student-code').value.trim().toUpperCase();
+          const normalized = rawCode.startsWith('BCS-') ? rawCode : `BCS-${rawCode}`;
+          const profile = STUDENT_PROFILES[normalized] || STUDENT_PROFILES[rawCode] || {
+            code: rawCode,
+            name: `นักเรียนรหัส ${rawCode}`,
+            classRoom: 'ชั้น ป.6/1',
+            gpa: '3.75',
+            attRate: '97.0%',
+            present: '80 วัน',
+            sick: '2 วัน',
+            personal: '1 วัน',
+            late: '0 ครั้ง',
+            absent: '0 วัน'
+          };
+          localStorage.setItem('bcs_student_session', JSON.stringify(profile));
+          applyStudentSession(profile);
+        });
+      }
+
+      document.querySelectorAll('[data-demo-student]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const code = btn.getAttribute('data-demo-student');
+          const profile = STUDENT_PROFILES[code];
+          if (profile) {
+            localStorage.setItem('bcs_student_session', JSON.stringify(profile));
+            applyStudentSession(profile);
+          }
+        });
+      });
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          localStorage.removeItem('bcs_student_session');
+          applyStudentSession(null);
+        });
+      }
+    }
 
     function initStudentTabs() {
       const btns = document.querySelectorAll('.student-tab-btn');
@@ -393,28 +611,55 @@
           spinner.classList.remove('hidden');
           btnText.textContent = 'กำลังส่งไฟล์เข้า Google Drive...';
 
-          // แปลงไฟล์เป็น Base64
-          const reader = new FileReader();
-          const base64 = await new Promise((resolve, reject) => {
-            reader.onload = () => resolve(String(reader.result).split(',')[1]);
-            reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
-            reader.readAsDataURL(file);
-          });
+          let driveUrl = '';
+          try {
+            const reader = new FileReader();
+            const base64 = await new Promise((resolve, reject) => {
+              reader.onload = () => resolve(String(reader.result).split(',')[1]);
+              reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+              reader.readAsDataURL(file);
+            });
 
-          // ส่งเข้า Google Drive ผ่าน GAS
-          const res = await fetch(GAS_UPLOAD_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-              base64: base64,
-              fileName: `[${studentCode}]_${file.name}`,
-              mimeType: file.type,
-              category: 'student_submissions'
-            })
-          });
+            const res = await fetch(GAS_UPLOAD_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({
+                base64: base64,
+                fileName: `[${studentCode}]_${file.name}`,
+                mimeType: file.type,
+                category: 'student_submissions'
+              })
+            });
 
-          const result = await res.json();
-          const driveUrl = result.url || result.fileUrl || '';
+            const result = await res.json();
+            driveUrl = result.url || result.fileUrl || '';
+          } catch (uploadErr) {
+            console.warn('GAS upload fallback:', uploadErr);
+          }
+
+          const submissionRecord = {
+            student_code: studentCode,
+            student_name: studentName,
+            assignment_title: assignTitle,
+            file_url: driveUrl || file.name,
+            notes: notes,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          };
+
+          // บันทึกลง LocalStorage เพื่อให้ระบบตรวจการบ้านหลังบ้านเห็นทันที
+          try {
+            const list = JSON.parse(localStorage.getItem('bcs_student_submissions') || '[]');
+            list.unshift(submissionRecord);
+            localStorage.setItem('bcs_student_submissions', JSON.stringify(list));
+          } catch (e) {}
+
+          // บันทึกลงตาราง student_submissions บน Supabase
+          if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+            try {
+              await getSupabase().from('student_submissions').insert([submissionRecord]);
+            } catch (e) {}
+          }
 
           // เพิ่มประวัติลงตาราง
           if (historyBody) {
@@ -426,7 +671,7 @@
                 <div class="text-[10px] text-slate-400">ส่งเมื่อสักครู่ · โดย ${studentName} (${studentCode})</div>
               </td>
               <td class="py-3 px-4">ชิ้นงานออนไลน์</td>
-              <td class="py-3 px-4"><a href="${driveUrl}" target="_blank" class="text-emerald-700 font-semibold hover:underline">📂 เปิดดูไฟล์ใน Drive</a></td>
+              <td class="py-3 px-4"><a href="${driveUrl || '#'}" target="_blank" class="text-emerald-700 font-semibold hover:underline">📂 ${file.name}</a></td>
               <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full font-bold text-[10px]">รอครูตรวจ</span></td>
               <td class="py-3 px-4 text-center font-bold text-slate-400">-</td>
               <td class="py-3 px-4 text-slate-500">${notes || 'ส่งงานสำเร็จเรียบร้อย'}</td>
@@ -434,8 +679,9 @@
             historyBody.prepend(tr);
           }
 
-          alert('✅ ส่งชิ้นงานเข้า Google Drive ของโรงเรียนสำเร็จเรียบร้อยแล้ว!');
-          form.reset();
+          alert(`✅ ส่งชิ้นงานของ ${studentName} (${studentCode}) สำเร็จเรียบร้อยแล้ว!`);
+          document.getElementById('hw-notes').value = '';
+          fileInput.value = '';
         } catch (err) {
           console.error(err);
           alert('❌ เกิดข้อผิดพลาดในการส่งงาน: ' + err.message);

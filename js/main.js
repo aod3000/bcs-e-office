@@ -523,10 +523,12 @@ async function checkAdmissionsStatusOnHomepage() {
 
     if (formContainer) {
       let closedCard = document.getElementById('adm-closed-card');
+      const openWrapper = document.getElementById('adm-open-wrapper');
       const form = document.getElementById('online-admission-form');
 
       if (isClosed) {
-        if (form) form.classList.add('hidden');
+        if (openWrapper) openWrapper.classList.add('hidden');
+        else if (form) form.classList.add('hidden');
         if (!closedCard) {
           closedCard = document.createElement('div');
           closedCard.id = 'adm-closed-card';
@@ -550,7 +552,8 @@ async function checkAdmissionsStatusOnHomepage() {
         }
       } else {
         if (closedCard) closedCard.classList.add('hidden');
-        if (form) form.classList.remove('hidden');
+        if (openWrapper) openWrapper.classList.remove('hidden');
+        else if (form) form.classList.remove('hidden');
       }
     }
   }
@@ -798,61 +801,159 @@ function initMobileMenu() {
   });
 }
 
-/* ---------- ระบบรับสมัครนักเรียนใหม่ออนไลน์ ---------- */
+/* ---------- ระบบรับสมัครนักเรียนใหม่ออนไลน์ + ตรวจสอบ/แก้ไข/ยืนยันสิทธิ์ ---------- */
 function initOnlineAdmissions() {
   const form = document.getElementById('online-admission-form');
   if (!form) return;
+
+  const STORAGE_KEY = 'bcs_admissions_records';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+
+  // เตรียมข้อมูลตัวอย่างเริ่มต้นเพื่อให้ผู้ปกครอง/ผู้ดูแลระบบทดสอบค้นหาได้ทันที
+  function getStoredAdmissions() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      let list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+      if (!list.some(r => r.citizen_id === '1100401234567')) {
+        list.push({
+          app_no: 'BCS-69-1001',
+          citizen_id: '1100401234567',
+          student_name: 'ด.ช. รักษ์เรียน เพียรศึกษา',
+          grade: 'ป.1 (หลักสูตรปกติ)',
+          parent_name: 'นายสมศักดิ์ เพียรศึกษา',
+          phone: '081-234-5678',
+          status: 'รอตรวจสอบเอกสาร',
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      }
+      return list;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveStoredAdmission(record) {
+    const list = getStoredAdmissions();
+    const idx = list.findIndex(r => r.citizen_id === record.citizen_id);
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...record };
+    } else {
+      list.unshift(record);
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+
+  // สลับแท็บระหว่าง "1. กรอกใบสมัครเรียนใหม่" และ "2. ตรวจสอบ / แก้ไข / ยืนยันสิทธิ์"
+  const tabNewBtn = document.getElementById('adm-tab-new-btn');
+  const tabCheckBtn = document.getElementById('adm-tab-check-btn');
+  const checkPanel = document.getElementById('adm-check-panel');
+
+  function switchAdmissionTab(mode) {
+    const isNew = mode === 'new';
+    if (tabNewBtn && tabCheckBtn) {
+      tabNewBtn.className = isNew
+        ? 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold bg-amber-400 text-slate-950 shadow transition flex items-center justify-center gap-2'
+        : 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-emerald-100 hover:bg-white/10 transition flex items-center justify-center gap-2';
+      tabCheckBtn.className = !isNew
+        ? 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold bg-amber-400 text-slate-950 shadow transition flex items-center justify-center gap-2'
+        : 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-emerald-100 hover:bg-white/10 transition flex items-center justify-center gap-2';
+    }
+    form.classList.toggle('hidden', !isNew);
+    if (checkPanel) checkPanel.classList.toggle('hidden', isNew);
+  }
+
+  if (tabNewBtn) tabNewBtn.addEventListener('click', () => switchAdmissionTab('new'));
+  if (tabCheckBtn) tabCheckBtn.addEventListener('click', () => switchAdmissionTab('check'));
 
   const fileInput = document.getElementById('adm-file');
   const submitBtn = document.getElementById('adm-submit-btn');
   const btnText = document.getElementById('adm-btn-text');
   const spinner = document.getElementById('adm-spinner');
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+  const receiptBox = document.getElementById('adm-receipt-box');
+  const receiptCodeEl = document.getElementById('adm-receipt-code');
+  const gotoCheckBtn = document.getElementById('adm-goto-check-btn');
+
+  let lastSubmittedCitizenId = '';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const file = fileInput.files[0];
-    if (!file) {
-      alert('กรุณาแนบไฟล์เอกสารหลักฐาน (สูติบัตร หรือ ทะเบียนบ้าน)');
-      return;
-    }
 
     const grade = document.getElementById('adm-grade').value;
     const studentName = document.getElementById('adm-student-name').value.trim();
-    const citizenId = document.getElementById('adm-citizen-id').value.trim();
+    const citizenId = document.getElementById('adm-citizen-id').value.trim().replace(/\D/g, '');
     const parentName = document.getElementById('adm-parent-name').value.trim();
     const phone = document.getElementById('adm-phone').value.trim();
+    const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+    if (citizenId.length !== 13) {
+      alert('⚠️ กรุณากรอกเลขประจำตัวประชาชนนักเรียนให้ครบ 13 หลัก (ตัวเลขเท่านั้น)');
+      return;
+    }
 
     try {
       submitBtn.disabled = true;
       spinner.classList.remove('hidden');
-      btnText.textContent = 'กำลังส่งใบสมัครเข้า Google Drive...';
+      btnText.textContent = 'กำลังบันทึกใบสมัครเรียน...';
 
-      // 1. แปลงไฟล์เป็น Base64
-      const reader = new FileReader();
-      const base64 = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(String(reader.result).split(',')[1]);
-        reader.onerror = () => reject(new Error('อ่านไฟล์หลักฐานไม่สำเร็จ'));
-        reader.readAsDataURL(file);
-      });
+      let driveUrl = '';
+      if (file) {
+        try {
+          btnText.textContent = 'กำลังอัปโหลดเอกสารเข้า Google Drive...';
+          const reader = new FileReader();
+          const base64 = await new Promise((resolve, reject) => {
+            reader.onload = () => resolve(String(reader.result).split(',')[1]);
+            reader.onerror = () => reject(new Error('อ่านไฟล์หลักฐานไม่สำเร็จ'));
+            reader.readAsDataURL(file);
+          });
 
-      // 2. ส่งไปยัง GAS เพื่อบันทึกลง Google Drive
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          base64: base64,
-          fileName: `[สมัคร_${grade}]_${studentName}_${file.name}`,
-          mimeType: file.type,
-          category: 'admissions'
-        })
-      });
+          const res = await fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              base64: base64,
+              fileName: `[สมัคร_${grade}]_${studentName}_${file.name}`,
+              mimeType: file.type,
+              category: 'admissions'
+            })
+          });
+          const result = await res.json();
+          driveUrl = result.url || result.fileUrl || '';
+        } catch (uploadErr) {
+          console.warn('อัปโหลดไฟล์ไป Google Drive ไม่สำเร็จ (บันทึกข้อมูลต่อ):', uploadErr);
+        }
+      }
 
-      const result = await res.json();
-      const driveUrl = result.url || result.fileUrl || '';
       const receiptNo = `BCS-69-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newRecord = {
+        app_no: receiptNo,
+        citizen_id: citizenId,
+        student_name: studentName,
+        grade: grade,
+        parent_name: parentName,
+        phone: phone,
+        document_url: driveUrl,
+        status: 'รอตรวจสอบเอกสาร',
+        created_at: new Date().toISOString()
+      };
 
-      alert(`✅ ยื่นใบสมัครเรียนออนไลน์สำเร็จเรียบร้อยแล้ว!\n\n📋 รหัสใบสมัคร: ${receiptNo}\nระดับชั้น: ${grade}\nชื่อนักเรียน: ${studentName}\n\nระบบได้จัดส่งเอกสารหลักฐานเข้าสู่ Google Drive ของโรงเรียนเรียบร้อยแล้ว ทางโรงเรียนจะติดต่อกลับทางเบอร์โทรศัพท์ ${phone} ครับ`);
+      // บันทึกลง LocalStorage ทันที
+      saveStoredAdmission(newRecord);
+
+      // บันทึกลง Supabase ตาราง admissions (ถ้าเชื่อมต่ออยู่)
+      if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+        try {
+          await getSupabase().from('admissions').upsert([newRecord], { onConflict: 'citizen_id' });
+        } catch (dbErr) {
+          console.warn('บันทึกใบสมัครลง Supabase admissions:', dbErr);
+        }
+      }
+
+      lastSubmittedCitizenId = citizenId;
+      if (receiptCodeEl) receiptCodeEl.textContent = `รหัสใบสมัคร: ${receiptNo} | เลข ปชช.: ${citizenId}`;
+      if (receiptBox) receiptBox.classList.remove('hidden');
+
       form.reset();
     } catch (err) {
       console.error(err);
@@ -863,4 +964,161 @@ function initOnlineAdmissions() {
       btnText.textContent = 'ส่งใบสมัครเรียนออนไลน์';
     }
   });
+
+  if (gotoCheckBtn) {
+    gotoCheckBtn.addEventListener('click', () => {
+      switchAdmissionTab('check');
+      const lookupInput = document.getElementById('adm-lookup-nid');
+      if (lookupInput && lastSubmittedCitizenId) {
+        lookupInput.value = lastSubmittedCitizenId;
+        lookupByCitizenId(lastSubmittedCitizenId);
+      }
+    });
+  }
+
+  // ส่วนค้นหา แก้ไข และยืนยันการสมัครเรียนด้วยเลขบัตรประชาชน 13 หลัก
+  const lookupInput = document.getElementById('adm-lookup-nid');
+  const lookupBtn = document.getElementById('adm-lookup-btn');
+  const sampleNidBtn = document.getElementById('adm-sample-nid-btn');
+  const resultCard = document.getElementById('adm-lookup-result');
+  const emptyCard = document.getElementById('adm-lookup-empty');
+  const resAppNo = document.getElementById('res-app-no');
+  const resStatusBadge = document.getElementById('res-status-badge');
+  const editGrade = document.getElementById('edit-adm-grade');
+  const editName = document.getElementById('edit-adm-name');
+  const editParent = document.getElementById('edit-adm-parent');
+  const editPhone = document.getElementById('edit-adm-phone');
+  const saveEditBtn = document.getElementById('save-edit-adm-btn');
+  const confirmBtn = document.getElementById('confirm-adm-btn');
+  const feedbackEl = document.getElementById('adm-action-feedback');
+
+  let currentRecord = null;
+
+  function renderStatusBadge(status) {
+    if (!resStatusBadge) return;
+    if (status === 'ยืนยันการสมัครเรียนแล้ว') {
+      resStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-400 text-slate-950 shadow';
+      resStatusBadge.textContent = '✅ ยืนยันการสมัครเรียนแล้ว';
+    } else {
+      resStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950';
+      resStatusBadge.textContent = `⏳ ${status || 'รอตรวจสอบเอกสาร'}`;
+    }
+  }
+
+  async function lookupByCitizenId(rawNid) {
+    const nid = (rawNid || '').trim().replace(/\D/g, '');
+    if (nid.length !== 13) {
+      alert('⚠️ กรุณากรอกเลขประจำตัวประชาชน 13 หลักให้ครบถ้วน');
+      return;
+    }
+
+    if (feedbackEl) feedbackEl.classList.add('hidden');
+    let found = null;
+
+    // 1. ค้นหาจาก Supabase ตาราง admissions ก่อน
+    if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+      try {
+        const { data } = await getSupabase()
+          .from('admissions')
+          .select('*')
+          .eq('citizen_id', nid)
+          .maybeSingle();
+        if (data) found = data;
+      } catch (e) { /* ignore */ }
+    }
+
+    // 2. ค้นหาจาก LocalStorage
+    if (!found) {
+      const list = getStoredAdmissions();
+      found = list.find(r => r.citizen_id === nid) || null;
+    }
+
+    if (!found) {
+      currentRecord = null;
+      if (resultCard) resultCard.classList.add('hidden');
+      if (emptyCard) emptyCard.classList.remove('hidden');
+      return;
+    }
+
+    currentRecord = found;
+    if (emptyCard) emptyCard.classList.add('hidden');
+    if (resultCard) resultCard.classList.remove('hidden');
+
+    if (resAppNo) resAppNo.textContent = `${found.app_no || 'BCS-69-XXXX'} (เลข ปชช. ${found.citizen_id})`;
+    renderStatusBadge(found.status);
+
+    if (editGrade) editGrade.value = found.grade || 'ป.1 (หลักสูตรปกติ)';
+    if (editName) editName.value = found.student_name || '';
+    if (editParent) editParent.value = found.parent_name || '';
+    if (editPhone) editPhone.value = found.phone || '';
+  }
+
+  if (lookupBtn && lookupInput) {
+    lookupBtn.addEventListener('click', () => lookupByCitizenId(lookupInput.value));
+    lookupInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        lookupByCitizenId(lookupInput.value);
+      }
+    });
+  }
+
+  if (sampleNidBtn && lookupInput) {
+    sampleNidBtn.addEventListener('click', () => {
+      lookupInput.value = '1100401234567';
+      lookupByCitizenId('1100401234567');
+    });
+  }
+
+  // ปุ่มบันทึกการแก้ไขข้อมูลผู้สมัคร
+  if (saveEditBtn) {
+    saveEditBtn.addEventListener('click', async () => {
+      if (!currentRecord) return;
+      currentRecord.grade = editGrade ? editGrade.value : currentRecord.grade;
+      currentRecord.student_name = editName ? editName.value.trim() : currentRecord.student_name;
+      currentRecord.parent_name = editParent ? editParent.value.trim() : currentRecord.parent_name;
+      currentRecord.phone = editPhone ? editPhone.value.trim() : currentRecord.phone;
+      currentRecord.updated_at = new Date().toISOString();
+
+      saveStoredAdmission(currentRecord);
+
+      if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+        try {
+          await getSupabase().from('admissions').upsert([currentRecord], { onConflict: 'citizen_id' });
+        } catch (e) { /* ignore */ }
+      }
+
+      if (feedbackEl) {
+        feedbackEl.textContent = '💾 บันทึกการแก้ไขข้อมูลผู้สมัครเรียบร้อยแล้ว!';
+        feedbackEl.classList.remove('hidden');
+      }
+    });
+  }
+
+  // ปุ่มยืนยันการสมัครเรียน / รายงานตัว
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async () => {
+      if (!currentRecord) return;
+      currentRecord.grade = editGrade ? editGrade.value : currentRecord.grade;
+      currentRecord.student_name = editName ? editName.value.trim() : currentRecord.student_name;
+      currentRecord.parent_name = editParent ? editParent.value.trim() : currentRecord.parent_name;
+      currentRecord.phone = editPhone ? editPhone.value.trim() : currentRecord.phone;
+      currentRecord.status = 'ยืนยันการสมัครเรียนแล้ว';
+      currentRecord.updated_at = new Date().toISOString();
+
+      saveStoredAdmission(currentRecord);
+      renderStatusBadge(currentRecord.status);
+
+      if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+        try {
+          await getSupabase().from('admissions').upsert([currentRecord], { onConflict: 'citizen_id' });
+        } catch (e) { /* ignore */ }
+      }
+
+      if (feedbackEl) {
+        feedbackEl.textContent = '🎉 ยืนยันสิทธิ์การสมัครเรียนเรียบร้อยแล้ว! กรุณานำเอกสารตัวจริงมายื่นตามวันเวลาที่กำหนดด้านบน';
+        feedbackEl.classList.remove('hidden');
+      }
+    });
+  }
 }

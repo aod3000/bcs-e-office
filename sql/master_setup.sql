@@ -135,15 +135,50 @@ CREATE TABLE IF NOT EXISTS public.student_submissions (
   submitted_at timestamptz DEFAULT now()
 );
 
--- 6) ตารางระบบรับสมัครนักเรียนออนไลน์ (admissions)
+-- 6) ตารางรับสมัครนักเรียนออนไลน์ (admissions) รองรับค้นหา/แก้ไข/ยืนยันสิทธิ์ด้วยเลขบัตรประชาชน 13 หลัก
 CREATE TABLE IF NOT EXISTS public.admissions (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  national_id text NOT NULL,
+  app_no text,
+  citizen_id text UNIQUE,
+  national_id text,
   student_name text NOT NULL,
-  grade_level text NOT NULL,
+  grade text,
+  grade_level text,
   parent_name text,
   phone text,
   address text,
+  document_url text,
+  status text DEFAULT 'รอตรวจสอบเอกสาร',
+  updated_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.admissions
+  ADD COLUMN IF NOT EXISTS app_no text,
+  ADD COLUMN IF NOT EXISTS citizen_id text,
+  ADD COLUMN IF NOT EXISTS grade text,
+  ADD COLUMN IF NOT EXISTS document_url text,
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+
+-- 6.1) ตารางภาระงาน/รายงานครู (tasks) และตารางใบลาออนไลน์ (leave_requests)
+CREATE TABLE IF NOT EXISTS public.tasks (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid,
+  title text NOT NULL,
+  category text,
+  description text,
+  file_url text,
+  status text DEFAULT 'pending',
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.leave_requests (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid,
+  leave_type text NOT NULL,
+  start_date date,
+  end_date date,
+  reason text,
   status text DEFAULT 'submitted',
   created_at timestamptz DEFAULT now()
 );
@@ -155,6 +190,8 @@ ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.classrooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.student_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leave_requests ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
@@ -181,6 +218,12 @@ BEGIN
 
   DROP POLICY IF EXISTS "Public Manage Admissions" ON public.admissions;
   CREATE POLICY "Public Manage Admissions" ON public.admissions FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "Public Manage Tasks" ON public.tasks;
+  CREATE POLICY "Public Manage Tasks" ON public.tasks FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "Public Manage Leaves" ON public.leave_requests;
+  CREATE POLICY "Public Manage Leaves" ON public.leave_requests FOR ALL USING (true);
 END $$;
 
 -- 8) รีเฟรช Schema Cache ของ Supabase ทันที

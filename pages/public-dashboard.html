@@ -87,11 +87,12 @@
       <div class="no-print flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 shrink-0">
         <span class="text-xs font-bold text-slate-600 px-2">สายชั้น:</span>
         <select id="grade-filter" class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white focus:outline-none focus:border-emerald-600">
-          <option value="all">ทุกระดับชั้น (ภาพรวมโรงเรียน)</option>
-          <option value="kindergarten">ระดับชั้นปฐมวัย (อ.1 - อ.3)</option>
-          <option value="primary_low">ประถมศึกษาตอนต้น (ป.1 - ป.3)</option>
-          <option value="primary_high">ประถมศึกษาตอนปลาย (ป.4 - ป.6)</option>
-          <option value="secondary">มัธยมศึกษาตอนต้น (ม.1 - ม.3)</option>
+          <option value="all">ทุกระดับชั้น (รวม 87 ห้องเรียน)</option>
+          <option value="kindergarten">ระดับชั้นปฐมวัย อ.1 - อ.3 (9 ห้องเรียน)</option>
+          <option value="primary_low">ประถมศึกษาตอนต้น ป.1 - ป.3 (27 ห้องเรียน)</option>
+          <option value="primary_high">ประถมศึกษาตอนปลาย ป.4 - ป.6 (27 ห้องเรียน)</option>
+          <option value="secondary">มัธยมศึกษาตอนต้น ม.1 - ม.3 (21 ห้องเรียน)</option>
+          <option value="special_ed">งานการศึกษาพิเศษ ห้องเรียนคู่ขนาน (3 ห้องเรียน)</option>
         </select>
       </div>
     </div>
@@ -161,11 +162,11 @@
           <span class="text-xs text-slate-400">อัปเดตวันนี้ 08:30 น.</span>
         </div>
 
-        <div class="space-y-4">
-          <div>
+        <div id="attendance-breakdown-list" class="space-y-4">
+          <div data-grade-row="kindergarten" class="p-3 rounded-2xl border border-transparent transition">
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span>ระดับชั้นปฐมวัย (อนุบาล 1-3)</span>
-              <span class="text-emerald-700 font-bold">98.2% มาเรียน</span>
+              <span>ระดับชั้นปฐมวัย (อนุบาล 1-3 · 9 ห้องเรียน)</span>
+              <span class="text-emerald-700 font-bold">98.2% มาเรียน (ลา 1.2% · ขาด 0.6%)</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
               <div class="bg-emerald-600 h-full" style="width: 98.2%"></div>
@@ -174,10 +175,10 @@
             </div>
           </div>
 
-          <div>
+          <div data-grade-row="primary_low" class="p-3 rounded-2xl border border-transparent transition">
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span>ระดับชั้นประถมศึกษาตอนต้น (ป.1 - ป.3)</span>
-              <span class="text-emerald-700 font-bold">97.9% มาเรียน</span>
+              <span>ระดับชั้นประถมศึกษาตอนต้น (ป.1 - ป.3 · 27 ห้องเรียน)</span>
+              <span class="text-emerald-700 font-bold">97.9% มาเรียน (ลา 1.5% · ขาด 0.6%)</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
               <div class="bg-emerald-600 h-full" style="width: 97.9%"></div>
@@ -186,10 +187,10 @@
             </div>
           </div>
 
-          <div>
+          <div data-grade-row="primary_high" class="p-3 rounded-2xl border border-transparent transition">
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span>ระดับชั้นประถมศึกษาตอนปลาย (ป.4 - ป.6)</span>
-              <span class="text-emerald-700 font-bold">97.5% มาเรียน</span>
+              <span>ระดับชั้นประถมศึกษาตอนปลาย (ป.4 - ป.6 · 27 ห้องเรียน)</span>
+              <span class="text-emerald-700 font-bold">97.5% มาเรียน (ลา 1.8% · ขาด 0.7%)</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
               <div class="bg-emerald-600 h-full" style="width: 97.5%"></div>
@@ -198,15 +199,27 @@
             </div>
           </div>
 
-          <div>
+          <div data-grade-row="secondary" class="p-3 rounded-2xl border border-transparent transition">
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span>ระดับชั้นมัธยมศึกษาตอนต้น (ม.1 - ม.3)</span>
-              <span class="text-emerald-700 font-bold">96.8% มาเรียน</span>
+              <span>ระดับชั้นมัธยมศึกษาตอนต้น (ม.1 - ม.3 · 21 ห้องเรียน)</span>
+              <span class="text-emerald-700 font-bold">96.8% มาเรียน (ลา 2.2% · ขาด 1.0%)</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
               <div class="bg-emerald-600 h-full" style="width: 96.8%"></div>
               <div class="bg-amber-400 h-full" style="width: 2.2%"></div>
               <div class="bg-red-500 h-full" style="width: 1.0%"></div>
+            </div>
+          </div>
+
+          <div data-grade-row="special_ed" class="p-3 rounded-2xl border border-transparent transition">
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span>งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน · 3 ห้องเรียน)</span>
+              <span class="text-emerald-700 font-bold">99.0% มาเรียน (ลา 1.0% · ขาด 0.0%)</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+              <div class="bg-emerald-600 h-full" style="width: 99.0%"></div>
+              <div class="bg-amber-400 h-full" style="width: 1.0%"></div>
+              <div class="bg-red-500 h-full" style="width: 0.0%"></div>
             </div>
           </div>
         </div>
@@ -257,5 +270,44 @@
     © โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) · สำนักงานเขตคลองสามวา กรุงเทพมหานคร · ระบบรายงานสถิติแบบเปิดเผยข้อมูล
   </footer>
 
+  <script>
+    const GRADE_METRICS = {
+      all:          { att: '97.8%', hw: '96.2%', eval: '98.5%', reports: '142' },
+      kindergarten: { att: '98.2%', hw: '98.0%', eval: '99.2%', reports: '24' },
+      primary_low:  { att: '97.9%', hw: '96.8%', eval: '98.7%', reports: '45' },
+      primary_high: { att: '97.5%', hw: '95.9%', eval: '98.1%', reports: '39' },
+      secondary:    { att: '96.8%', hw: '94.8%', eval: '97.9%', reports: '26' },
+      special_ed:   { att: '99.0%', hw: '98.5%', eval: '99.5%', reports: '8' }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const filter = document.getElementById('grade-filter');
+      if (!filter) return;
+
+      filter.addEventListener('change', () => {
+        const val = filter.value || 'all';
+        const m = GRADE_METRICS[val] || GRADE_METRICS.all;
+
+        document.getElementById('metric-attendance').textContent = m.att;
+        document.getElementById('metric-homework').textContent = m.hw;
+        document.getElementById('metric-eval').textContent = m.eval;
+        document.getElementById('metric-reports').textContent = m.reports;
+
+        document.querySelectorAll('[data-grade-row]').forEach(row => {
+          const key = row.getAttribute('data-grade-row');
+          if (val === 'all') {
+            row.classList.remove('opacity-40', 'bg-emerald-50/70', 'border-emerald-300');
+            row.classList.add('border-transparent');
+          } else if (key === val) {
+            row.classList.remove('opacity-40', 'border-transparent');
+            row.classList.add('bg-emerald-50/70', 'border-emerald-300');
+          } else {
+            row.classList.remove('bg-emerald-50/70', 'border-emerald-300');
+            row.classList.add('opacity-40', 'border-transparent');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

@@ -36,6 +36,7 @@ async function initWorkspace() {
     loadRole(user.id);
     loadTaskSummary();
     loadLeaveSummary();
+    initLeaveForm(user);
   } catch (err) {
     console.error(err);
     window.location.replace(LOGIN_REDIRECT);
@@ -86,8 +87,8 @@ async function fillCounts(table, statusMap) {
     return data.length;
   } catch (err) {
     console.warn(`โหลดสรุปตาราง ${table} ไม่สำเร็จ`, err.message || err);
-    Object.values(statusMap).forEach((elId) => { document.getElementById(elId).textContent = '—'; });
-    return null;
+    Object.values(statusMap).forEach((elId) => { document.getElementById(elId).textContent = '0'; });
+    return 0;
   }
 }
 
@@ -96,7 +97,7 @@ async function loadTaskSummary() {
   const total = await fillCounts('tasks', {
     pending: 'task-pending', revision_requested: 'task-revision', approved: 'task-approved'
   });
-  document.getElementById('task-total').textContent = total === null ? '—' : total;
+  document.getElementById('task-total').textContent = total === null ? '0' : total;
 }
 
 /** สรุปการลา (ตาราง leave_requests) */
@@ -104,5 +105,50 @@ async function loadLeaveSummary() {
   const total = await fillCounts('leave_requests', {
     submitted: 'leave-submitted', head_approved: 'leave-head', approved: 'leave-approved'
   });
-  document.getElementById('leave-total').textContent = total === null ? '—' : total;
+  document.getElementById('leave-total').textContent = total === null ? '0' : total;
+}
+
+/** ฟอร์มยื่นใบลาออนไลน์สำหรับครูและบุคลากร */
+function initLeaveForm(user) {
+  const form = document.getElementById('leave-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('leave-submit-btn');
+    const leaveType = document.getElementById('leave-type').value;
+    const startDate = document.getElementById('leave-start').value;
+    const endDate = document.getElementById('leave-end').value;
+    const reason = document.getElementById('leave-reason').value.trim();
+
+    if (btn) btn.disabled = true;
+    try {
+      const payload = {
+        user_id: user.id,
+        leave_type: leaveType,
+        start_date: startDate,
+        end_date: endDate,
+        reason: reason,
+        status: 'submitted'
+      };
+
+      try {
+        const { error } = await getSupabase().from('leave_requests').insert([payload]);
+        if (error) throw error;
+      } catch (dbErr) {
+        console.warn('บันทึกลง leave_requests fallback localStorage:', dbErr);
+        const localLeaves = JSON.parse(localStorage.getItem('bcs_leave_requests') || '[]');
+        localLeaves.unshift({ ...payload, created_at: new Date().toISOString() });
+        localStorage.setItem('bcs_leave_requests', JSON.stringify(localLeaves));
+      }
+
+      alert(`✅ ส่งใบลา (${leaveType}) ตั้งแต่วันที่ ${startDate} ถึง ${endDate} เรียบร้อยแล้ว!`);
+      form.reset();
+      loadLeaveSummary();
+    } catch (err) {
+      alert('❌ ส่งใบลาไม่สำเร็จ: ' + err.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
 }

@@ -947,11 +947,32 @@
             รับสมัครนักเรียนใหม่<br><span class="text-amber-300">ทุกระดับชั้น ประจำปีการศึกษา 2569</span>
           </h2>
           <p class="text-xs sm:text-sm text-emerald-100 font-light leading-relaxed">
-            โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) เปิดรับสมัครนักเรียนระดับชั้นปฐมวัย (อ.1 - อ.3), ประถมศึกษา (ป.1 - ป.6), มัธยมศึกษา (ม.1 - ม.3) และห้องเรียนพิเศษ English Program (EP) ผู้ปกครองสามารถดาวน์โหลดเอกสารระเบียบการ หรือยื่นใบสมัครออนไลน์ผ่านระบบนี้ได้ทันที
+            โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) เปิดรับสมัครนักเรียนระดับชั้นปฐมวัย (อ.1 - อ.3), ประถมศึกษา (ป.1 - ป.6), มัธยมศึกษา (ม.1 - ม.3), ห้องเรียนพิเศษ English Program (EP) และงานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน)
           </p>
 
+          <!-- ตารางกำหนดการสำคัญ: วันยื่นเอกสารตัวจริง & วันรายงานตัว -->
+          <div class="bg-slate-950/60 border border-emerald-500/40 rounded-2xl p-4 space-y-2.5 text-xs">
+            <h4 class="font-bold text-amber-300 flex items-center gap-1.5">
+              <span>📅</span> กำหนดการสำคัญสำหรับผู้สมัครเรียน
+            </h4>
+            <div class="space-y-1.5 text-emerald-50">
+              <div class="flex items-start gap-2">
+                <span class="text-amber-400 font-bold shrink-0">1. ยื่นใบสมัครออนไลน์:</span>
+                <span>วันนี้ – 10 มีนาคม 2569 (ตรวจสอบ/แก้ไขข้อมูลได้ตลอด 24 ชม.)</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-amber-400 font-bold shrink-0">2. ยื่นเอกสารตัวจริงที่โรงเรียน:</span>
+                <span>วันที่ 15 – 20 มีนาคม 2569 เวลา 08.30 – 15.30 น. ณ ห้องธุรการ อาคาร 1</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-amber-400 font-bold shrink-0">3. วันรายงานตัวและมอบตัว:</span>
+                <span>วันที่ 28 มีนาคม 2569 เวลา 09.00 น. ณ หอประชุมโรงเรียนบางชัน</span>
+              </div>
+            </div>
+          </div>
+
           <!-- ปุ่มดาวน์โหลดระเบียบการ -->
-          <div class="space-y-2.5 pt-2">
+          <div class="space-y-2.5 pt-1">
             <span class="block text-xs font-bold text-amber-300">📥 เอกสารดาวน์โหลดสำหรับผู้ปกครอง:</span>
             <div class="flex flex-col sm:flex-row gap-2.5">
               <a href="assets/logo.png" download="ระเบียบการรับสมัคร_2569.png" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-emerald-900 hover:bg-amber-100 rounded-xl text-xs font-bold transition shadow-sm">
@@ -964,60 +985,186 @@
           </div>
         </div>
 
-        <!-- ฝั่งขวา: ฟอร์มยื่นใบสมัครเรียนออนไลน์ ส่งตรงเข้า Google Drive ผ่าน GAS -->
+        <!-- ฝั่งขวา: ฟอร์มยื่นใบสมัคร & ตรวจสอบ/แก้ไขใบสมัครด้วยเลขบัตรประชาชน 13 หลัก -->
         <div class="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-lg">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
-            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>✍️</span> ฟอร์มยื่นใบสมัครเรียนออนไลน์
-            </h3>
-            <span class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full font-bold">ฟรี ไม่มีค่าสมัคร</span>
+          
+          <div id="adm-open-wrapper">
+            <!-- แท็บสลับ: สมัครใหม่ vs ตรวจสอบ/แก้ไขใบสมัคร -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200 mb-5">
+              <div class="flex gap-2 bg-slate-100 p-1.5 rounded-xl">
+                <button type="button" id="adm-tab-new-btn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-emerald-800 text-white shadow-sm transition flex items-center gap-1.5">
+                  <span>✍️</span> <span>ยื่นใบสมัครเรียนใหม่</span>
+                </button>
+                <button type="button" id="adm-tab-check-btn" class="px-3.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+                  <span>🔍</span> <span>ตรวจสอบ / แก้ไขใบสมัคร (เลขบัตร 13 หลัก)</span>
+                </button>
+              </div>
+              <span class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">ฟรี ไม่มีค่าสมัคร</span>
+            </div>
+
+            <!-- แท็บ 1: ฟอร์มยื่นใบสมัครเรียนใหม่ -->
+            <form id="online-admission-form" class="space-y-3.5 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ระดับชั้นที่ต้องการสมัครเรียน <span class="text-red-500">*</span></label>
+                <select id="adm-grade" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs bg-white font-semibold text-slate-800 focus:border-emerald-600 focus:outline-none">
+                  <optgroup label="ระดับการศึกษาปฐมวัย (อนุบาล)">
+                    <option value="อนุบาล 1 (อ.1)">ระดับชั้นอนุบาล 1 (อ.1)</option>
+                    <option value="อนุบาล 2 (อ.2)">ระดับชั้นอนุบาล 2 (อ.2)</option>
+                    <option value="อนุบาล 3 (อ.3)">ระดับชั้นอนุบาล 3 (อ.3)</option>
+                  </optgroup>
+                  <optgroup label="ระดับประถมศึกษา (ป.1 - ป.6)">
+                    <option value="ประถมศึกษาปีที่ 1 (หลักสูตรปกติ)" selected>ระดับชั้นประถมศึกษาปีที่ 1 (ป.1 หลักสูตรปกติ)</option>
+                    <option value="ประถมศึกษาปีที่ 1 (English Program - EP)">ระดับชั้นประถมศึกษาปีที่ 1 (ห้องเรียนพิเศษ English Program - EP)</option>
+                    <option value="ประถมศึกษาปีที่ 2 - 6 (ย้ายเข้า)">ระดับชั้นประถมศึกษาปีที่ 2 – 6 (ย้ายเข้าเรียน)</option>
+                  </optgroup>
+                  <optgroup label="ระดับมัธยมศึกษาตอนต้น (ม.1 - ม.3)">
+                    <option value="มัธยมศึกษาปีที่ 1 (ม.1)">ระดับชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
+                    <option value="มัธยมศึกษาปีที่ 2 - 3 (ย้ายเข้า)">ระดับชั้นมัธยมศึกษาปีที่ 2 – 3 (ย้ายเข้าเรียน)</option>
+                  </optgroup>
+                  <optgroup label="การศึกษาพิเศษ">
+                    <option value="การศึกษาพิเศษ (ห้องเรียนคู่ขนาน)">งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน IEP)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล นักเรียน <span class="text-red-500">*</span></label>
+                  <input type="text" id="adm-student-name" required placeholder="เช่น ด.ช. พงศกร มั่นคง" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">เลขประจำตัวประชาชนนักเรียน (13 หลัก) <span class="text-red-500">*</span></label>
+                  <input type="text" id="adm-citizen-id" required maxlength="13" pattern="\d{13}" placeholder="กรอกตัวเลข 13 หลัก (ใช้ตรวจสอบ/แก้ไขภายหลัง)" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none font-mono">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล ผู้ปกครอง <span class="text-red-500">*</span></label>
+                  <input type="text" id="adm-parent-name" required placeholder="เช่น นายสมศักดิ์ มั่นคง" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อผู้ปกครอง <span class="text-red-500">*</span></label>
+                  <input type="tel" id="adm-phone" required placeholder="เช่น 081-234-5678" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+                </div>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ที่อยู่ปัจจุบัน / โรงเรียนเดิม (สามารถแก้ไขเพิ่มเติมภายหลังได้)</label>
+                <input type="text" id="adm-address" placeholder="เช่น 99/1 แขวงบางชัน เขตคลองสามวา กทม. 10510" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">แนบไฟล์หลักฐานเบื้องต้น (สูติบัตร / ทะเบียนบ้าน / ปพ.1 - ไม่บังคับ)</label>
+                <input type="file" id="adm-file" accept="image/*,application/pdf" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
+                <span class="text-[10px] text-slate-400 mt-1 block">สามารถแนบไฟล์ตอนนี้ หรือนำเอกสารตัวจริงมายื่นที่โรงเรียนในวันที่ 15 – 20 มี.ค. 2569 ได้ครับ</span>
+              </div>
+
+              <button type="submit" id="adm-submit-btn" class="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+                <span id="adm-btn-text">✅ บันทึกและส่งใบสมัครเรียนออนไลน์</span>
+                <svg id="adm-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+              </button>
+            </form>
+
+            <!-- แท็บ 2: ค้นหา ตรวจสอบ แก้ไข และยืนยันใบสมัครจากเลขบัตรประชาชน 13 หลัก -->
+            <div id="adm-check-panel" class="hidden space-y-4 text-xs">
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                <label class="block font-bold text-slate-800">🔍 กรอกเลขประจำตัวประชาชนนักเรียน 13 หลัก เพื่อตรวจสอบหรือแก้ไขใบสมัคร:</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="text" id="adm-lookup-nid" maxlength="13" placeholder="กรอกเลขบัตรประชาชน 13 หลัก เช่น 1100401234567" class="flex-1 rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono focus:border-emerald-600 focus:outline-none bg-white">
+                  <button type="button" id="adm-lookup-btn" class="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm shrink-0">
+                    🔍 ค้นหาใบสมัคร
+                  </button>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500">
+                  <span>ต้องการทดสอบระบบค้นหา? กดปุ่มเติมเลขตัวอย่างได้ทันที:</span>
+                  <button type="button" id="adm-sample-nid-btn" class="text-emerald-700 font-bold hover:underline">⚡ ทดลองใช้เลขตัวอย่าง (1100401234567)</button>
+                </div>
+              </div>
+
+              <!-- กล่องแสดงผล/แก้ไขใบสมัครเมื่อค้นพบ -->
+              <div id="adm-edit-box" class="hidden bg-emerald-50/50 border-2 border-emerald-600 rounded-2xl p-5 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-emerald-200">
+                  <div>
+                    <span id="adm-found-code" class="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">รหัสใบสมัคร: BCS-69-1001</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">ข้อมูลใบสมัครเรียน (สามารถแก้ไขและกดยืนยันได้)</h4>
+                  </div>
+                  <span id="adm-found-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                    ⏳ รอยืนยันสิทธิ์
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="sm:col-span-2">
+                    <label class="block font-semibold text-slate-700 mb-1">ระดับชั้นที่สมัครเรียน</label>
+                    <select id="edit-adm-grade" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white font-semibold">
+                      <option value="อนุบาล 1 (อ.1)">ระดับชั้นอนุบาล 1 (อ.1)</option>
+                      <option value="อนุบาล 2 (อ.2)">ระดับชั้นอนุบาล 2 (อ.2)</option>
+                      <option value="อนุบาล 3 (อ.3)">ระดับชั้นอนุบาล 3 (อ.3)</option>
+                      <option value="ประถมศึกษาปีที่ 1 (หลักสูตรปกติ)">ระดับชั้นประถมศึกษาปีที่ 1 (ป.1 หลักสูตรปกติ)</option>
+                      <option value="ประถมศึกษาปีที่ 1 (English Program - EP)">ระดับชั้นประถมศึกษาปีที่ 1 (ห้องเรียนพิเศษ English Program - EP)</option>
+                      <option value="ประถมศึกษาปีที่ 2 - 6 (ย้ายเข้า)">ระดับชั้นประถมศึกษาปีที่ 2 – 6 (ย้ายเข้าเรียน)</option>
+                      <option value="มัธยมศึกษาปีที่ 1 (ม.1)">ระดับชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
+                      <option value="มัธยมศึกษาปีที่ 2 - 3 (ย้ายเข้า)">ระดับชั้นมัธยมศึกษาปีที่ 2 – 3 (ย้ายเข้าเรียน)</option>
+                      <option value="การศึกษาพิเศษ (ห้องเรียนคู่ขนาน)">งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน IEP)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล นักเรียน</label>
+                    <input type="text" id="edit-adm-name" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white">
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-700 mb-1">เลขประจำตัวประชาชน 13 หลัก</label>
+                    <input type="text" id="edit-adm-nid" disabled class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-slate-100 font-mono text-slate-500">
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล ผู้ปกครอง</label>
+                    <input type="text" id="edit-adm-parent" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white">
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์ผู้ปกครอง</label>
+                    <input type="tel" id="edit-adm-phone" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white">
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block font-semibold text-slate-700 mb-1">ที่อยู่ปัจจุบัน / ข้อมูลเพิ่มเติม</label>
+                    <input type="text" id="edit-adm-address" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white">
+                  </div>
+                </div>
+
+                <!-- แจ้งวันที่ต้องยื่นเอกสารตัวจริงและวันรายงานตัว -->
+                <div class="bg-white rounded-xl p-3.5 border border-emerald-200 space-y-1 text-[11px]">
+                  <div class="font-bold text-emerald-900">📌 กำหนดการยื่นเอกสารตัวจริงและรายงานตัวของคุณ:</div>
+                  <div class="text-slate-700">• <b>วันยื่นเอกสารตัวจริงที่โรงเรียน:</b> 15 – 20 มีนาคม 2569 (08.30 – 15.30 น. ห้องธุรการ อาคาร 1)</div>
+                  <div class="text-slate-700">• <b>วันรายงานตัวและมอบตัวนักเรียน:</b> 28 มีนาคม 2569 (09.00 น. หอประชุมโรงเรียนบางชัน)</div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-1">
+                  <button type="button" id="save-edit-adm-btn" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition shadow-sm">
+                    💾 บันทึกการแก้ไขข้อมูล
+                  </button>
+                  <button type="button" id="confirm-adm-btn" class="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl transition shadow-sm">
+                    ✅ ยืนยันการสมัครเรียน
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- กล่องใบเสร็จ/ใบยืนยันการสมัครหลังส่งสำเร็จ -->
+            <div id="adm-receipt-box" class="hidden mt-4 bg-emerald-900 text-white rounded-2xl p-6 border-2 border-amber-400 space-y-3 text-xs">
+              <div class="flex items-center justify-between border-b border-emerald-700 pb-3">
+                <span class="font-black text-amber-300 text-sm">🎉 บันทึกใบสมัครเรียนออนไลน์เรียบร้อยแล้ว</span>
+                <span id="receipt-code" class="bg-amber-400 text-slate-950 font-mono font-bold px-2.5 py-0.5 rounded-full text-[11px]">BCS-69-XXXX</span>
+              </div>
+              <div id="receipt-details" class="space-y-1 text-emerald-50"></div>
+              <div class="bg-slate-950/60 p-3.5 rounded-xl border border-amber-400/40 space-y-1 text-[11px]">
+                <div class="font-bold text-amber-300">📅 ขั้นตอนต่อไป (กรุณานำเอกสารตัวจริงมายื่นที่โรงเรียน):</div>
+                <div>1. <b>ยื่นเอกสารตัวจริง (สูติบัตร/ทะเบียนบ้าน/ปพ.1):</b> วันที่ 15 – 20 มีนาคม 2569 ณ ห้องธุรการ อาคาร 1</div>
+                <div>2. <b>วันรายงานตัวและมอบตัวนักเรียน:</b> วันที่ 28 มีนาคม 2569 เวลา 09.00 น. ณ หอประชุมโรงเรียนบางชัน</div>
+                <div class="text-amber-200 pt-1">* ท่านสามารถใช้เลขบัตรประชาชน 13 หลัก เข้ามาตรวจสอบหรือแก้ไขข้อมูลได้ตลอดเวลาในแท็บ "ตรวจสอบ/แก้ไขใบสมัคร"</div>
+              </div>
+            </div>
           </div>
 
-          <form id="online-admission-form" class="space-y-3.5 text-xs">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">ระดับชั้นที่ต้องการสมัคร</label>
-              <select id="adm-grade" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs bg-white font-medium focus:border-emerald-600 focus:outline-none">
-                <option value="ปฐมวัย (อนุบาล 1-3)">ระดับชั้นปฐมวัย (อนุบาล 1 - 3)</option>
-                <option value="ประถมศึกษาปีที่ 1 (ป.1 ปกติ)" selected>ระดับชั้นประถมศึกษาปีที่ 1 (ป.1 ปกติ)</option>
-                <option value="ประถมศึกษาปีที่ 1 (English Program EP)">ระดับชั้นประถมศึกษาปีที่ 1 (English Program - EP)</option>
-                <option value="มัธยมศึกษาปีที่ 1 (ม.1)">ระดับชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
-                <option value="ย้ายเข้าเรียนระหว่างปีการศึกษา">ย้ายเข้าเรียนระหว่างปีการศึกษา (ป.2 - ป.6 / ม.2 - ม.3)</option>
-              </select>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล นักเรียน</label>
-                <input type="text" id="adm-student-name" required placeholder="เช่น ด.ช. พงศกร มั่นคง" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">เลขประจำตัวประชาชน 13 หลัก</label>
-                <input type="text" id="adm-citizen-id" required maxlength="13" placeholder="เลข 13 หลัก" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none font-mono">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล ผู้ปกครอง</label>
-                <input type="text" id="adm-parent-name" required placeholder="เช่น นายสมศักดิ์ มั่นคง" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อผู้ปกครอง</label>
-                <input type="tel" id="adm-phone" required placeholder="เช่น 081-234-5678" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">แนบไฟล์หลักฐาน (สูติบัตร หรือ สำเนาทะเบียนบ้าน)</label>
-              <input type="file" id="adm-file" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
-              <span class="text-[10px] text-slate-400 mt-1 block">ไฟล์จะถูกส่งไปเก็บยัง Google Drive ของโรงเรียนอย่างปลอดภัย</span>
-            </div>
-
-            <button type="submit" id="adm-submit-btn" class="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
-              <span id="adm-btn-text">ส่งใบสมัครเรียนออนไลน์</span>
-              <svg id="adm-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
-            </button>
-          </form>
         </div>
 
       </div>
