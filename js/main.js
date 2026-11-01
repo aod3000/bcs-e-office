@@ -428,43 +428,88 @@ function initCarousel() {
 }
 
 /* ---------- ตรวจสอบสถานะเปิด/ปิดรับสมัครเรียนบนหน้าแรก ---------- */
-function checkAdmissionsStatusOnHomepage() {
+async function checkAdmissionsStatusOnHomepage() {
   const section = document.getElementById('admissions');
   if (!section) return;
 
-  const status = localStorage.getItem('bcs_admissions_status') || 'open';
-  const form = document.getElementById('online-admission-form');
-  const submitBtn = document.getElementById('adm-submit-btn');
+  function applyAdmissionsUI(status) {
+    const isClosed = status === 'closed';
+    const formContainer = section.querySelector('.lg\\:col-span-7');
+    const badgeContainer = section.querySelector('.lg\\:col-span-5 .inline-flex');
 
-  let noticeEl = document.getElementById('adm-closed-notice');
+    if (badgeContainer) {
+      if (isClosed) {
+        badgeContainer.className = 'inline-flex items-center gap-2 bg-red-600 text-white px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow';
+        badgeContainer.innerHTML = '<span>🔒</span> ปิดระบบรับสมัครชั่วคราว';
+      } else {
+        badgeContainer.className = 'inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider';
+        badgeContainer.innerHTML = '<span>📢</span> เปิดรับสมัครปีการศึกษา 2569';
+      }
+    }
 
-  if (status === 'closed') {
-    if (!noticeEl) {
-      noticeEl = document.createElement('div');
-      noticeEl.id = 'adm-closed-notice';
-      noticeEl.className = 'p-5 mb-5 rounded-2xl bg-amber-400 text-slate-950 font-bold text-center border-2 border-amber-300 shadow-md text-xs sm:text-sm leading-relaxed';
-      noticeEl.innerHTML = '🔒 <span>ขณะนี้ระบบรับสมัครเรียนออนไลน์ปิดรับสมัครชั่วคราว หรือสิ้นสุดระยะเวลารับสมัครประจำปีการศึกษา 2569 แล้ว หากมีข้อสงสัยกรุณาติดต่อห้องธุรการโรงเรียน โทร. 02-517-1423</span>';
-      if (form) form.parentNode.insertBefore(noticeEl, form);
-    }
-    if (form) {
-      form.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
-      form.classList.add('opacity-50', 'pointer-events-none');
-    }
-    if (submitBtn) {
-      const btnText = document.getElementById('adm-btn-text');
-      if (btnText) btnText.textContent = '🔒 ปิดรับสมัครเรียนชั่วคราว';
-    }
-  } else {
-    if (noticeEl) noticeEl.remove();
-    if (form) {
-      form.querySelectorAll('input, select, button').forEach(el => el.disabled = false);
-      form.classList.remove('opacity-50', 'pointer-events-none');
-    }
-    if (submitBtn) {
-      const btnText = document.getElementById('adm-btn-text');
-      if (btnText) btnText.textContent = 'ส่งใบสมัครเรียนออนไลน์';
+    if (formContainer) {
+      let closedCard = document.getElementById('adm-closed-card');
+      const form = document.getElementById('online-admission-form');
+
+      if (isClosed) {
+        if (form) form.classList.add('hidden');
+        if (!closedCard) {
+          closedCard = document.createElement('div');
+          closedCard.id = 'adm-closed-card';
+          closedCard.className = 'bg-slate-950/95 border-2 border-amber-400 rounded-2xl p-8 sm:p-12 text-center text-white shadow-xl flex flex-col items-center justify-center';
+          closedCard.innerHTML = `
+            <div class="w-16 h-16 rounded-full bg-red-600/20 text-red-400 grid place-items-center text-3xl mb-4 border border-red-500/30">
+              🔒
+            </div>
+            <h3 class="text-xl sm:text-2xl font-black text-amber-300 mb-2">ระบบรับสมัครเรียนออนไลน์ปิดชั่วคราว</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md font-light mb-6">
+              ขณะนี้ปิดรับสมัครนักเรียนใหม่ประจำปีการศึกษา 2569 ชั่วคราว หรือสิ้นสุดระยะเวลาการยื่นใบสมัครออนไลน์แล้ว<br>
+              หากผู้ปกครองมีข้อสงสัยหรือต้องการติดต่อขอยื่นเอกสารตัวจริง กรุณาติดต่อห้องธุรการโรงเรียน
+            </p>
+            <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 rounded-xl text-xs text-amber-300 font-bold border border-white/20 shadow">
+              <span>📞</span> ติดต่อธุรการ: 02-517-1423 (วันและเวลาราชการ)
+            </div>
+          `;
+          formContainer.appendChild(closedCard);
+        } else {
+          closedCard.classList.remove('hidden');
+        }
+      } else {
+        if (closedCard) closedCard.classList.add('hidden');
+        if (form) form.classList.remove('hidden');
+      }
     }
   }
+
+  // 1) อ่านค่าเริ่มต้นจาก LocalStorage
+  const localStatus = localStorage.getItem('bcs_admissions_status') || 'open';
+  applyAdmissionsUI(localStatus);
+
+  // 2) ดึงค่าสถานะล่าสุดจาก Supabase site_settings (ตารางกลาง)
+  if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+    try {
+      const { data } = await getSupabase()
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'admissions')
+        .maybeSingle();
+
+      if (data && data.value) {
+        const remoteStatus = data.value.is_open === false ? 'closed' : 'open';
+        localStorage.setItem('bcs_admissions_status', remoteStatus);
+        applyAdmissionsUI(remoteStatus);
+      }
+    } catch (e) {
+      console.warn('โหลดสถานะรับสมัครจาก Supabase:', e);
+    }
+  }
+
+  // 3) ตัวดักฟังการเปลี่ยนแปลงสถานะข้ามหน้าต่าง (Cross-Tab Sync)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'bcs_admissions_status') {
+      applyAdmissionsUI(e.newValue || 'open');
+    }
+  });
 }
 
 /* ---------- ตรวจสอบประกาศด่วนจากระบบหลังบ้าน CMS ---------- */

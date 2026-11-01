@@ -89,6 +89,9 @@
       <button data-tab-target="tab-onepage" class="admin-tab-btn px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
         <span>📄</span> รายงานหน้าเดียว
       </button>
+      <button data-tab-target="tab-grading" class="admin-tab-btn px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
+        <span>✏️</span> ตรวจข้อสอบ & ชิ้นงาน
+      </button>
       <button data-tab-target="tab-tasks" class="admin-tab-btn px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5">
         <span>📋</span> ตรวจงาน
       </button>
@@ -516,6 +519,86 @@
 
         </div>
 
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB: ระบบตรวจข้อสอบ & ชิ้นงานนักเรียน (Exam & Assignment Grading) -->
+    <!-- ============================================================== -->
+    <section id="tab-grading" class="admin-tab-content hidden space-y-6">
+      
+      <!-- Grading Summary Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center">
+          <span class="text-xs text-slate-500 font-medium">📝 ชิ้นงาน/ข้อสอบทั้งหมด</span>
+          <div id="stat-grading-total" class="text-2xl font-black text-slate-900 mt-1">24 รายการ</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-amber-200 bg-amber-50/30 shadow-sm text-center">
+          <span class="text-xs text-amber-700 font-medium">⏳ รอตรวจ</span>
+          <div id="stat-grading-pending" class="text-2xl font-black text-amber-600 mt-1">8 รายการ</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-emerald-200 bg-emerald-50/30 shadow-sm text-center">
+          <span class="text-xs text-emerald-700 font-medium">✅ ตรวจแล้ว</span>
+          <div id="stat-grading-graded" class="text-2xl font-black text-emerald-700 mt-1">16 รายการ</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-blue-200 bg-blue-50/30 shadow-sm text-center">
+          <span class="text-xs text-blue-700 font-medium">📊 คะแนนเฉลี่ย</span>
+          <div id="stat-grading-avg" class="text-2xl font-black text-blue-700 mt-1">82.5%</div>
+        </div>
+      </div>
+
+      <!-- Main Grading Card -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>✏️</span> ระบบตรวจข้อสอบ แบบทดสอบ และชิ้นงานนักเรียน
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">ครูผู้สอนสามารถตรวจให้คะแนนแบบทดสอบออนไลน์ ใส่คำแนะนำ และส่งผลคะแนนให้นักเรียนดูผ่าน Student Portal</p>
+          </div>
+
+          <!-- Filters -->
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="grade-filter-subject" class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-600">
+              <option value="all">ทุกรายวิชา</option>
+              <option value="math">คณิตศาสตร์</option>
+              <option value="sci">วิทยาศาสตร์และเทคโนโลยี</option>
+              <option value="eng">ภาษาอังกฤษ (EP)</option>
+              <option value="thai">ภาษาไทย</option>
+              <option value="soc">สังคมศึกษา</option>
+              <option value="art">ศิลปะ & ดนตรี</option>
+            </select>
+
+            <select id="grade-filter-class" class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-600">
+              <option value="all">ทุกห้องเรียน</option>
+              <option value="ป.1/1">ป.1/1</option>
+              <option value="ป.1/2">ป.1/2</option>
+              <option value="ป.1/9">ป.1/9 (EP)</option>
+              <option value="ม.1/1">ม.1/1</option>
+              <option value="ม.1/7">ม.1/7</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Grading Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
+              <tr>
+                <th class="py-3 px-4">นักเรียนผู้ส่ง</th>
+                <th class="py-3 px-4">ชื่อแบบทดสอบ / ชิ้นงาน</th>
+                <th class="py-3 px-4">ไฟล์ส่งงาน (Drive)</th>
+                <th class="py-3 px-4">คะแนนที่ได้ (/100)</th>
+                <th class="py-3 px-4">คำแนะนำ/ข้อเสนอแนะครู</th>
+                <th class="py-3 px-4 text-center">สถานะ</th>
+                <th class="py-3 px-4 text-right">ดำเนินการ</th>
+              </tr>
+            </thead>
+            <tbody id="grading-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 

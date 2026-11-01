@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAdmissionsToggleModule();
   initDatabaseBackupRestoreModule();
   initUrgentAnnouncementCms();
+  initGradingModule();
 });
 
 /* =====================================================================
@@ -304,13 +305,16 @@ function renderUsersTable(users) {
           `}
         </td>
 
-        <!-- ปุ่มบันทึก -->
-        <td class="py-3 px-4 text-right">
+        <!-- ปุ่มดำเนินการ -->
+        <td class="py-3 px-4 text-right whitespace-nowrap">
           ${isSuperAdmin ? `
             <span class="text-xs text-slate-400">ระบบคุ้มครอง</span>
           ` : `
-            <button onclick="saveUserProfile('${user.id}')" class="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+            <button onclick="saveUserProfile('${user.id}')" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition mr-1">
               💾 บันทึก
+            </button>
+            <button onclick="deleteUserProfile('${user.id}')" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-semibold shadow-sm transition" title="ลบผู้ใช้งาน">
+              🗑️ ลบ
             </button>
           `}
         </td>
@@ -374,6 +378,41 @@ window.saveUserProfile = async function(userId) {
   } catch (err) {
     console.error('บันทึกสิทธิ์ล้มเหลว', err);
     showToast('❌ บันทึกสิทธิ์ล้มเหลว: ' + err.message, 'error');
+  }
+};
+
+/** ลบผู้ใช้งานออกจากระบบและฐานข้อมูล */
+window.deleteUserProfile = async function(userId) {
+  const target = allUsers.find(u => u.id === userId);
+  if (!target) return;
+
+  const isSuperAdmin = target.email && target.email.toLowerCase() === 'admin@bcs.ac.th';
+  if (isSuperAdmin) {
+    alert('ไม่สามารถลบบัญชี SuperAdmin ได้ เนื่องจากเป็นผู้ดูแลระบบหลัก');
+    return;
+  }
+
+  const name = target.full_name || target.email;
+  if (!confirm(`คุณต้องการลบผู้ใช้งาน "${name}" (${target.email}) ออกจากระบบและฐานข้อมูลใช่หรือไม่?\nการกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+    return;
+  }
+
+  try {
+    if (window.supabase && isSupabaseConfigured() && !String(userId).startsWith('import-')) {
+      const { error } = await getSupabase()
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+      if (error) throw error;
+    }
+
+    allUsers = allUsers.filter(u => u.id !== userId);
+    renderUsersTable(allUsers);
+    updateUserStats(allUsers);
+    showToast(`🗑️ ลบผู้ใช้งาน "${name}" ออกจากระบบเรียบร้อยแล้ว`);
+  } catch (err) {
+    console.error('ลบผู้ใช้ล้มเหลว', err);
+    alert('❌ ลบผู้ใช้งานไม่สำเร็จ: ' + err.message);
   }
 };
 
@@ -1267,6 +1306,7 @@ function initCsvAndIndividualCrud() {
         if (lines.length <= 1) throw new Error('ไฟล์ CSV ว่างเปล่า หรือไม่มีข้อมูลแถว');
 
         let added = 0;
+        const newUsersToSave = [];
         for (let i = 1; i < lines.length; i++) {
           const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
           if (cols.length >= 2 && cols[1]) {
@@ -1278,22 +1318,38 @@ function initCsvAndIndividualCrud() {
 
             const existing = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
             if (!existing) {
-              allUsers.push({
+              const newUser = {
                 id: 'import-' + Date.now() + '-' + i,
                 full_name: fullName,
                 email: email,
                 role: role,
                 is_active: isActive,
                 departments: { id: 1, name: deptStr }
+              };
+              allUsers.push(newUser);
+              newUsersToSave.push({
+                email: email,
+                full_name: fullName,
+                role: role,
+                is_active: isActive
               });
               added++;
             }
           }
         }
 
+        // บันทึกลง Supabase profiles (SQL Database) จริงทันที
+        if (window.supabase && isSupabaseConfigured() && newUsersToSave.length > 0) {
+          try {
+            await getSupabase().from('profiles').upsert(newUsersToSave, { onConflict: 'email' });
+          } catch (dbErr) {
+            console.warn('บันทึกบุคลากรลง Supabase:', dbErr);
+          }
+        }
+
         renderUsersTable(allUsers);
         updateUserStats(allUsers);
-        showToast(`📥 นำเข้าบุคลากร ${added} ท่านจาก CSV สำเร็จ`);
+        showToast(`📥 นำเข้าและบันทึกบุคลากร ${added} ท่านลงฐานข้อมูล SQL สำเร็จ`);
       } catch (err) {
         alert('❌ นำเข้าไฟล์ CSV บุคลากรไม่สำเร็จ: ' + err.message);
       }
@@ -1844,6 +1900,194 @@ function initUrgentAnnouncementCms() {
     localStorage.setItem('bcs_urgent_announcement', JSON.stringify(payload));
     showToast('📢 บันทึกการตั้งค่าประกาศด่วนหน้าเว็บสำเร็จ');
   });
+}
+
+/* =====================================================================
+   17. EXAM & ASSIGNMENT GRADING MODULE (ตรวจข้อสอบ & ชิ้นงานนักเรียน)
+   ===================================================================== */
+const MOCK_SUBMISSIONS = [
+  {
+    id: 1,
+    student_code: 'BCS-6901',
+    student_name: 'ด.ช. ภูมิพัฒน์ สุขใจ',
+    class_room: 'ป.1/1',
+    subject: 'math',
+    subject_name: 'คณิตศาสตร์',
+    title: 'แบบฝึกหัดที่ 3: การบวกและการลบระคน',
+    submitted_at: '1 พ.ย. 2569 13:40 น.',
+    file_url: 'https://drive.google.com',
+    file_name: 'ใบงานคณิตศาสตร์_BCS6901.pdf',
+    score: null,
+    feedback: '',
+    status: 'pending'
+  },
+  {
+    id: 2,
+    student_code: 'BCS-6902',
+    student_name: 'ด.ช. ณภัทร ภักดี',
+    class_room: 'ป.1/1',
+    subject: 'sci',
+    subject_name: 'วิทยาศาสตร์และเทคโนโลยี',
+    title: 'ใบงานการทดลอง: ส่วนประกอบของพืชรอบตัว',
+    submitted_at: '1 พ.ย. 2569 14:15 น.',
+    file_url: 'https://drive.google.com',
+    file_name: 'การทดลองพืช_BCS6902.jpg',
+    score: 95,
+    feedback: 'อธิบายขั้นตอนการทดลองและวาดภาพประกอบได้ดีเยี่ยมมาก',
+    status: 'graded'
+  },
+  {
+    id: 3,
+    student_code: 'BCS-6911',
+    student_name: 'ด.ช. ธนกร มงคลชัย',
+    class_room: 'ป.1/2',
+    subject: 'eng',
+    subject_name: 'ภาษาอังกฤษ (EP)',
+    title: 'Midterm Quiz: Daily Conversations & Vocabulary',
+    submitted_at: '1 พ.ย. 2569 15:00 น.',
+    file_url: 'https://drive.google.com',
+    file_name: 'Quiz_English_BCS6911.pdf',
+    score: null,
+    feedback: '',
+    status: 'pending'
+  },
+  {
+    id: 4,
+    student_code: 'BCS-6921',
+    student_name: 'ด.ช. เคนจิ ทาคูมิ',
+    class_room: 'ป.1/9',
+    subject: 'eng',
+    subject_name: 'ภาษาอังกฤษ (EP)',
+    title: 'English Story Writing & Speaking Recording',
+    submitted_at: '1 พ.ย. 2569 15:30 น.',
+    file_url: 'https://drive.google.com',
+    file_name: 'Kenji_StoryWriting.pdf',
+    score: 98,
+    feedback: 'Excellent grammar and vocabulary usage!',
+    status: 'graded'
+  }
+];
+
+function initGradingModule() {
+  const tbody = document.getElementById('grading-table-body');
+  const subjectFilter = document.getElementById('grade-filter-subject');
+  const classFilter = document.getElementById('grade-filter-class');
+  if (!tbody) return;
+
+  function renderGradingTable() {
+    const subVal = subjectFilter ? subjectFilter.value : 'all';
+    const classVal = classFilter ? classFilter.value : 'all';
+
+    const list = MOCK_SUBMISSIONS.filter(s => {
+      if (subVal !== 'all' && s.subject !== subVal) return false;
+      if (classVal !== 'all' && s.class_room !== classVal) return false;
+      return true;
+    });
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">ไม่พบรายการส่งข้อสอบหรือชิ้นงานตามเงื่อนไขที่เลือก</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(item => `
+      <tr class="hover:bg-slate-50 transition" data-submission-id="${item.id}">
+        <td class="py-3 px-4 font-bold text-slate-800">
+          ${escapeHtml(item.student_name)}
+          <div class="text-[10px] text-slate-400 font-mono">${escapeHtml(item.student_code)} (${escapeHtml(item.class_room)})</div>
+        </td>
+        <td class="py-3 px-4">
+          <div class="font-semibold text-slate-800">${escapeHtml(item.title)}</div>
+          <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] mt-0.5">${escapeHtml(item.subject_name)}</span>
+        </td>
+        <td class="py-3 px-4">
+          <a href="${item.file_url}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 font-semibold hover:underline">
+            <span>📂</span> <span>${escapeHtml(item.file_name || 'เปิดดูไฟล์')}</span>
+          </a>
+          <div class="text-[10px] text-slate-400 mt-0.5">${item.submitted_at}</div>
+        </td>
+        <td class="py-3 px-4">
+          <input type="number" min="0" max="100" value="${item.score !== null ? item.score : ''}" placeholder="คะแนน..." class="grade-score-input w-24 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-900 focus:border-emerald-600 focus:outline-none">
+        </td>
+        <td class="py-3 px-4">
+          <input type="text" value="${escapeHtml(item.feedback || '')}" placeholder="คำแนะนำครูผู้ตรวจ..." class="grade-feedback-input w-full min-w-[160px] rounded-xl border border-slate-200 px-3 py-1.5 text-xs text-slate-700 focus:border-emerald-600 focus:outline-none">
+        </td>
+        <td class="py-3 px-4 text-center">
+          ${item.status === 'graded' ? `
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">🟢 ตรวจแล้ว</span>
+          ` : `
+            <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-bold text-[10px]">⏳ รอตรวจ</span>
+          `}
+        </td>
+        <td class="py-3 px-4 text-right">
+          <button onclick="saveGradingResult(${item.id})" class="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+            ✅ บันทึกผล
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    updateGradingStats();
+  }
+
+  function updateGradingStats() {
+    const total = MOCK_SUBMISSIONS.length;
+    const graded = MOCK_SUBMISSIONS.filter(s => s.status === 'graded').length;
+    const pending = total - graded;
+    const gradedItems = MOCK_SUBMISSIONS.filter(s => s.score !== null);
+    const avg = gradedItems.length ? (gradedItems.reduce((acc, s) => acc + s.score, 0) / gradedItems.length).toFixed(1) : 0;
+
+    const elTotal = document.getElementById('stat-grading-total');
+    const elPending = document.getElementById('stat-grading-pending');
+    const elGraded = document.getElementById('stat-grading-graded');
+    const elAvg = document.getElementById('stat-grading-avg');
+
+    if (elTotal) elTotal.textContent = `${total} รายการ`;
+    if (elPending) elPending.textContent = `${pending} รายการ`;
+    if (elGraded) elGraded.textContent = `${graded} รายการ`;
+    if (elAvg) elAvg.textContent = `${avg}%`;
+  }
+
+  window.saveGradingResult = async function(id) {
+    const item = MOCK_SUBMISSIONS.find(s => s.id === id);
+    if (!item) return;
+
+    const row = document.querySelector(`tr[data-submission-id="${id}"]`);
+    if (!row) return;
+
+    const scoreInput = row.querySelector('.grade-score-input');
+    const feedbackInput = row.querySelector('.grade-feedback-input');
+
+    const scoreVal = scoreInput && scoreInput.value ? parseFloat(scoreInput.value) : null;
+    const feedbackVal = feedbackInput ? feedbackInput.value.trim() : '';
+
+    if (scoreVal === null || isNaN(scoreVal)) {
+      alert('กรุณากรอกคะแนนที่ได้ (0 - 100)');
+      return;
+    }
+
+    item.score = scoreVal;
+    item.feedback = feedbackVal;
+    item.status = 'graded';
+
+    // บันทึกลง Supabase student_submissions ถ้าออนไลน์
+    if (window.supabase && isSupabaseConfigured()) {
+      try {
+        await getSupabase().from('student_submissions').update({
+          score: scoreVal,
+          feedback: feedbackVal,
+          status: 'graded'
+        }).eq('id', id);
+      } catch (e) {}
+    }
+
+    renderGradingTable();
+    showToast(`✅ บันทึกคะแนน ${scoreVal}/100 ให้นักเรียน ${item.student_name} สำเร็จแล้ว`);
+  };
+
+  if (subjectFilter) subjectFilter.addEventListener('change', renderGradingTable);
+  if (classFilter) classFilter.addEventListener('change', renderGradingTable);
+
+  renderGradingTable();
 }
 
 function showToast(message, type = 'success') {
