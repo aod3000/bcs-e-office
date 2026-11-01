@@ -47,7 +47,34 @@ body {
 .announce-widget.is-entering { animation: widget-in 0.5s ease both; }
 @keyframes widget-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ล็อกการเลื่อนหน้าเว็บหลักขณะเปิด Slide-over */
+/* ---------- สไตล์เส้นขอบสีใต้การ์ด 7 เมนูด่วน (Quick Action Cards) ---------- */
+.card-border-blue    { border-bottom: 4px solid #2563eb; }
+.card-border-amber   { border-bottom: 4px solid #f59e0b; }
+.card-border-emerald { border-bottom: 4px solid #10b981; }
+.card-border-purple  { border-bottom: 4px solid #8b5cf6; }
+.card-border-sky     { border-bottom: 4px solid #0284c7; }
+.card-border-orange  { border-bottom: 4px solid #ea580c; }
+.card-border-yellow  { border-bottom: 4px solid #eab308; }
+
+/* ---------- Staff Popup Modal ---------- */
+.modal-backdrop {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+.modal-box {
+  transform: scale(0.92) translateY(10px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+.modal-backdrop.open .modal-box {
+  transform: scale(1) translateY(0);
+}
+
+/* ล็อกการเลื่อนหน้าเว็บหลักขณะเปิด Slide-over หรือ Modal */
 body.no-scroll { overflow: hidden; }
 
 /* ---------- เมนูมือถือ ---------- */

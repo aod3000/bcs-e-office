@@ -9,7 +9,140 @@ document.addEventListener('DOMContentLoaded', () => {
   initDropdown();
   initAnnounceWidget();
   initSlideOver();
+  initStaffModal();
+  initGalleryFilter();
+  initNavDropdowns();
 });
+
+/* ---------- ทำเนียบบุคลากร Popup Modal ---------- */
+function initStaffModal() {
+  const modal = document.getElementById('staff-modal');
+  const closeBtn = document.getElementById('staff-modal-close');
+  if (!modal || !closeBtn) return;
+
+  // ผูกคลิกกับการ์ดบุคลากร
+  document.querySelectorAll('[data-staff-id]').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = parseInt(card.dataset.staffId, 10);
+      openStaffModal(id);
+    });
+  });
+
+  const closeModal = () => {
+    modal.classList.remove('open');
+    document.body.classList.remove('no-scroll');
+  };
+
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+}
+
+/** เปิด Modal แสดงรายละเอียดบุคลากรและโซเชียลมีเดีย */
+function openStaffModal(id) {
+  if (typeof STAFF_DATA === 'undefined') return;
+  const staff = STAFF_DATA.find(s => s.id === id);
+  const modal = document.getElementById('staff-modal');
+  if (!staff || !modal) return;
+
+  document.getElementById('staff-modal-header-name').textContent = staff.name;
+  document.getElementById('staff-modal-name').textContent = staff.name;
+  document.getElementById('staff-modal-pos').textContent = staff.position;
+  document.getElementById('staff-modal-dept').textContent = staff.department;
+
+  const avatarContainer = document.getElementById('staff-modal-avatar');
+  if (staff.image) {
+    avatarContainer.innerHTML = `<img src="${staff.image}" alt="${staff.name}" class="h-28 w-28 rounded-full object-cover shadow-inner ring-4 ring-slate-100">`;
+  } else {
+    avatarContainer.innerHTML = `
+      <div class="grid place-items-center h-28 w-28 rounded-full bg-slate-100 text-slate-400 ring-4 ring-slate-50 shadow-inner">
+        <svg class="w-14 h-14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>`;
+  }
+
+  // แสดงช่องทางโซเชียลมีเดียหลากหลายช่องทาง
+  const socialsContainer = document.getElementById('staff-modal-socials');
+  socialsContainer.innerHTML = '';
+  if (staff.socials && staff.socials.length > 0) {
+    staff.socials.forEach(item => {
+      const a = document.createElement('a');
+      a.href = item.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = `flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-xl border text-sm font-medium transition-all duration-300 shadow-sm ${item.color}`;
+      
+      let icon = '🔗';
+      if (item.type === 'facebook') icon = '🔵 Facebook';
+      else if (item.type === 'line') icon = '🟢 LINE';
+      else if (item.type === 'email') icon = '✉️ อีเมล';
+      else if (item.type === 'phone') icon = '📞 โทรศัพท์';
+      
+      a.innerHTML = `<span>${icon}</span> <span class="truncate">${item.label}</span>`;
+      socialsContainer.appendChild(a);
+    });
+  } else {
+    socialsContainer.innerHTML = '<p class="text-sm text-slate-400 text-center py-2">ไม่มีข้อมูลช่องทางติดต่อเพิ่มเติม</p>';
+  }
+
+  modal.classList.add('open');
+  document.body.classList.add('no-scroll');
+}
+
+/* ---------- ตัวกรองภาพกิจกรรม (Gallery Filter) ---------- */
+function initGalleryFilter() {
+  const filterBtns = document.querySelectorAll('[data-gallery-filter]');
+  const galleryItems = document.querySelectorAll('[data-gallery-category]');
+  if (!filterBtns.length || !galleryItems.length) return;
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.classList.remove('bg-blue-900', 'text-white', 'shadow-sm');
+        b.classList.add('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+      });
+      btn.classList.add('bg-blue-900', 'text-white', 'shadow-sm');
+      btn.classList.remove('bg-white', 'text-slate-600', 'hover:bg-slate-50');
+
+      const filter = btn.dataset.galleryFilter;
+      galleryItems.forEach(item => {
+        if (filter === 'all' || item.dataset.galleryCategory === filter) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    });
+  });
+}
+
+/* ---------- ควบคุม Navbar Dropdowns ทั้งหมด ---------- */
+function initNavDropdowns() {
+  document.querySelectorAll('[data-dropdown-toggle]').forEach(toggle => {
+    const targetId = toggle.dataset.dropdownToggle;
+    const menu = document.getElementById(targetId);
+    if (!menu) return;
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = !menu.classList.contains('hidden');
+      closeAllDropdowns();
+      if (!isOpen) menu.classList.remove('hidden');
+    });
+  });
+
+  document.addEventListener('click', closeAllDropdowns);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllDropdowns();
+  });
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.add('hidden'));
+}
 
 /* ---------- Slide-over Panel: รายละเอียดประกาศและข่าวสาร ---------- */
 /* ข้อมูลตัวอย่าง (ยังไม่มีข้อมูลจริง) รูปปกใช้ gradient ชั่วคราว */
