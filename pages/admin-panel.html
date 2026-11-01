@@ -747,6 +747,74 @@
         </div>
 
       </div>
+
+      <!-- ส่วนจัดการประกาศข่าวประชาสัมพันธ์ (เพิ่มได้หลายรายการ ไม่จำกัดจำนวน) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-4">
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-amber-300/80 space-y-4">
+          <div class="pb-2 border-b border-slate-200">
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <span>📢</span> เพิ่มประกาศข่าวประชาสัมพันธ์ (หลายรายการ)
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">สามารถเพิ่มประกาศข่าวสารโรงเรียนได้หลายหัวข้อ ไม่จำกัดจำนวน และแสดงบนหน้าแรกทันที</p>
+          </div>
+
+          <form id="news-announce-form" class="space-y-3.5 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">หัวข้อประกาศข่าว <span class="text-red-500">*</span></label>
+              <input type="text" id="news-item-title" required placeholder="เช่น ประกาศกำหนดการสอบปลายภาคเรียนที่ 1/2569" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs focus:border-emerald-600 focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">หมวดหมู่ประกาศ</label>
+                <select id="news-item-badge" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white font-semibold">
+                  <option value="ประชาสัมพันธ์">📢 ประชาสัมพันธ์</option>
+                  <option value="วิชาการ">📚 วิชาการ</option>
+                  <option value="รับสมัครเรียน">📝 รับสมัครเรียน</option>
+                  <option value="ผลงาน">🏆 ผลงานและรางวัล</option>
+                  <option value="ประกาศด่วน">🚨 ประกาศด่วน</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">วันที่แสดงผล</label>
+                <input type="text" id="news-item-date" placeholder="เช่น 2 พ.ย. 2569" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">รายละเอียดเนื้อหาข่าว <span class="text-red-500">*</span></label>
+              <textarea id="news-item-content" rows="3" required placeholder="ระบุรายละเอียดเนื้อหาประกาศ (เมื่อคลิกที่ข่าวบนหน้าแรกจะเปิดอ่านเนื้อหาฉบับเต็มได้)..." class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">แนบไฟล์รูปภาพหรือเอกสาร PDF (ไม่บังคับ - อัปโหลดเข้า Google Drive)</label>
+              <input type="file" id="news-item-file" accept="image/*,application/pdf" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-900 hover:file:bg-amber-100">
+            </div>
+
+            <label class="flex items-center gap-2 pt-1 cursor-pointer">
+              <input type="checkbox" id="news-item-pin-urgent" class="rounded text-emerald-700">
+              <span class="font-bold text-slate-700">📌 ตั้งเป็นประกาศด่วนแจ้งเตือนมุมขวาล่างหน้าแรกด้วย</span>
+            </label>
+
+            <button type="submit" id="news-item-submit-btn" class="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl font-bold shadow transition flex items-center justify-center gap-2">
+              <span>➕</span> <span id="news-item-btn-text">เพิ่มประกาศข่าวขึ้นหน้าเว็บไซต์</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">รายการประกาศข่าวทั้งหมดบนหน้าแรก (<span id="admin-news-count">0</span> รายการ)</h3>
+              <p class="text-xs text-slate-400">สามารถเพิ่มได้หลายรายการ ปักหมุดเป็นประกาศด่วน หรือลบออกได้ตลอดเวลา</p>
+            </div>
+          </div>
+
+          <div id="admin-news-list" class="space-y-3 text-xs">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================== -->
@@ -1021,13 +1089,37 @@
         </div>
       </div>
 
+      <!-- Google Apps Script (GAS) Endpoint Configuration Card -->
+      <div class="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-emerald-600/30 space-y-4">
+        <div class="pb-2 border-b border-slate-200">
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span>🔗</span> ตั้งค่าลิงก์ Google Apps Script (GAS Web App URL)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">ลิงก์เชื่อมต่อสำหรับอัปโหลดไฟล์รูปภาพ แบนเนอร์ ใบสมัครเรียน และชิ้นงานเข้าสู่ Google Drive ของโรงเรียน (ใส่ลิงก์ล่าสุดให้เรียบร้อยแล้ว)</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Web App URL (/exec):</label>
+            <input type="url" id="cms-gas-url-input" value="https://script.google.com/macros/s/AKfycbxss53zZHwLbgrmNVqd65NbFJL-KiBu2GWtK3GxxLX8iCJtCZOFdocUrn2liPzKtydb/exec"
+                   class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-mono text-emerald-900 bg-emerald-50/40 focus:border-emerald-700 focus:outline-none">
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <span class="text-[11px] text-emerald-700 font-semibold">✅ เชื่อมต่อลิงก์ GAS ใหม่ของคุณเรียบร้อยแล้ว</span>
+            <button type="button" id="save-gas-url-btn" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition">
+              💾 บันทึกลิงก์ GAS
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Quick Announcement & School Info CMS Card -->
       <div class="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-4">
         <div class="pb-2 border-b border-slate-200">
           <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
             <span>📢</span> ข้อความประกาศด่วนหน้าแรก (Urgent Announcement CMS)
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">แก้ไขข้อความแจ้งเตือนด่วนที่แสดงบนแถบกระดิ่งหน้าแรกของเว็บไซต์โดยตรงจากหลังบ้าน</p>
+          <p class="text-xs text-slate-500 mt-0.5">แก้ไขข้อความแจ้งเตือนด่วนที่แสดงบนแถบกระดิ่งหน้าแรกของเว็บไซต์โดยตรงจากหลังบ้าน (หากต้องการเพิ่มข่าวหลายรายการ ให้ไปที่แท็บ "📷 ภาพกิจกรรม & ข่าว")</p>
         </div>
 
         <div class="space-y-3 text-xs">
@@ -1096,14 +1188,14 @@
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <span>➕</span> เพิ่มผู้ใช้งานรายบุคคล
+          <span>➕</span> เพิ่มผู้ใช้งานรายบุคคลและกำหนดสิทธิ์
         </h3>
         <button id="close-user-modal" class="text-slate-400 hover:text-slate-700 text-2xl font-light">&times;</button>
       </div>
 
       <form id="user-crud-form" class="mt-4 space-y-3 text-xs">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">อีเมลโรงเรียน (@bcs.ac.th)</label>
+          <label class="block font-semibold text-slate-700 mb-1">อีเมลโรงเรียน (@bcs.ac.th) หรืออีเมลผู้ใช้งาน</label>
           <input type="email" id="crud-user-email" required placeholder="name@bcs.ac.th" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-emerald-600 focus:outline-none">
         </div>
         <div>
@@ -1120,10 +1212,29 @@
             <option value="student">🎒 นักเรียน (Student)</option>
           </select>
         </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">สังกัดกลุ่มงาน / กลุ่มสาระการเรียนรู้</label>
+          <select id="crud-user-dept" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs bg-white font-medium">
+            <option value="1">1. กลุ่มบริหารวิชาการ</option>
+            <option value="2">2. กลุ่มบริหารงบประมาณและแผนงาน</option>
+            <option value="3">3. กลุ่มบริหารงานบุคคล</option>
+            <option value="4">4. กลุ่มบริหารทั่วไป</option>
+            <option value="5">5. กลุ่มสาระการเรียนรู้ภาษาไทย</option>
+            <option value="6">6. กลุ่มสาระการเรียนรู้คณิตศาสตร์</option>
+            <option value="7">7. กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี</option>
+            <option value="8">8. กลุ่มสาระการเรียนรู้สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+            <option value="9">9. กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา</option>
+            <option value="10">10. กลุ่มสาระการเรียนรู้ศิลปะ</option>
+            <option value="11">11. กลุ่มสาระการเรียนรู้การงานอาชีพ</option>
+            <option value="12">12. กลุ่มสาระการเรียนรู้ภาษาต่างประเทศ (EP)</option>
+            <option value="13">13. ระดับการศึกษาปฐมวัย (อนุบาล 1-3)</option>
+            <option value="14">14. งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน)</option>
+          </select>
+        </div>
 
         <div class="mt-6 flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
           <button type="button" id="cancel-user-modal" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 transition">ยกเลิก</button>
-          <button type="submit" class="px-4 py-2 rounded-xl font-bold bg-emerald-800 hover:bg-emerald-700 text-white transition shadow-sm">เพิ่มผู้ใช้</button>
+          <button type="submit" class="px-4 py-2 rounded-xl font-bold bg-emerald-800 hover:bg-emerald-700 text-white transition shadow-sm">💾 บันทึกและเพิ่มผู้ใช้</button>
         </div>
       </form>
     </div>
@@ -1192,8 +1303,8 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/staff-data.js"></script>
-  <script src="../js/admin-cms.js"></script>
+  <script src="../js/supabase-client.js?v=20261102"></script>
+  <script src="../js/staff-data.js?v=20261102"></script>
+  <script src="../js/admin-cms.js?v=20261102"></script>
 </body>
 </html>

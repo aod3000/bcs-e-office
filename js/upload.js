@@ -2,7 +2,8 @@
    upload.js - ฟอร์มอัปโหลดไฟล์: ไฟล์ -> Base64 -> GAS (Drive) -> Supabase
    ============================================ */
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxss53zZHwLbgrmNVqd65NbFJL-KiBu2GWtK3GxxLX8iCJtCZOFdocUrn2liPzKtydb/exec';
+const GAS_URL = (typeof localStorage !== 'undefined' && localStorage.getItem('bcs_gas_url')) || DEFAULT_GAS_URL;
 
 /** ดึงขนาดไฟล์อัปโหลดสูงสุดที่แอดมินกำหนดไว้ (ค่าเริ่มต้น 50 MB) */
 function getMaxUploadMb() {

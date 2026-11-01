@@ -443,7 +443,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-client.js"></script>
   <script>
-    const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+    const DEFAULT_GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbxss53zZHwLbgrmNVqd65NbFJL-KiBu2GWtK3GxxLX8iCJtCZOFdocUrn2liPzKtydb/exec';
+    const GAS_UPLOAD_URL = localStorage.getItem('bcs_gas_url') || DEFAULT_GAS_UPLOAD_URL;
 
     const STUDENT_PROFILES = {
       'BCS-6901': {

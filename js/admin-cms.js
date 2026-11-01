@@ -8,40 +8,98 @@
    - จัดการทำเนียบบุคลากรและช่องทางติดต่อโซเชียลมีเดีย
    ===================================================================== */
 
-const GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+const DEFAULT_GAS_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbxss53zZHwLbgrmNVqd65NbFJL-KiBu2GWtK3GxxLX8iCJtCZOFdocUrn2liPzKtydb/exec';
+let GAS_UPLOAD_URL = (typeof localStorage !== 'undefined' && localStorage.getItem('bcs_gas_url')) || DEFAULT_GAS_UPLOAD_URL;
+
+function getGasUrl() {
+  return (typeof localStorage !== 'undefined' && localStorage.getItem('bcs_gas_url')) || DEFAULT_GAS_UPLOAD_URL;
+}
+
+function isValidUuid(val) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(val || ''));
+}
+
+// 14 กลุ่มงาน/กลุ่มสาระมาตรฐานของโรงเรียนบางชัน (แสดงใน Dropdown เสมอแม้ตาราง departments มี 0 แถว)
+const DEFAULT_DEPARTMENTS = [
+  { id: 1, name: 'กลุ่มบริหารวิชาการ', kind: 'division' },
+  { id: 2, name: 'กลุ่มบริหารงบประมาณและแผนงาน', kind: 'division' },
+  { id: 3, name: 'กลุ่มบริหารงานบุคคล', kind: 'division' },
+  { id: 4, name: 'กลุ่มบริหารทั่วไป', kind: 'division' },
+  { id: 5, name: 'กลุ่มสาระการเรียนรู้ภาษาไทย', kind: 'subject_group' },
+  { id: 6, name: 'กลุ่มสาระการเรียนรู้คณิตศาสตร์', kind: 'subject_group' },
+  { id: 7, name: 'กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี', kind: 'subject_group' },
+  { id: 8, name: 'กลุ่มสาระการเรียนรู้สังคมศึกษา ศาสนา และวัฒนธรรม', kind: 'subject_group' },
+  { id: 9, name: 'กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา', kind: 'subject_group' },
+  { id: 10, name: 'กลุ่มสาระการเรียนรู้ศิลปะ', kind: 'subject_group' },
+  { id: 11, name: 'กลุ่มสาระการเรียนรู้การงานอาชีพ', kind: 'subject_group' },
+  { id: 12, name: 'กลุ่มสาระการเรียนรู้ภาษาต่างประเทศ (EP)', kind: 'subject_group' },
+  { id: 13, name: 'ระดับการศึกษาปฐมวัย (อนุบาล 1-3)', kind: 'grade_level' },
+  { id: 14, name: 'งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน)', kind: 'special_unit' }
+];
 
 // หน่วยความจำชั่วคราวสำหรับข้อมูลหน้าหลังบ้าน
 let currentUser = null;
 let currentProfile = null;
 let allUsers = [];
-let allDepartments = [];
+let allDepartments = [...DEFAULT_DEPARTMENTS];
 let allTasks = [];
 let currentFilterRole = 'all';
 let currentSearchTerm = '';
 let pendingRevisionTaskId = null;
+let usersFilterBound = false;
+
+function safeAdminInit(fn) {
+  try {
+    fn();
+  } catch (err) {
+    console.warn('Admin init warning in', fn.name, err);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initAdminTabs();
+  // 1. ผูก Event Listener ของทุกปุ่มและแท็บทันทีโดยไม่ต้องรอ Network
+  safeAdminInit(initAdminTabs);
+  safeAdminInit(initGasUrlSettings);
+  safeAdminInit(loadStaffDirectory);
+  safeAdminInit(initActivityUpload);
+  safeAdminInit(initMultiNewsAnnouncementsModule);
+  safeAdminInit(initRevisionModal);
+  safeAdminInit(initAttendanceModule);
+  safeAdminInit(initOnePageReportModule);
+  safeAdminInit(initCsvAndIndividualCrud);
+  safeAdminInit(initBannersModule);
+  safeAdminInit(initUploadLimitModule);
+  safeAdminInit(initAdmissionsToggleModule);
+  safeAdminInit(initDatabaseBackupRestoreModule);
+  safeAdminInit(initUrgentAnnouncementCms);
+  safeAdminInit(initGradingModule);
+  safeAdminInit(initSupabaseDiagnosticsModule);
+
+  // 2. โหลดข้อมูลจาก Supabase และ LocalStorage
   await initAdminAuth();
   await loadDepartments();
   await loadUsers();
-  await loadTasks();
-  await loadLeaveRequests();
-  await loadActivities();
-  loadStaffDirectory();
-  initActivityUpload();
-  initRevisionModal();
-  initAttendanceModule();
-  initOnePageReportModule();
-  initCsvAndIndividualCrud();
-  initBannersModule();
-  initUploadLimitModule();
-  initAdmissionsToggleModule();
-  initDatabaseBackupRestoreModule();
-  initUrgentAnnouncementCms();
-  initGradingModule();
-  initSupabaseDiagnosticsModule();
+  await Promise.allSettled([
+    loadTasks(),
+    loadLeaveRequests(),
+    loadActivities()
+  ]);
 });
+
+function initGasUrlSettings() {
+  const input = document.getElementById('cms-gas-url-input');
+  const saveBtn = document.getElementById('save-gas-url-btn');
+  if (input) input.value = getGasUrl();
+  if (saveBtn && input) {
+    saveBtn.addEventListener('click', () => {
+      const val = input.value.trim() || DEFAULT_GAS_UPLOAD_URL;
+      localStorage.setItem('bcs_gas_url', val);
+      GAS_UPLOAD_URL = val;
+      input.value = val;
+      showToast('✅ บันทึกลิงก์ Google Apps Script (GAS) เรียบร้อยแล้ว');
+    });
+  }
+}
 
 /* =====================================================================
    1. AUTH & PERMISSIONS
@@ -136,14 +194,47 @@ function initAdminTabs() {
    3. DEPARTMENTS & USERS MANAGEMENT (สิทธิ์ & บทบาท)
    ===================================================================== */
 async function loadDepartments() {
+  allDepartments = [...DEFAULT_DEPARTMENTS];
   try {
     if (!window.supabase || !isSupabaseConfigured()) return;
     const { data, error } = await getSupabase().from('departments').select('*').order('id');
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       allDepartments = data;
+    } else if (!error && data && data.length === 0) {
+      // หากตาราง departments ใน Supabase ยังว่างเปล่า (0 กลุ่มงาน) ให้เติมข้อมูล 14 กลุ่มงานอัตโนมัติ
+      try {
+        const seedRows = DEFAULT_DEPARTMENTS.map(d => ({ name: d.name, kind: d.kind }));
+        const { data: inserted } = await getSupabase().from('departments').insert(seedRows).select('*');
+        if (inserted && inserted.length > 0) allDepartments = inserted;
+      } catch (seedErr) {
+        // หากคอลัมน์ kind ยังไม่มี ให้ลอง insert เฉพาะ name
+        try {
+          const seedSimple = DEFAULT_DEPARTMENTS.map(d => ({ name: d.name }));
+          const { data: inserted2 } = await getSupabase().from('departments').insert(seedSimple).select('*');
+          if (inserted2 && inserted2.length > 0) allDepartments = inserted2;
+        } catch (e2) { /* ใช้ DEFAULT_DEPARTMENTS ต่อไป */ }
+      }
     }
   } catch (err) {
-    console.warn('โหลดรายชื่อกลุ่มงานไม่สำเร็จ:', err);
+    console.warn('โหลดรายชื่อกลุ่มงาน (ใช้ค่ามาตรฐาน 14 กลุ่มงาน):', err);
+  }
+}
+
+/** บันทึกรายชื่อผู้ใช้งานทั้งหมดลงทั้ง LocalStorage และตาราง site_settings บน Supabase */
+async function persistUsersDirectory(usersList) {
+  try {
+    localStorage.setItem('bcs_users_directory', JSON.stringify(usersList));
+  } catch (e) {}
+
+  if (window.supabase && isSupabaseConfigured()) {
+    try {
+      await getSupabase().from('site_settings').upsert({
+        key: 'users_directory',
+        value: { users: usersList, updated_at: new Date().toISOString() }
+      });
+    } catch (e) {
+      console.warn('ซิงก์ users_directory ลง site_settings:', e);
+    }
   }
 }
 
@@ -152,82 +243,127 @@ async function loadUsers() {
   if (!tbody) return;
 
   try {
-    if (!window.supabase || !isSupabaseConfigured()) {
-      tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400">ยังไม่ได้เชื่อมต่อ Supabase</td></tr>';
-      return;
-    }
+    let dbUsers = [];
+    let settingsUsers = [];
+    let localUsers = [];
 
-    let users = null;
-    let fetchError = null;
-
-    // สเต็ป 1: ลองดึงแบบสมบูรณ์พร้อมกลุ่มงาน
+    // 1. อ่านจาก LocalStorage
     try {
-      const res = await getSupabase()
-        .from('profiles')
-        .select('*, departments(id, name)');
-      if (res.error) throw res.error;
-      users = res.data;
-    } catch (e1) {
-      console.warn('โหลดผู้ใช้แบบที่ 1 ติดขัด (ลองแบบที่ 2):', e1.message);
-      // สเต็ป 2: ลองดึงแบบธรรมดาไม่ join
+      localUsers = JSON.parse(localStorage.getItem('bcs_users_directory') || '[]');
+      if (!Array.isArray(localUsers)) localUsers = [];
+    } catch (e) { localUsers = []; }
+
+    if (window.supabase && isSupabaseConfigured()) {
+      // 2. อ่านจากตาราง site_settings (key = 'users_directory') ซึ่งเก็บผู้ใช้ที่เพิ่มรายคนหรือนำเข้า CSV ได้โดยไม่ติด Foreign Key auth.users
       try {
-        const res2 = await getSupabase().from('profiles').select('*');
-        if (res2.error) throw res2.error;
-        users = res2.data;
-      } catch (e2) {
-        fetchError = e2;
-      }
-    }
-
-    if (fetchError) throw fetchError;
-
-    if (users && users.length > 0) {
-      allUsers = users;
-    } else {
-      // ค่าเริ่มต้น SuperAdmin หากยังไม่มีข้อมูลในตาราง
-      allUsers = [
-        {
-          id: 'bcs-admin-default',
-          email: 'admin@bcs.ac.th',
-          full_name: 'ผู้ดูแลระบบหลัก (SuperAdmin)',
-          role: 'admin',
-          is_active: true,
-          departments: { id: 1, name: 'ฝ่ายบริหารทั่วไป' }
+        const { data: dirSetting } = await getSupabase()
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'users_directory')
+          .maybeSingle();
+        if (dirSetting && dirSetting.value && Array.isArray(dirSetting.value.users)) {
+          settingsUsers = dirSetting.value.users;
         }
-      ];
+      } catch (e) {}
+
+      // 3. อ่านจากตาราง profiles
+      try {
+        const res = await getSupabase().from('profiles').select('*, departments(id, name)');
+        if (!res.error && res.data) {
+          dbUsers = res.data;
+        } else {
+          const res2 = await getSupabase().from('profiles').select('*');
+          if (!res2.error && res2.data) dbUsers = res2.data;
+        }
+      } catch (e) {}
     }
+
+    // รวมรายชื่อจากทุกแหล่งโดยใช้ email เป็นคีย์หลักเพื่อไม่ให้ซ้ำ
+    const mergedMap = new Map();
+
+    // ลำดับการรวม: settingsUsers -> localUsers -> dbUsers (เพื่อให้ข้อมูลล่าสุดครบถ้วน)
+    [...settingsUsers, ...localUsers, ...dbUsers].forEach(u => {
+      if (!u || !u.email) return;
+      const key = u.email.toLowerCase().trim();
+      const prev = mergedMap.get(key) || {};
+      const deptId = u.department_id || (u.departments && u.departments.id) || prev.department_id || 1;
+      const deptObj = allDepartments.find(d => d.id == deptId) || u.departments || prev.departments || { id: 1, name: 'กลุ่มบริหารวิชาการ' };
+      mergedMap.set(key, {
+        ...prev,
+        ...u,
+        id: (isValidUuid(u.id) ? u.id : (isValidUuid(prev.id) ? prev.id : (u.id || prev.id || 'usr_' + Date.now()))),
+        email: key,
+        full_name: u.full_name || prev.full_name || 'ไม่ระบุชื่อ',
+        role: u.role || prev.role || 'teacher',
+        department_id: deptId,
+        departments: deptObj,
+        is_active: typeof u.is_active === 'boolean' ? u.is_active : (typeof prev.is_active === 'boolean' ? prev.is_active : true)
+      });
+    });
+
+    // ตรวจสอบว่ามีบัญชี SuperAdmin และตัวอย่างบุคลากรเริ่มต้นหรือยัง
+    if (!mergedMap.has('admin@bcs.ac.th')) {
+      mergedMap.set('admin@bcs.ac.th', {
+        id: (currentUser && currentUser.email && currentUser.email.toLowerCase() === 'admin@bcs.ac.th') ? currentUser.id : 'bcs-admin-default',
+        email: 'admin@bcs.ac.th',
+        full_name: 'ผู้ดูแลระบบหลัก (SuperAdmin)',
+        role: 'admin',
+        department_id: 4,
+        is_active: true,
+        departments: { id: 4, name: 'กลุ่มบริหารทั่วไป' }
+      });
+    }
+
+    if (mergedMap.size <= 1 && !localStorage.getItem('bcs_users_seeded')) {
+      const sampleUsers = [
+        { id: 'usr_exec_1', email: 'director@bcs.ac.th', full_name: 'นางชลตวรรณ ขุมเพ็ชร', role: 'executive', department_id: 1, is_active: true, departments: { id: 1, name: 'กลุ่มบริหารวิชาการ' } },
+        { id: 'usr_exec_2', email: 'kanyaphat@bcs.ac.th', full_name: 'นางสาวกัญญาภัทร นวลเพ็ญ', role: 'executive', department_id: 1, is_active: true, departments: { id: 1, name: 'กลุ่มบริหารวิชาการ' } },
+        { id: 'usr_head_ep', email: 'ep.head@bcs.ac.th', full_name: 'ครูหัวหน้ากลุ่มสาระภาษาต่างประเทศ (EP)', role: 'head', department_id: 12, is_active: true, departments: { id: 12, name: 'กลุ่มสาระการเรียนรู้ภาษาต่างประเทศ (EP)' } },
+        { id: 'usr_teacher_1', email: 'teacher.math@bcs.ac.th', full_name: 'ครูสมชาย รัตนวิเชียร', role: 'teacher', department_id: 6, is_active: true, departments: { id: 6, name: 'กลุ่มสาระการเรียนรู้คณิตศาสตร์' } }
+      ];
+      sampleUsers.forEach(su => mergedMap.set(su.email, su));
+      localStorage.setItem('bcs_users_seeded', '1');
+    }
+
+    allUsers = Array.from(mergedMap.values());
+    try {
+      localStorage.setItem('bcs_users_directory', JSON.stringify(allUsers));
+    } catch (e) {}
 
     updateUserStats(allUsers);
     renderUsersTable(allUsers);
 
-    // Bind Filter & Search
-    const searchInput = document.getElementById('user-search-input');
-    const roleFilter = document.getElementById('user-role-filter');
-    const refreshBtn = document.getElementById('refresh-users-btn');
+    // Bind Filter & Search ครั้งเดียวเพื่อไม่ให้ซ้อนกัน
+    if (!usersFilterBound) {
+      usersFilterBound = true;
+      const searchInput = document.getElementById('user-search-input');
+      const roleFilter = document.getElementById('user-role-filter');
+      const refreshBtn = document.getElementById('refresh-users-btn');
 
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        currentSearchTerm = e.target.value.toLowerCase().trim();
-        applyUserFilters();
-      });
-    }
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          currentSearchTerm = e.target.value.toLowerCase().trim();
+          applyUserFilters();
+        });
+      }
 
-    if (roleFilter) {
-      roleFilter.addEventListener('change', (e) => {
-        currentFilterRole = e.target.value;
-        applyUserFilters();
-      });
-    }
+      if (roleFilter) {
+        roleFilter.addEventListener('change', (e) => {
+          currentFilterRole = e.target.value;
+          applyUserFilters();
+        });
+      }
 
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', async () => {
-        refreshBtn.disabled = true;
-        refreshBtn.textContent = '⏳ กำลังโหลด...';
-        await loadUsers();
-        refreshBtn.disabled = false;
-        refreshBtn.textContent = '🔄';
-        showToast('🔄 รีเฟรชรายชื่อผู้ใช้งานแล้ว');
-      });
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = '⏳';
+          await loadUsers();
+          refreshBtn.disabled = false;
+          refreshBtn.textContent = '🔄';
+          showToast('🔄 รีเฟรชรายชื่อผู้ใช้งานแล้ว');
+        });
+      }
     }
   } catch (err) {
     console.error('โหลดรายชื่อผู้ใช้ล้มเหลว', err);
@@ -378,16 +514,15 @@ window.saveUserProfile = async function(userId) {
   const newStatus = statusSelect ? statusSelect.value === 'true' : true;
 
   try {
-    if (window.supabase && isSupabaseConfigured() && !String(userId).startsWith('import-') && !String(userId).startsWith('bcs-admin-default')) {
+    // 1. อัปเดตในตาราง profiles (เฉพาะกรณี userId เป็น UUID จริงใน Supabase Auth)
+    if (window.supabase && isSupabaseConfigured() && isValidUuid(userId)) {
       const updates = {};
       if (newDept !== null) updates.department_id = newDept;
       if (newRole) updates.role = newRole;
       if (typeof newStatus === 'boolean') updates.is_active = newStatus;
       updates.updated_at = new Date().toISOString();
 
-      // Robust Auto-Pruning Loop: หากคอลัมน์ใดยังไม่มีใน Schema ของ Supabase จะตัดออกอัตโนมัติและลองบันทึกใหม่
       let attempt = 0;
-      let lastError = null;
       while (attempt < 5) {
         attempt++;
         const { error } = await getSupabase()
@@ -395,15 +530,8 @@ window.saveUserProfile = async function(userId) {
           .update(updates)
           .eq('id', userId);
 
-        if (!error) {
-          lastError = null;
-          break;
-        }
-
-        lastError = error;
+        if (!error) break;
         const msg = error.message || '';
-        
-        // ตรวจจับชื่อคอลัมน์จาก Error ของ Supabase / PostgREST
         const match = msg.match(/Could not find the '(\w+)' column/i);
         if (match && match[1] && updates.hasOwnProperty(match[1])) {
           delete updates[match[1]];
@@ -412,24 +540,24 @@ window.saveUserProfile = async function(userId) {
         } else if (msg.includes('updated_at') && updates.hasOwnProperty('updated_at')) {
           delete updates.updated_at;
         } else {
-          // หากเป็น Error อื่นๆ ให้หยุด loop
+          console.warn('อัปเดตตาราง profiles (ใช้ระบบบันทึกสำรอง site_settings ต่อ):', msg);
           break;
         }
       }
-
-      if (lastError) throw lastError;
     }
 
-    showToast('✅ อัปเดตสิทธิ์ผู้ใช้งานเรียบร้อยแล้ว');
-    
-    // อัปเดตข้อมูลใน local array
-    const target = allUsers.find(u => u.id === userId);
+    // 2. อัปเดตใน allUsers และบันทึกลงทั้ง LocalStorage + Supabase site_settings (key = 'users_directory')
+    const target = allUsers.find(u => String(u.id) === String(userId));
     if (target) {
       if (newRole) target.role = newRole;
       target.department_id = newDept;
+      target.departments = allDepartments.find(d => d.id == newDept) || target.departments;
       target.is_active = newStatus;
       updateUserStats(allUsers);
     }
+
+    await persistUsersDirectory(allUsers);
+    showToast('✅ บันทึกสิทธิ์และสังกัดกลุ่มงานเรียบร้อยแล้ว');
   } catch (err) {
     console.error('บันทึกสิทธิ์ล้มเหลว', err);
     showToast('❌ บันทึกสิทธิ์ล้มเหลว: ' + err.message, 'error');
@@ -438,7 +566,7 @@ window.saveUserProfile = async function(userId) {
 
 /** ลบผู้ใช้งานออกจากระบบและฐานข้อมูล */
 window.deleteUserProfile = async function(userId) {
-  const target = allUsers.find(u => u.id === userId);
+  const target = allUsers.find(u => String(u.id) === String(userId));
   if (!target) return;
 
   const isSuperAdmin = target.email && target.email.toLowerCase() === 'admin@bcs.ac.th';
@@ -448,20 +576,20 @@ window.deleteUserProfile = async function(userId) {
   }
 
   const name = target.full_name || target.email;
-  if (!confirm(`คุณต้องการลบผู้ใช้งาน "${name}" (${target.email}) ออกจากระบบและฐานข้อมูลใช่หรือไม่?\nการกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+  if (!confirm(`คุณต้องการลบผู้ใช้งาน "${name}" (${target.email}) ออกจากระบบและฐานข้อมูลใช่หรือไม่?`)) {
     return;
   }
 
   try {
-    if (window.supabase && isSupabaseConfigured() && !String(userId).startsWith('import-')) {
-      const { error } = await getSupabase()
+    if (window.supabase && isSupabaseConfigured() && isValidUuid(userId)) {
+      await getSupabase()
         .from('profiles')
         .delete()
         .eq('id', userId);
-      if (error) throw error;
     }
 
-    allUsers = allUsers.filter(u => u.id !== userId);
+    allUsers = allUsers.filter(u => String(u.id) !== String(userId));
+    await persistUsersDirectory(allUsers);
     renderUsersTable(allUsers);
     updateUserStats(allUsers);
     showToast(`🗑️ ลบผู้ใช้งาน "${name}" ออกจากระบบเรียบร้อยแล้ว`);
@@ -929,47 +1057,301 @@ async function loadActivities() {
 }
 
 /* =====================================================================
+   6.1 MULTI-NEWS ANNOUNCEMENTS CMS (จัดการประกาศข่าวหลายรายการ ไม่จำกัดจำนวน)
+   ===================================================================== */
+const DEFAULT_NEWS_ANNOUNCEMENTS = [
+  {
+    id: 1,
+    title: 'เปิดรับสมัครนักเรียนใหม่ ประจำปีการศึกษา 2569',
+    badge: 'รับสมัครเรียน',
+    date: '1 พ.ย. 2569',
+    summary: 'ผู้ปกครองสามารถยื่นใบสมัครออนไลน์และตรวจสอบสิทธิ์ด้วยเลขบัตรประชาชน 13 หลักได้ที่นี่',
+    content: 'โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) เปิดรับสมัครนักเรียนใหม่ ระดับชั้นอนุบาล 1-3, ประถมศึกษาปีที่ 1-6, หลักสูตรสองภาษา (EP), มัธยมศึกษาปีที่ 1-3 และงานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน) ยื่นเอกสารตัวจริงวันที่ 15-20 มี.ค. 2569 และรายงานตัววันที่ 28 มี.ค. 2569',
+    file_url: ''
+  },
+  {
+    id: 2,
+    title: 'ประกาศตารางสอบและประเมินผลปลายภาคเรียน',
+    badge: 'วิชาการ',
+    date: '28 ต.ค. 2569',
+    summary: 'นักเรียนสามารถเข้าสู่ระบบบริการนักเรียนเพื่อดูตารางสอบและผลคะแนนรายบุคคล',
+    content: 'ฝ่ายบริหารวิชาการแจ้งกำหนดการประเมินผลปลายภาคเรียน นักเรียนสามารถเข้าสู่ระบบด้วยรหัสนักเรียนเพื่อตรวจสอบคะแนนเก็บและผลการเรียนรายวิชาได้ด้วยตนเอง',
+    file_url: ''
+  },
+  {
+    id: 3,
+    title: 'ขอแสดงความยินดีกับนักเรียนที่ได้รับรางวัลการแข่งขันทักษะวิชาการ',
+    badge: 'ผลงาน',
+    date: '25 ต.ค. 2569',
+    summary: 'ผลการแข่งขันโครงงานวิทยาศาสตร์และทักษะภาษาอังกฤษระดับเขตพื้นที่การศึกษาคลองสามวา',
+    content: 'โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) ขอแสดงความยินดีกับนักเรียนและคณะครูผู้ฝึกสอนที่ได้รับรางวัลชนะเลิศการแข่งขันทักษะวิชาการระดับเขตคลองสามวา ประจำปีการศึกษา 2569',
+    file_url: ''
+  }
+];
+
+function getStoredNewsAnnouncements() {
+  try {
+    const raw = localStorage.getItem('bcs_news_announcements');
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch (e) {}
+  return [...DEFAULT_NEWS_ANNOUNCEMENTS];
+}
+
+async function saveStoredNewsAnnouncements(list) {
+  try {
+    localStorage.setItem('bcs_news_announcements', JSON.stringify(list));
+  } catch (e) {}
+
+  if (window.supabase && isSupabaseConfigured()) {
+    try {
+      await getSupabase().from('site_settings').upsert({
+        key: 'news_announcements',
+        value: { items: list, updated_at: new Date().toISOString() }
+      });
+    } catch (e) {}
+  }
+}
+
+async function initMultiNewsAnnouncementsModule() {
+  const form = document.getElementById('news-announce-form');
+  const listContainer = document.getElementById('admin-news-list');
+  const countEl = document.getElementById('admin-news-count');
+  if (!form || !listContainer) return;
+
+  // โหลดจาก Supabase site_settings ถ้ามี
+  if (window.supabase && isSupabaseConfigured()) {
+    try {
+      const { data } = await getSupabase()
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'news_announcements')
+        .maybeSingle();
+      if (data && data.value && Array.isArray(data.value.items) && data.value.items.length > 0) {
+        localStorage.setItem('bcs_news_announcements', JSON.stringify(data.value.items));
+      }
+    } catch (e) {}
+  }
+
+  function renderAdminNewsList() {
+    const items = getStoredNewsAnnouncements();
+    if (countEl) countEl.textContent = items.length;
+
+    if (items.length === 0) {
+      listContainer.innerHTML = '<div class="py-8 text-center text-slate-400">ยังไม่มีประกาศข่าว</div>';
+      return;
+    }
+
+    listContainer.innerHTML = items.map((item, idx) => `
+      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-amber-300 transition">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold">${escapeHtml(item.badge || 'ประชาสัมพันธ์')}</span>
+            <span class="text-[11px] text-slate-400">📅 ${escapeHtml(item.date || '')}</span>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm mt-1 truncate">${escapeHtml(item.title)}</h4>
+          <p class="text-xs text-slate-600 line-clamp-2 mt-0.5">${escapeHtml(item.content || item.summary || '')}</p>
+          ${item.file_url ? `<a href="${item.file_url}" target="_blank" class="inline-block text-[11px] text-emerald-700 font-bold hover:underline mt-1">📎 เปิดดูไฟล์แนบ</a>` : ''}
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="pinNewsToUrgent(${idx})" class="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-[11px] font-bold transition" title="ตั้งเป็นประกาศด่วนมุมขวาล่าง">
+            📌 ตั้งเป็นด่วน
+          </button>
+          <button type="button" onclick="deleteNewsAnnouncement(${idx})" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-[11px] font-bold transition" title="ลบประกาศข่าวนี้">
+            🗑️ ลบ
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.deleteNewsAnnouncement = async function(idx) {
+    const items = getStoredNewsAnnouncements();
+    if (!items[idx]) return;
+    if (!confirm(`ต้องการลบประกาศข่าว "${items[idx].title}" ใช่หรือไม่?`)) return;
+    items.splice(idx, 1);
+    await saveStoredNewsAnnouncements(items);
+    renderAdminNewsList();
+    showToast('🗑️ ลบประกาศข่าวเรียบร้อยแล้ว');
+  };
+
+  window.pinNewsToUrgent = function(idx) {
+    const items = getStoredNewsAnnouncements();
+    const item = items[idx];
+    if (!item) return;
+    const payload = {
+      text: `${item.title} — ${item.content || item.summary || ''}`,
+      active: true,
+      updated_at: new Date().toISOString()
+    };
+    localStorage.setItem('bcs_urgent_announcement', JSON.stringify(payload));
+    localStorage.removeItem('bcs-announce-closed');
+    const urgentInput = document.getElementById('cms-urgent-text');
+    if (urgentInput) urgentInput.value = payload.text;
+    showToast(`📌 ตั้ง "${item.title}" เป็นประกาศด่วนหน้าแรกเรียบร้อยแล้ว`);
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('news-item-title').value.trim();
+    const badge = document.getElementById('news-item-badge').value;
+    const dateInput = document.getElementById('news-item-date').value.trim();
+    const content = document.getElementById('news-item-content').value.trim();
+    const fileInput = document.getElementById('news-item-file');
+    const pinUrgent = document.getElementById('news-item-pin-urgent').checked;
+    const btn = document.getElementById('news-item-submit-btn');
+    const btnText = document.getElementById('news-item-btn-text');
+
+    const dateStr = dateInput || new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    try {
+      if (btn) btn.disabled = true;
+      let fileUrl = '';
+      const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+      if (file) {
+        if (btnText) btnText.textContent = 'กำลังอัปโหลดไฟล์แนบเข้า Google Drive...';
+        try {
+          const base64 = await fileToBase64(file);
+          const res = await fetch(getGasUrl(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              base64,
+              fileName: `[ประกาศข่าว]_${file.name}`,
+              mimeType: file.type,
+              category: 'announcements'
+            })
+          });
+          const result = await res.json();
+          fileUrl = result.url || result.fileUrl || '';
+        } catch (upErr) {
+          console.warn('อัปโหลดไฟล์ประกาศข่าว:', upErr);
+        }
+      }
+
+      const items = getStoredNewsAnnouncements();
+      const newItem = {
+        id: Date.now(),
+        title,
+        badge,
+        date: dateStr,
+        summary: content.slice(0, 120),
+        content,
+        file_url: fileUrl
+      };
+      items.unshift(newItem);
+      await saveStoredNewsAnnouncements(items);
+
+      if (pinUrgent) {
+        localStorage.setItem('bcs_urgent_announcement', JSON.stringify({
+          text: `${title} — ${content}`,
+          active: true,
+          updated_at: new Date().toISOString()
+        }));
+        localStorage.removeItem('bcs-announce-closed');
+      }
+
+      form.reset();
+      renderAdminNewsList();
+      showToast('✅ เพิ่มประกาศข่าวประชาสัมพันธ์รายการใหม่สำเร็จ!');
+    } catch (err) {
+      showToast('❌ เพิ่มประกาศข่าวไม่สำเร็จ: ' + err.message, 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+      if (btnText) btnText.textContent = 'เพิ่มประกาศข่าวขึ้นหน้าเว็บไซต์';
+    }
+  });
+
+  renderAdminNewsList();
+}
+
+/* =====================================================================
    7. STAFF DIRECTORY CMS (จัดการทำเนียบบุคลากร)
    ===================================================================== */
+function getStoredStaffDirectory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('bcs_staff_directory') || 'null');
+    if (Array.isArray(saved) && saved.length > 0) return saved;
+  } catch (e) {}
+
+  if (window.STAFF_DATA && window.STAFF_DATA.length) {
+    return window.STAFF_DATA.map(s => ({
+      id: s.id,
+      name: s.name,
+      position: s.position,
+      group: s.department,
+      socials: { facebook: 'https://facebook.com', line: 'https://line.me', email: 'info@bcs.ac.th', phone: '02-517-1423' }
+    }));
+  }
+
+  return [
+    { id: 1, name: 'นางชลตวรรณ ขุมเพ็ชร', position: 'ผู้อำนวยการสถานศึกษา', group: 'ผู้บริหารสถานศึกษา', socials: { facebook: 'https://facebook.com', line: 'https://line.me', email: 'director@bcs.ac.th' } },
+    { id: 2, name: 'นางสาวกัญญาภัทร นวลเพ็ญ', position: 'รองผู้อำนวยการ (วิชาการ)', group: 'กลุ่มบริหารวิชาการ', socials: { facebook: 'https://facebook.com', email: 'academic@bcs.ac.th' } },
+    { id: 3, name: 'นายสมชาย รัตนวิเชียร', position: 'รองผู้อำนวยการ (ทั่วไป/บุคคล)', group: 'กลุ่มบริหารทั่วไป', socials: { facebook: 'https://facebook.com', email: 'general@bcs.ac.th' } }
+  ];
+}
+
 function loadStaffDirectory() {
   const tbody = document.getElementById('staff-table-body');
+  const addBtn = document.getElementById('add-staff-modal-btn');
   if (!tbody) return;
 
-  const staffList = (window.STAFF_MEMBERS && window.STAFF_MEMBERS.length) ? window.STAFF_MEMBERS : [
-    {
-      name: 'นางชลตวรรณ ขุมเพ็ชร',
-      position: 'ผู้อำนวยการสถานศึกษา',
-      group: 'ผู้บริหารสถานศึกษา',
-      socials: { facebook: 'https://facebook.com', line: 'https://line.me', email: 'director@bcs.ac.th' }
-    },
-    {
-      name: 'นางสาวกัญญาภัทร นวลเพ็ญ',
-      position: 'รองผู้อำนวยการสถานศึกษา',
-      group: 'กลุ่มบริหารวิชาการ',
-      socials: { facebook: 'https://facebook.com', email: 'academic@bcs.ac.th' }
-    }
-  ];
+  function renderStaff() {
+    const staffList = getStoredStaffDirectory();
+    tbody.innerHTML = staffList.map((member, i) => {
+      const socials = member.socials || {};
+      const socialBadges = [];
+      if (socials.facebook) socialBadges.push('<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">Facebook</span>');
+      if (socials.line) socialBadges.push('<span class="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-[10px]">LINE</span>');
+      if (socials.email) socialBadges.push('<span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">Email</span>');
+      if (socials.phone) socialBadges.push('<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[10px]">โทร</span>');
 
-  tbody.innerHTML = staffList.map((member, i) => {
-    const socials = member.socials || {};
-    const socialBadges = [];
-    if (socials.facebook) socialBadges.push('<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">Facebook</span>');
-    if (socials.line) socialBadges.push('<span class="bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-[10px]">LINE</span>');
-    if (socials.email) socialBadges.push('<span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">Email</span>');
-    if (socials.phone) socialBadges.push('<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[10px]">โทร</span>');
+      return `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(member.name)}</td>
+          <td class="py-3 px-4">${escapeHtml(member.position)}</td>
+          <td class="py-3 px-4">${escapeHtml(member.group || '-')}</td>
+          <td class="py-3 px-4 flex flex-wrap gap-1">${socialBadges.join(' ')}</td>
+          <td class="py-3 px-4 text-right whitespace-nowrap">
+            <button type="button" onclick="deleteStaffMember(${i})" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold transition">🗑️ ลบ</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
 
-    return `
-      <tr class="hover:bg-slate-50 transition">
-        <td class="py-3 px-4 font-bold text-slate-900">${escapeHtml(member.name)}</td>
-        <td class="py-3 px-4">${escapeHtml(member.position)}</td>
-        <td class="py-3 px-4">${escapeHtml(member.group || '-')}</td>
-        <td class="py-3 px-4 flex flex-wrap gap-1">${socialBadges.join(' ')}</td>
-        <td class="py-3 px-4 text-right">
-          <button onclick="alert('ข้อมูลบุคลากรเชื่อมโยงกับ js/staff-data.js')" class="text-emerald-700 hover:underline text-xs font-semibold">ดูข้อมูล</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
+  window.deleteStaffMember = function(idx) {
+    const list = getStoredStaffDirectory();
+    if (!list[idx]) return;
+    if (!confirm(`ต้องการลบบุคลากร "${list[idx].name}" ออกจากทำเนียบใช่หรือไม่?`)) return;
+    list.splice(idx, 1);
+    localStorage.setItem('bcs_staff_directory', JSON.stringify(list));
+    renderStaff();
+    showToast('🗑️ ลบบุคลากรออกจากทำเนียบเรียบร้อยแล้ว');
+  };
+
+  if (addBtn && !addBtn.dataset.bound) {
+    addBtn.dataset.bound = 'true';
+    addBtn.addEventListener('click', () => {
+      const name = prompt('กรอกชื่อ - นามสกุล บุคลากรใหม่:');
+      if (!name || !name.trim()) return;
+      const position = prompt('กรอกตำแหน่ง (เช่น ครูชำนาญการพิเศษ / หัวหน้ากลุ่มสาระ):', 'ครูผู้สอน') || 'ครูผู้สอน';
+      const group = prompt('กรอกสังกัดกลุ่มงาน / กลุ่มสาระ:', 'กลุ่มสาระการเรียนรู้คณิตศาสตร์') || 'กลุ่มบริหารวิชาการ';
+      const list = getStoredStaffDirectory();
+      list.push({
+        id: Date.now(),
+        name: name.trim(),
+        position: position.trim(),
+        group: group.trim(),
+        socials: { facebook: 'https://facebook.com', line: 'https://line.me', email: 'teacher@bcs.ac.th', phone: '02-517-1423' }
+      });
+      localStorage.setItem('bcs_staff_directory', JSON.stringify(list));
+      renderStaff();
+      showToast(`✅ เพิ่ม "${name.trim()}" เข้าทำเนียบบุคลากรเรียบร้อยแล้ว`);
+    });
+  }
+
+  renderStaff();
 }
 
 /* =====================================================================
@@ -1393,18 +1775,12 @@ function initCsvAndIndividualCrud() {
           }
         }
 
-        // บันทึกลง Supabase profiles (SQL Database) จริงทันที
-        if (window.supabase && isSupabaseConfigured() && newUsersToSave.length > 0) {
-          try {
-            await getSupabase().from('profiles').upsert(newUsersToSave, { onConflict: 'email' });
-          } catch (dbErr) {
-            console.warn('บันทึกบุคลากรลง Supabase:', dbErr);
-          }
-        }
+        // บันทึกลงทั้ง LocalStorage และ Supabase site_settings (key = 'users_directory') ทันที
+        await persistUsersDirectory(allUsers);
 
         renderUsersTable(allUsers);
         updateUserStats(allUsers);
-        showToast(`📥 นำเข้าและบันทึกบุคลากร ${added} ท่านลงฐานข้อมูล SQL สำเร็จ`);
+        showToast(`📥 นำเข้าและบันทึกบุคลากร ${added} ท่านลงระบบและฐานข้อมูลสำเร็จ`);
       } catch (err) {
         alert('❌ นำเข้าไฟล์ CSV บุคลากรไม่สำเร็จ: ' + err.message);
       }
@@ -1612,21 +1988,39 @@ function initCsvAndIndividualCrud() {
       const email = document.getElementById('crud-user-email').value.trim().toLowerCase();
       const name = document.getElementById('crud-user-name').value.trim();
       const role = document.getElementById('crud-user-role').value;
+      const deptSelect = document.getElementById('crud-user-dept');
+      const deptId = deptSelect ? parseInt(deptSelect.value, 10) : 1;
+      const deptObj = allDepartments.find(d => d.id == deptId) || { id: deptId, name: 'กลุ่มบริหารวิชาการ' };
 
-      allUsers.unshift({
-        id: 'usr_' + Date.now(),
-        email,
-        full_name: name,
-        role,
-        is_active: true,
-        created_at: new Date().toISOString()
-      });
+      const existingIdx = allUsers.findIndex(u => (u.email || '').toLowerCase() === email);
+      if (existingIdx >= 0) {
+        allUsers[existingIdx] = {
+          ...allUsers[existingIdx],
+          full_name: name,
+          role,
+          department_id: deptId,
+          departments: deptObj,
+          is_active: true
+        };
+      } else {
+        allUsers.unshift({
+          id: 'usr_' + Date.now(),
+          email,
+          full_name: name,
+          role,
+          department_id: deptId,
+          departments: deptObj,
+          is_active: true,
+          created_at: new Date().toISOString()
+        });
+      }
 
+      await persistUsersDirectory(allUsers);
       renderUsersTable(allUsers);
       updateUserStats(allUsers);
       userModal.classList.add('hidden');
       userCrudForm.reset();
-      showToast('✅ เพิ่มผู้ใช้งานในระบบเรียบร้อยแล้ว');
+      showToast(`✅ บันทึกผู้ใช้งาน "${name}" และกำหนดสิทธิ์เรียบร้อยแล้ว`);
     });
   }
 }

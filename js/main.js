@@ -2,22 +2,44 @@
    main.js - Hero Carousel, Theme Switcher, Mobile Menu
    ============================================ */
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+if (typeof window !== 'undefined') {
+  window.escapeHtml = escapeHtml;
+}
+
+function safeInit(fn) {
+  try {
+    fn();
+  } catch (err) {
+    console.warn('Init warning in', fn.name, err);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  initThemeSwitcher();
-  initCarousel();
-  initMobileMenu();
-  initDropdown();
-  initAnnounceWidget();
-  initSlideOver();
-  initStaffModal();
-  initDepartmentsSection();
-  initGalleryFilter();
-  initNavDropdowns();
-  initImageLightbox();
-  loadDynamicActivities();
-  initOnlineAdmissions();
-  checkAdmissionsStatusOnHomepage();
-  checkUrgentAnnouncementCms();
+  safeInit(initThemeSwitcher);
+  safeInit(initCarousel);
+  safeInit(initMobileMenu);
+  safeInit(initDropdown);
+  safeInit(initAnnounceWidget);
+  safeInit(initSlideOver);
+  safeInit(initStaffModal);
+  safeInit(initDepartmentsSection);
+  safeInit(initGalleryFilter);
+  safeInit(initNavDropdowns);
+  safeInit(initImageLightbox);
+  safeInit(loadDynamicActivities);
+  safeInit(loadDynamicNewsAnnouncements);
+  safeInit(initOnlineAdmissions);
+  safeInit(checkAdmissionsStatusOnHomepage);
+  safeInit(checkUrgentAnnouncementCms);
 });
 
 /* ---------- ทำเนียบบุคลากร Popup Modal ---------- */
@@ -114,11 +136,11 @@ window.openStaffModal = function(id) {
   document.body.classList.add('no-scroll');
 };
 
-/* ---------- ตัวกรองและแท็บในหมวดกลุ่มงาน/กลุ่มสาระ ---------- */
+/* ---------- ตัวกรองและแท็บในหมวดกลุ่มงาน/กลุ่มสาระ + คลิกดูรายละเอียด ---------- */
 function initDepartmentsSection() {
   const filterBtns = document.querySelectorAll('.dept-filter-btn');
   const cards = document.querySelectorAll('.dept-card-item');
-  if (!filterBtns.length || !cards.length) return;
+  if (!cards.length) return;
 
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -137,6 +159,62 @@ function initDepartmentsSection() {
           card.classList.add('hidden');
         }
       });
+    });
+  });
+
+  // ผูกคลิกเปิด Modal รายละเอียดกลุ่มงาน/กลุ่มสาระสำหรับการ์ดทั้ง 14 ใบ
+  const deptModal = document.getElementById('dept-detail-modal');
+  const closeBtn = document.getElementById('dept-modal-close');
+  const closeBtnBottom = document.getElementById('dept-modal-close-btn');
+  const staffBtn = document.getElementById('dept-modal-staff-btn');
+
+  const closeDeptModal = () => {
+    if (!deptModal) return;
+    deptModal.classList.remove('open');
+    deptModal.style.display = '';
+    deptModal.style.pointerEvents = 'none';
+    document.body.classList.remove('no-scroll');
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', closeDeptModal);
+  if (closeBtnBottom) closeBtnBottom.addEventListener('click', closeDeptModal);
+  if (staffBtn) staffBtn.addEventListener('click', closeDeptModal);
+  if (deptModal) {
+    deptModal.addEventListener('click', (e) => {
+      if (e.target === deptModal) closeDeptModal();
+    });
+  }
+
+  cards.forEach(card => {
+    card.classList.add('cursor-pointer');
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return; // ถ้ากดลิงก์ทำเนียบครู ให้เลื่อนไปตามลิงก์ปกติ
+      if (!deptModal) return;
+
+      const iconEl = card.querySelector('.w-12.h-12');
+      const badgeEl = card.querySelector('span.rounded-full');
+      const titleEl = card.querySelector('h3');
+      const descEl = card.querySelector('p');
+      const highlightsEl = card.querySelector('.space-y-1\\.5');
+
+      const modalIcon = document.getElementById('dept-modal-icon');
+      const modalBadge = document.getElementById('dept-modal-badge');
+      const modalTitle = document.getElementById('dept-modal-title');
+      const modalDesc = document.getElementById('dept-modal-desc');
+      const modalHighlights = document.getElementById('dept-modal-highlights');
+
+      if (modalIcon && iconEl) modalIcon.textContent = iconEl.textContent.trim();
+      if (modalBadge && badgeEl) modalBadge.textContent = badgeEl.textContent.trim();
+      if (modalTitle && titleEl) modalTitle.textContent = titleEl.textContent.trim();
+      if (modalDesc && descEl) modalDesc.textContent = descEl.textContent.trim();
+      if (modalHighlights) {
+        modalHighlights.innerHTML = highlightsEl ? highlightsEl.innerHTML : '<div>• ส่งเสริมศักยภาพผู้เรียนตามมาตรฐานการศึกษาขั้นพื้นฐาน</div>';
+      }
+
+      deptModal.classList.add('open');
+      deptModal.style.display = 'grid';
+      deptModal.style.pointerEvents = 'auto';
+      document.body.classList.add('no-scroll');
     });
   });
 }
@@ -801,13 +879,93 @@ function initMobileMenu() {
   });
 }
 
+/* ---------- โหลดประกาศข่าวประชาสัมพันธ์หลายรายการจากระบบหลังบ้าน (Admin CMS) ---------- */
+async function loadDynamicNewsAnnouncements() {
+  const listEl = document.getElementById('news-announcements-list');
+  const countEl = document.getElementById('news-announcements-count');
+  if (!listEl) return;
+
+  let announcements = [];
+  try {
+    const raw = localStorage.getItem('bcs_news_announcements');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) announcements = parsed;
+    }
+  } catch (e) {}
+
+  if (window.supabase && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+    try {
+      const { data } = await getSupabase()
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'news_announcements')
+        .maybeSingle();
+      if (data && data.value && Array.isArray(data.value.items) && data.value.items.length) {
+        announcements = data.value.items;
+        localStorage.setItem('bcs_news_announcements', JSON.stringify(announcements));
+      }
+    } catch (e) {}
+  }
+
+  if (!announcements || !announcements.length) return;
+
+  if (countEl) {
+    countEl.textContent = `แสดง ${announcements.length} ประกาศล่าสุด`;
+  }
+
+  listEl.innerHTML = announcements.map((item, idx) => {
+    const id = item.id || ('news_' + idx);
+    const badge = item.badge || 'ประชาสัมพันธ์';
+    const dateStr = item.date || 'ประกาศล่าสุด';
+    const contentText = item.content || item.summary || '';
+    const paragraphs = String(contentText).split(/\n+/).filter(Boolean);
+
+    // ลงทะเบียนเข้า NEWS_DATA เพื่อให้คลิกเปิด Slide-over อ่านฉบับเต็มได้ทันที
+    NEWS_DATA[id] = {
+      title: item.title || 'ประกาศโรงเรียนบางชัน',
+      date: dateStr,
+      emoji: badge === 'วิชาการ' ? '📚' : (badge === 'ผลงาน' ? '🏆' : (badge === 'ด่วน' ? '🚨' : '📢')),
+      cover: badge === 'ด่วน' ? 'from-rose-600 to-amber-700' : (badge === 'วิชาการ' ? 'from-amber-500 to-emerald-800' : 'from-emerald-600 to-green-900'),
+      content: paragraphs.length ? paragraphs : ['รายละเอียดตามประกาศโรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)']
+    };
+
+    const badgeColor = badge === 'วิชาการ'
+      ? 'text-amber-800 bg-amber-50 border-amber-200'
+      : (badge === 'ด่วน' ? 'text-rose-800 bg-rose-50 border-rose-200' : 'text-emerald-800 bg-emerald-50 border-emerald-200');
+
+    return `
+      <article data-news-id="${escapeHtml(id)}" role="button" tabindex="0" class="cursor-pointer group bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:border-amber-400 hover:shadow-md transition">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <span class="text-xs font-bold ${badgeColor} px-2.5 py-0.5 rounded-full border">${escapeHtml(badge)}</span>
+            <h3 class="text-base font-bold text-slate-900 mt-2 group-hover:text-emerald-700 transition">${escapeHtml(item.title)}</h3>
+            <p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHtml(contentText)}</p>
+          </div>
+          <span class="text-xs text-slate-400 shrink-0">${escapeHtml(dateStr)}</span>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  // ผูกคลิกเปิด Slide-over ให้การ์ดประกาศทั้งหมด
+  listEl.querySelectorAll('[data-news-id]').forEach((card) => {
+    const open = () => openSlideOver(card.dataset.newsId);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+  });
+}
+
 /* ---------- ระบบรับสมัครนักเรียนใหม่ออนไลน์ + ตรวจสอบ/แก้ไข/ยืนยันสิทธิ์ ---------- */
 function initOnlineAdmissions() {
   const form = document.getElementById('online-admission-form');
   if (!form) return;
 
   const STORAGE_KEY = 'bcs_admissions_records';
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxss53zZHwLbgrmNVqd65NbFJL-KiBu2GWtK3GxxLX8iCJtCZOFdocUrn2liPzKtydb/exec';
+  const getActiveGasUrl = () => (typeof localStorage !== 'undefined' && localStorage.getItem('bcs_gas_url')) || DEFAULT_GAS_URL;
 
   // เตรียมข้อมูลตัวอย่างเริ่มต้นเพื่อให้ผู้ปกครอง/ผู้ดูแลระบบทดสอบค้นหาได้ทันที
   function getStoredAdmissions() {
@@ -820,9 +978,10 @@ function initOnlineAdmissions() {
           app_no: 'BCS-69-1001',
           citizen_id: '1100401234567',
           student_name: 'ด.ช. รักษ์เรียน เพียรศึกษา',
-          grade: 'ป.1 (หลักสูตรปกติ)',
+          grade: 'ประถมศึกษาปีที่ 1 (หลักสูตรปกติ)',
           parent_name: 'นายสมศักดิ์ เพียรศึกษา',
           phone: '081-234-5678',
+          address: '99/1 ถนนพระยาสุเรนทร์ แขวงบางชัน เขตคลองสามวา กทม. 10510',
           status: 'รอตรวจสอบเอกสาร',
           created_at: new Date().toISOString()
         });
@@ -854,11 +1013,11 @@ function initOnlineAdmissions() {
     const isNew = mode === 'new';
     if (tabNewBtn && tabCheckBtn) {
       tabNewBtn.className = isNew
-        ? 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold bg-amber-400 text-slate-950 shadow transition flex items-center justify-center gap-2'
-        : 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-emerald-100 hover:bg-white/10 transition flex items-center justify-center gap-2';
+        ? 'px-3.5 py-2 rounded-lg text-xs font-bold bg-emerald-800 text-white shadow-sm transition flex items-center gap-1.5'
+        : 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5';
       tabCheckBtn.className = !isNew
-        ? 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold bg-amber-400 text-slate-950 shadow transition flex items-center justify-center gap-2'
-        : 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold text-emerald-100 hover:bg-white/10 transition flex items-center justify-center gap-2';
+        ? 'px-3.5 py-2 rounded-lg text-xs font-bold bg-emerald-800 text-white shadow-sm transition flex items-center gap-1.5'
+        : 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5';
     }
     form.classList.toggle('hidden', !isNew);
     if (checkPanel) checkPanel.classList.toggle('hidden', isNew);
@@ -872,7 +1031,8 @@ function initOnlineAdmissions() {
   const btnText = document.getElementById('adm-btn-text');
   const spinner = document.getElementById('adm-spinner');
   const receiptBox = document.getElementById('adm-receipt-box');
-  const receiptCodeEl = document.getElementById('adm-receipt-code');
+  const receiptCodeEl = document.getElementById('receipt-code') || document.getElementById('adm-receipt-code');
+  const receiptDetailsEl = document.getElementById('receipt-details');
   const gotoCheckBtn = document.getElementById('adm-goto-check-btn');
 
   let lastSubmittedCitizenId = '';
@@ -885,6 +1045,8 @@ function initOnlineAdmissions() {
     const citizenId = document.getElementById('adm-citizen-id').value.trim().replace(/\D/g, '');
     const parentName = document.getElementById('adm-parent-name').value.trim();
     const phone = document.getElementById('adm-phone').value.trim();
+    const addressEl = document.getElementById('adm-address');
+    const address = addressEl ? addressEl.value.trim() : '';
     const file = fileInput && fileInput.files ? fileInput.files[0] : null;
 
     if (citizenId.length !== 13) {
@@ -908,7 +1070,7 @@ function initOnlineAdmissions() {
             reader.readAsDataURL(file);
           });
 
-          const res = await fetch(GAS_URL, {
+          const res = await fetch(getActiveGasUrl(), {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
@@ -933,6 +1095,7 @@ function initOnlineAdmissions() {
         grade: grade,
         parent_name: parentName,
         phone: phone,
+        address: address,
         document_url: driveUrl,
         status: 'รอตรวจสอบเอกสาร',
         created_at: new Date().toISOString()
@@ -952,6 +1115,12 @@ function initOnlineAdmissions() {
 
       lastSubmittedCitizenId = citizenId;
       if (receiptCodeEl) receiptCodeEl.textContent = `รหัสใบสมัคร: ${receiptNo} | เลข ปชช.: ${citizenId}`;
+      if (receiptDetailsEl) {
+        receiptDetailsEl.innerHTML = `
+          <div>👤 <b>ชื่อนักเรียน:</b> ${escapeHtml(studentName)} (${escapeHtml(grade)})</div>
+          <div>👪 <b>ผู้ปกครอง:</b> ${escapeHtml(parentName)} (${escapeHtml(phone)})</div>
+        `;
+      }
       if (receiptBox) receiptBox.classList.remove('hidden');
 
       form.reset();
@@ -961,7 +1130,7 @@ function initOnlineAdmissions() {
     } finally {
       submitBtn.disabled = false;
       spinner.classList.add('hidden');
-      btnText.textContent = 'ส่งใบสมัครเรียนออนไลน์';
+      btnText.textContent = '✅ บันทึกและส่งใบสมัครเรียนออนไลน์';
     }
   });
 
@@ -980,14 +1149,16 @@ function initOnlineAdmissions() {
   const lookupInput = document.getElementById('adm-lookup-nid');
   const lookupBtn = document.getElementById('adm-lookup-btn');
   const sampleNidBtn = document.getElementById('adm-sample-nid-btn');
-  const resultCard = document.getElementById('adm-lookup-result');
+  const resultCard = document.getElementById('adm-edit-box') || document.getElementById('adm-lookup-result');
   const emptyCard = document.getElementById('adm-lookup-empty');
-  const resAppNo = document.getElementById('res-app-no');
-  const resStatusBadge = document.getElementById('res-status-badge');
+  const resAppNo = document.getElementById('adm-found-code') || document.getElementById('res-app-no');
+  const resStatusBadge = document.getElementById('adm-found-status-badge') || document.getElementById('res-status-badge');
   const editGrade = document.getElementById('edit-adm-grade');
   const editName = document.getElementById('edit-adm-name');
+  const editNid = document.getElementById('edit-adm-nid');
   const editParent = document.getElementById('edit-adm-parent');
   const editPhone = document.getElementById('edit-adm-phone');
+  const editAddress = document.getElementById('edit-adm-address');
   const saveEditBtn = document.getElementById('save-edit-adm-btn');
   const confirmBtn = document.getElementById('confirm-adm-btn');
   const feedbackEl = document.getElementById('adm-action-feedback');
@@ -997,10 +1168,10 @@ function initOnlineAdmissions() {
   function renderStatusBadge(status) {
     if (!resStatusBadge) return;
     if (status === 'ยืนยันการสมัครเรียนแล้ว') {
-      resStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-400 text-slate-950 shadow';
+      resStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500 text-white shadow';
       resStatusBadge.textContent = '✅ ยืนยันการสมัครเรียนแล้ว';
     } else {
-      resStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950';
+      resStatusBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300';
       resStatusBadge.textContent = `⏳ ${status || 'รอตรวจสอบเอกสาร'}`;
     }
   }
@@ -1037,6 +1208,7 @@ function initOnlineAdmissions() {
       currentRecord = null;
       if (resultCard) resultCard.classList.add('hidden');
       if (emptyCard) emptyCard.classList.remove('hidden');
+      alert(`❌ ไม่พบข้อมูลใบสมัครของเลขประจำตัวประชาชน ${nid}\n(หากต้องการทดสอบ สามารถกดปุ่ม "⚡ ทดลองใช้เลขตัวอย่าง 1100401234567" ได้ครับ)`);
       return;
     }
 
@@ -1044,13 +1216,15 @@ function initOnlineAdmissions() {
     if (emptyCard) emptyCard.classList.add('hidden');
     if (resultCard) resultCard.classList.remove('hidden');
 
-    if (resAppNo) resAppNo.textContent = `${found.app_no || 'BCS-69-XXXX'} (เลข ปชช. ${found.citizen_id})`;
+    if (resAppNo) resAppNo.textContent = `รหัสใบสมัคร: ${found.app_no || 'BCS-69-XXXX'} (เลข ปชช. ${found.citizen_id})`;
     renderStatusBadge(found.status);
 
-    if (editGrade) editGrade.value = found.grade || 'ป.1 (หลักสูตรปกติ)';
+    if (editGrade) editGrade.value = found.grade || 'ประถมศึกษาปีที่ 1 (หลักสูตรปกติ)';
     if (editName) editName.value = found.student_name || '';
+    if (editNid) editNid.value = found.citizen_id || nid;
     if (editParent) editParent.value = found.parent_name || '';
     if (editPhone) editPhone.value = found.phone || '';
+    if (editAddress) editAddress.value = found.address || '99/1 ถนนพระยาสุเรนทร์ แขวงบางชัน เขตคลองสามวา กทม. 10510';
   }
 
   if (lookupBtn && lookupInput) {
@@ -1078,6 +1252,7 @@ function initOnlineAdmissions() {
       currentRecord.student_name = editName ? editName.value.trim() : currentRecord.student_name;
       currentRecord.parent_name = editParent ? editParent.value.trim() : currentRecord.parent_name;
       currentRecord.phone = editPhone ? editPhone.value.trim() : currentRecord.phone;
+      currentRecord.address = editAddress ? editAddress.value.trim() : currentRecord.address;
       currentRecord.updated_at = new Date().toISOString();
 
       saveStoredAdmission(currentRecord);
@@ -1091,6 +1266,8 @@ function initOnlineAdmissions() {
       if (feedbackEl) {
         feedbackEl.textContent = '💾 บันทึกการแก้ไขข้อมูลผู้สมัครเรียบร้อยแล้ว!';
         feedbackEl.classList.remove('hidden');
+      } else {
+        alert('💾 บันทึกการแก้ไขข้อมูลผู้สมัครเรียบร้อยแล้ว!');
       }
     });
   }
@@ -1103,6 +1280,7 @@ function initOnlineAdmissions() {
       currentRecord.student_name = editName ? editName.value.trim() : currentRecord.student_name;
       currentRecord.parent_name = editParent ? editParent.value.trim() : currentRecord.parent_name;
       currentRecord.phone = editPhone ? editPhone.value.trim() : currentRecord.phone;
+      currentRecord.address = editAddress ? editAddress.value.trim() : currentRecord.address;
       currentRecord.status = 'ยืนยันการสมัครเรียนแล้ว';
       currentRecord.updated_at = new Date().toISOString();
 
@@ -1118,6 +1296,8 @@ function initOnlineAdmissions() {
       if (feedbackEl) {
         feedbackEl.textContent = '🎉 ยืนยันสิทธิ์การสมัครเรียนเรียบร้อยแล้ว! กรุณานำเอกสารตัวจริงมายื่นตามวันเวลาที่กำหนดด้านบน';
         feedbackEl.classList.remove('hidden');
+      } else {
+        alert('🎉 ยืนยันสิทธิ์การสมัครเรียนเรียบร้อยแล้ว!\nกรุณานำเอกสารตัวจริงมายื่นที่โรงเรียนวันที่ 15 – 20 มีนาคม 2569 และรายงานตัววันที่ 28 มีนาคม 2569');
       }
     });
   }
