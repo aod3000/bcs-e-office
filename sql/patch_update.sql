@@ -12,13 +12,30 @@
 alter table public.profiles 
   add column if not exists is_active boolean not null default true;
 
--- 2) เพิ่มกลุ่มงานการศึกษาพิเศษใน departments
+-- 2) เพิ่มคอลัมน์ kind ให้กับตาราง departments หากยังไม่มี (แก้ Error 42703 ทันที)
+alter table public.departments 
+  add column if not exists kind text default 'special';
+
+-- 3) เพิ่มกลุ่มงานการศึกษาพิเศษใน departments
 insert into public.departments (name, kind) values
   ('งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน)', 'special'),
   ('ระดับชั้นการศึกษาพิเศษ', 'grade_level')
 on conflict (name) do nothing;
 
--- 3) สร้างตารางห้องเรียน (classrooms)
+-- 4) ตารางเก็บการตั้งค่าเว็บไซต์และเนื้อหาหลังบ้าน (Site CMS Settings)
+create table if not exists public.site_settings (
+  key         text primary key,
+  value       jsonb not null,
+  updated_at  timestamptz not null default now()
+);
+
+-- ค่าเริ่มต้นสำหรับการตั้งค่าเว็บไซต์
+insert into public.site_settings (key, value) values
+  ('admissions', '{"is_open": true, "year": 2569, "notice": "เปิดรับสมัครนักเรียนใหม่ประจำปีการศึกษา 2569"}'::jsonb),
+  ('urgent_announcement', '{"is_active": true, "text": "ขอเชิญผู้ปกครองและนักเรียนร่วมกิจกรรมวันวิชาการ 15 มีนาคม 2569", "link": "#activities"}'::jsonb)
+on conflict (key) do nothing;
+
+-- 5) สร้างตารางห้องเรียน (classrooms)
 create table if not exists public.classrooms (
   id           bigint generated always as identity primary key,
   grade_level  text not null,                       -- เช่น 'อนุบาล', 'ป.1', 'ม.1', 'การศึกษาพิเศษ'

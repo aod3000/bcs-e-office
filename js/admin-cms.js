@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCsvAndIndividualCrud();
   initBannersModule();
   initUploadLimitModule();
+  initAdmissionsToggleModule();
+  initDatabaseBackupRestoreModule();
+  initUrgentAnnouncementCms();
 });
 
 /* =====================================================================
@@ -1612,6 +1615,176 @@ function initUploadLimitModule() {
   });
 }
 
+
+/* =====================================================================
+   14. ADMISSIONS TOGGLE MODULE (สวิตช์เปิด/ปิดรับสมัครเรียน)
+   ===================================================================== */
+function initAdmissionsToggleModule() {
+  const toggleBtn = document.getElementById('toggle-admissions-btn');
+  const banner = document.getElementById('adm-status-banner');
+  const icon = document.getElementById('adm-status-icon');
+  const text = document.getElementById('adm-status-text');
+
+  if (!toggleBtn || !banner) return;
+
+  function renderStatus(status) {
+    const isOpen = status !== 'closed';
+    if (isOpen) {
+      banner.className = 'flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border transition mb-6 bg-emerald-50 border-emerald-200';
+      if (icon) icon.textContent = '🟢';
+      if (text) {
+        text.textContent = '● กำลังเปิดรับสมัคร';
+        text.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white';
+      }
+      toggleBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm flex items-center gap-1.5';
+      toggleBtn.innerHTML = '<span>🔒</span> <span>สลับเป็น: ปิดระบบรับสมัครชั่วคราว</span>';
+    } else {
+      banner.className = 'flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border transition mb-6 bg-red-50 border-red-200';
+      if (icon) icon.textContent = '🔴';
+      if (text) {
+        text.textContent = '✕ ปิดรับสมัครชั่วคราว';
+        text.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-600 text-white';
+      }
+      toggleBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-700 transition shadow-sm flex items-center gap-1.5';
+      toggleBtn.innerHTML = '<span>📢</span> <span>สลับเป็น: เปิดรับสมัครเรียนปกติ</span>';
+    }
+  }
+
+  const currentStatus = localStorage.getItem('bcs_admissions_status') || 'open';
+  renderStatus(currentStatus);
+
+  toggleBtn.addEventListener('click', async () => {
+    const prev = localStorage.getItem('bcs_admissions_status') || 'open';
+    const next = prev === 'open' ? 'closed' : 'open';
+    localStorage.setItem('bcs_admissions_status', next);
+    renderStatus(next);
+
+    // Sync to Supabase site_settings if online
+    if (window.supabase && isSupabaseConfigured()) {
+      try {
+        await getSupabase().from('site_settings').upsert({
+          key: 'admissions',
+          value: { is_open: next === 'open', updated_at: new Date().toISOString() }
+        });
+      } catch (e) { /* ignore */ }
+    }
+
+    showToast(next === 'open' ? '🟢 เปิดระบบรับสมัครเรียนออนไลน์เรียบร้อยแล้ว' : '🔴 ปิดระบบรับสมัครเรียนออนไลน์ชั่วคราวแล้ว');
+  });
+}
+
+/* =====================================================================
+   15. DATABASE BACKUP & RESTORE MODULE (สำรองและกู้คืนฐานข้อมูล)
+   ===================================================================== */
+function initDatabaseBackupRestoreModule() {
+  const backupBtn = document.getElementById('backup-db-btn');
+  const restoreInput = document.getElementById('restore-db-file');
+
+  if (backupBtn) {
+    backupBtn.addEventListener('click', () => {
+      let heroBanners = [];
+      try { heroBanners = JSON.parse(localStorage.getItem('bcs_hero_banners') || '[]'); } catch (e) {}
+
+      let urgent = {};
+      try { urgent = JSON.parse(localStorage.getItem('bcs_urgent_announcement') || '{}'); } catch (e) {}
+
+      const backupObj = {
+        app: 'BCS-School-System',
+        version: '2.0',
+        school_name: 'โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)',
+        exported_at: new Date().toISOString(),
+        backup_date_th: new Date().toLocaleDateString('th-TH', { dateStyle: 'full' }),
+        data: {
+          users_count: (typeof allUsers !== 'undefined') ? allUsers.length : 0,
+          users: (typeof allUsers !== 'undefined') ? allUsers : [],
+          students: (typeof MOCK_CLASS_STUDENTS !== 'undefined') ? MOCK_CLASS_STUDENTS : {},
+          hero_banners: heroBanners,
+          admissions_status: localStorage.getItem('bcs_admissions_status') || 'open',
+          urgent_announcement: urgent,
+          max_upload_mb: localStorage.getItem('bcs_max_upload_mb') || '50'
+        }
+      };
+
+      const jsonStr = JSON.stringify(backupObj, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `BCS_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('💾 ส่งออกไฟล์สำรองฐานข้อมูล (.JSON) เรียบร้อยแล้ว');
+    });
+  }
+
+  if (restoreInput) {
+    restoreInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+
+        if (!parsed.data) throw new Error('โครงสร้างไฟล์สำรองไม่ถูกต้อง');
+
+        if (confirm(`คุณต้องการกู้คืนฐานข้อมูลจากไฟล์ "${file.name}" (สำรองเมื่อ ${parsed.exported_at || 'ไม่ระบุ'}) ใช่หรือไม่?\nข้อมูลการตั้งค่าและนักเรียนจะถูกเขียนทับด้วยข้อมูลจากไฟล์นี้`)) {
+          if (parsed.data.students && typeof MOCK_CLASS_STUDENTS !== 'undefined') {
+            Object.assign(MOCK_CLASS_STUDENTS, parsed.data.students);
+          }
+          if (parsed.data.hero_banners) {
+            localStorage.setItem('bcs_hero_banners', JSON.stringify(parsed.data.hero_banners));
+          }
+          if (parsed.data.admissions_status) {
+            localStorage.setItem('bcs_admissions_status', parsed.data.admissions_status);
+          }
+          if (parsed.data.urgent_announcement) {
+            localStorage.setItem('bcs_urgent_announcement', JSON.stringify(parsed.data.urgent_announcement));
+          }
+          if (parsed.data.max_upload_mb) {
+            localStorage.setItem('bcs_max_upload_mb', parsed.data.max_upload_mb);
+          }
+
+          showToast('✅ กู้คืนข้อมูลสำเร็จ กำลังรีเฟรชหน้าต่าง...');
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      } catch (err) {
+        alert('❌ กู้คืนข้อมูลไม่สำเร็จ: ' + err.message);
+      }
+      e.target.value = '';
+    });
+  }
+}
+
+/* =====================================================================
+   16. URGENT ANNOUNCEMENT CMS (จัดการประกาศด่วนหน้าเว็บ)
+   ===================================================================== */
+function initUrgentAnnouncementCms() {
+  const textInput = document.getElementById('cms-urgent-text');
+  const activeCheck = document.getElementById('cms-urgent-active');
+  const saveBtn = document.getElementById('save-urgent-announcement-btn');
+
+  if (!textInput || !saveBtn) return;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('bcs_urgent_announcement') || '{}');
+    if (saved.text) textInput.value = saved.text;
+    if (typeof saved.active === 'boolean') activeCheck.checked = saved.active;
+  } catch (e) {}
+
+  saveBtn.addEventListener('click', () => {
+    const payload = {
+      text: textInput.value.trim(),
+      active: activeCheck.checked,
+      updated_at: new Date().toISOString()
+    };
+    localStorage.setItem('bcs_urgent_announcement', JSON.stringify(payload));
+    showToast('📢 บันทึกการตั้งค่าประกาศด่วนหน้าเว็บสำเร็จ');
+  });
+}
 
 function showToast(message, type = 'success') {
   const toast = document.getElementById('admin-toast');

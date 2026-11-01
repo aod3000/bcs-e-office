@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initImageLightbox();
   loadDynamicActivities();
   initOnlineAdmissions();
+  checkAdmissionsStatusOnHomepage();
+  checkUrgentAnnouncementCms();
 });
 
 /* ---------- ทำเนียบบุคลากร Popup Modal ---------- */
@@ -305,21 +307,98 @@ function initThemeSwitcher() {
   applyTheme(localStorage.getItem(THEME_KEY) || 'school');
 }
 
-/* ---------- Hero Carousel (เลื่อนอัตโนมัติ) ---------- */
+/* ---------- Hero Carousel (ภาพสไลด์หน้าแรกแบบไดนามิกจากหลังบ้าน) ---------- */
 function initCarousel() {
   const root = document.getElementById('hero-carousel');
   if (!root) return;
 
   const track = root.querySelector('.carousel-track');
+  if (!track) return;
+
+  // อ่านรายการแบนเนอร์จากระบบหลังบ้าน (localStorage หรือค่าเริ่มต้น)
+  const storedBanners = localStorage.getItem('bcs_hero_banners');
+  let bannerList = null;
+  try {
+    bannerList = storedBanners ? JSON.parse(storedBanners) : null;
+  } catch (e) {}
+
+  if (!bannerList || !bannerList.length) {
+    bannerList = [
+      {
+        id: 1,
+        title: 'โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)',
+        tagline: 'มุ่งสู่ความเป็นเลิศทางวิชาการ ควบคู่คุณธรรม นำเทคโนโลยี น้อมนำหลักปรัชญาของเศรษฐกิจพอเพียง',
+        badge: '⭐ อัตลักษณ์และความเป็นเลิศ',
+        img: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&auto=format&fit=crop&q=80',
+        btnText: 'สารจากผู้อำนวยการ →',
+        btnLink: '#director'
+      },
+      {
+        id: 2,
+        title: 'หลักสูตรสองภาษา (EP) & ห้องเรียนอัจฉริยะ',
+        tagline: 'จัดการเรียนการสอนภาษาอังกฤษกับครูเจ้าของภาษา เสริมสร้างทักษะสากลและการคิดวิเคราะห์',
+        badge: '🌍 English Program & Smart Learning',
+        img: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&auto=format&fit=crop&q=80',
+        btnText: 'ดูหลักสูตรการศึกษา →',
+        btnLink: '#vision'
+      },
+      {
+        id: 3,
+        title: 'ส่งเสริมทักษะชีวิต ศิลปะ ดนตรี และกีฬา',
+        tagline: 'พัฒนาศักยภาพผู้เรียนรอบด้าน มีสุขภาพพลานามัยสมบูรณ์ พร้อมก้าวสู่สังคมยุคดิจิทัลอย่างมั่นใจ',
+        badge: '🎨 คุณธรรม ดนตรี กีฬาเด่น',
+        img: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&auto=format&fit=crop&q=80',
+        btnText: 'ชมกิจกรรมโรงเรียน →',
+        btnLink: '#activities'
+      }
+    ];
+  }
+
+  // เรนเดอร์สไลด์พร้อมภาพพื้นหลังจริงและ Overlay กราเดียนต์เพื่อให้อ่านง่าย
+  track.innerHTML = bannerList.map((b) => `
+    <article class="carousel-slide relative min-w-full min-h-[480px] sm:min-h-[580px] lg:min-h-[640px] overflow-hidden flex flex-col justify-end p-8 sm:p-20 text-white">
+      <img src="${b.img}" alt="${escapeHtml(b.title)}" class="absolute inset-0 w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/40 to-transparent"></div>
+      <div class="relative z-10 mx-auto max-w-[1536px] w-full">
+        <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold uppercase tracking-wider mb-4 shadow">
+          ${escapeHtml(b.badge || '📢 ข่าวสารและกิจกรรม')}
+        </span>
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-white drop-shadow-md">
+          ${escapeHtml(b.title)}
+        </h1>
+        <p class="mt-4 max-w-2xl text-sm sm:text-base text-emerald-100 font-light leading-relaxed drop-shadow">
+          ${escapeHtml(b.tagline || '')}
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="${b.btnLink || '#vision'}" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-7 py-3 text-sm shadow-lg hover:-translate-y-0.5 transition">
+            ${escapeHtml(b.btnText || 'ดูข้อมูลเพิ่มเติม →')}
+          </a>
+          <a href="#admissions" class="rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur px-6 py-3 text-sm font-medium transition">
+            📝 สมัครเรียนออนไลน์
+          </a>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  // เรนเดอร์จุดบอกตำแหน่ง (Dots)
+  const dotsContainer = root.querySelector('.absolute.bottom-6');
+  if (dotsContainer) {
+    dotsContainer.innerHTML = bannerList.map((_, idx) => `
+      <button class="carousel-dot h-2.5 w-2.5 rounded-full bg-white/40 transition-all ${idx === 0 ? 'active' : ''}" aria-label="สไลด์ ${idx + 1}"></button>
+    `).join('');
+  }
+
   const slides = root.querySelectorAll('.carousel-slide');
   const dots = root.querySelectorAll('.carousel-dot');
-  const INTERVAL = 5000; // เลื่อนทุก 5 วินาที
+  const INTERVAL = 5000;
   let index = 0;
   let timer = null;
   let startX = 0;
 
-  /** แสดงสไลด์ตามลำดับที่ระบุ (วนลูป) */
   function goTo(i) {
+    if (!slides.length) return;
     index = (i + slides.length) % slides.length;
     track.style.transform = `translateX(-${index * 100}%)`;
     dots.forEach((d, n) => d.classList.toggle('active', n === index));
@@ -328,15 +407,15 @@ function initCarousel() {
   function start() { stop(); timer = setInterval(() => goTo(index + 1), INTERVAL); }
   function stop() { if (timer) clearInterval(timer); }
 
-  root.querySelector('[data-carousel-prev]').addEventListener('click', () => { goTo(index - 1); start(); });
-  root.querySelector('[data-carousel-next]').addEventListener('click', () => { goTo(index + 1); start(); });
+  const prevBtn = root.querySelector('[data-carousel-prev]');
+  const nextBtn = root.querySelector('[data-carousel-next]');
+  if (prevBtn) prevBtn.addEventListener('click', () => { goTo(index - 1); start(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => { goTo(index + 1); start(); });
   dots.forEach((d, n) => d.addEventListener('click', () => { goTo(n); start(); }));
 
-  // หยุดชั่วคราวเมื่อเมาส์อยู่เหนือแบนเนอร์
   root.addEventListener('mouseenter', stop);
   root.addEventListener('mouseleave', start);
 
-  // รองรับการปัดนิ้วบนมือถือ
   root.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; stop(); }, { passive: true });
   root.addEventListener('touchend', (e) => {
     const diff = e.changedTouches[0].clientX - startX;
@@ -346,6 +425,63 @@ function initCarousel() {
 
   goTo(0);
   start();
+}
+
+/* ---------- ตรวจสอบสถานะเปิด/ปิดรับสมัครเรียนบนหน้าแรก ---------- */
+function checkAdmissionsStatusOnHomepage() {
+  const section = document.getElementById('admissions');
+  if (!section) return;
+
+  const status = localStorage.getItem('bcs_admissions_status') || 'open';
+  const form = document.getElementById('online-admission-form');
+  const submitBtn = document.getElementById('adm-submit-btn');
+
+  let noticeEl = document.getElementById('adm-closed-notice');
+
+  if (status === 'closed') {
+    if (!noticeEl) {
+      noticeEl = document.createElement('div');
+      noticeEl.id = 'adm-closed-notice';
+      noticeEl.className = 'p-5 mb-5 rounded-2xl bg-amber-400 text-slate-950 font-bold text-center border-2 border-amber-300 shadow-md text-xs sm:text-sm leading-relaxed';
+      noticeEl.innerHTML = '🔒 <span>ขณะนี้ระบบรับสมัครเรียนออนไลน์ปิดรับสมัครชั่วคราว หรือสิ้นสุดระยะเวลารับสมัครประจำปีการศึกษา 2569 แล้ว หากมีข้อสงสัยกรุณาติดต่อห้องธุรการโรงเรียน โทร. 02-517-1423</span>';
+      if (form) form.parentNode.insertBefore(noticeEl, form);
+    }
+    if (form) {
+      form.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+      form.classList.add('opacity-50', 'pointer-events-none');
+    }
+    if (submitBtn) {
+      const btnText = document.getElementById('adm-btn-text');
+      if (btnText) btnText.textContent = '🔒 ปิดรับสมัครเรียนชั่วคราว';
+    }
+  } else {
+    if (noticeEl) noticeEl.remove();
+    if (form) {
+      form.querySelectorAll('input, select, button').forEach(el => el.disabled = false);
+      form.classList.remove('opacity-50', 'pointer-events-none');
+    }
+    if (submitBtn) {
+      const btnText = document.getElementById('adm-btn-text');
+      if (btnText) btnText.textContent = 'ส่งใบสมัครเรียนออนไลน์';
+    }
+  }
+}
+
+/* ---------- ตรวจสอบประกาศด่วนจากระบบหลังบ้าน CMS ---------- */
+function checkUrgentAnnouncementCms() {
+  const widget = document.getElementById('announce-widget');
+  if (!widget) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem('bcs_urgent_announcement') || '{}');
+    if (typeof saved.active === 'boolean' && !saved.active) {
+      widget.classList.add('hidden');
+      return;
+    }
+    if (saved.text) {
+      const textEl = widget.querySelector('.truncate, p, span');
+      if (textEl) textEl.textContent = saved.text;
+    }
+  } catch (e) {}
 }
 
 /* ---------- โหลดภาพกิจกรรมล่าสุดแบบไดนามิกจากระบบหลังบ้าน (Admin CMS) ---------- */

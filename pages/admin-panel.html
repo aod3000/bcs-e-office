@@ -719,6 +719,23 @@
           </div>
         </div>
 
+        <!-- Admissions Status On/Off Toggle Control Banner -->
+        <div id="adm-status-banner" class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border transition mb-6 bg-emerald-50 border-emerald-200">
+          <div class="flex items-center gap-3">
+            <span id="adm-status-icon" class="text-2xl">🟢</span>
+            <div>
+              <div class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                <span>สถานะระบบรับสมัครเรียนหน้าเว็บ:</span>
+                <span id="adm-status-text" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white">● กำลังเปิดรับสมัคร</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">ผู้ปกครองสามารถยื่นใบสมัครและแนบเอกสารผ่านหน้าแรกของเว็บไซต์ได้ตามปกติ</p>
+            </div>
+          </div>
+          <button type="button" id="toggle-admissions-btn" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm flex items-center gap-1.5">
+            <span>🔒</span> <span>สลับเป็น: ปิดระบบรับสมัครชั่วคราว</span>
+          </button>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-700 uppercase text-[11px] border-b">
@@ -861,6 +878,73 @@
           <button id="save-upload-limit-btn" class="px-6 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
             <span>💾</span> <span>บันทึกการตั้งค่าขนาดไฟล์</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Database Backup & Restore Card -->
+      <div class="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-6">
+        <div class="pb-2 border-b border-slate-200">
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span>💾</span> สำรองและกู้คืนฐานข้อมูล (Database Backup & Restore)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">บันทึกสำรองข้อมูลทั้งหมดในระบบเป็นไฟล์ JSON เก็บไว้ในเครื่อง และสามารถกู้คืนกลับมาได้ตลอดเวลาเพียง 1 คลิก</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center gap-2 text-sm font-bold text-slate-900">
+                <span>📦</span> <span>สำรองฐานข้อมูล (Backup)</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                ส่งออกข้อมูลผู้ใช้งาน, ข้อมูลห้องเรียน, นักเรียน, สถิติเช็คชื่อ, แบนเนอร์, และการตั้งค่าทั้งหมด
+              </p>
+            </div>
+            <button type="button" id="backup-db-btn" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2">
+              <span>💾</span> <span>ดาวน์โหลดไฟล์สำรอง (JSON)</span>
+            </button>
+          </div>
+
+          <div class="p-5 rounded-2xl border border-amber-200 bg-amber-50/50 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center gap-2 text-sm font-bold text-amber-950">
+                <span>📥</span> <span>กู้คืนฐานข้อมูล (Restore)</span>
+              </div>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                นำเข้าไฟล์สำรอง JSON เพื่อกู้คืนสถานะข้อมูลและโครงสร้างระบบกลับมาเป็นเหมือนเดิม
+              </p>
+            </div>
+            <label class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+              <span>🔄</span> <span>เลือกไฟล์กู้คืน (.JSON)</span>
+              <input type="file" id="restore-db-file" accept=".json" class="hidden">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Announcement & School Info CMS Card -->
+      <div class="max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-4">
+        <div class="pb-2 border-b border-slate-200">
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span>📢</span> ข้อความประกาศด่วนหน้าแรก (Urgent Announcement CMS)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">แก้ไขข้อความแจ้งเตือนด่วนที่แสดงบนแถบกระดิ่งหน้าแรกของเว็บไซต์โดยตรงจากหลังบ้าน</p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">ข้อความประกาศด่วน:</label>
+            <textarea id="cms-urgent-text" rows="2" class="w-full rounded-xl border border-slate-200 p-3 text-xs focus:border-emerald-600 focus:outline-none" placeholder="ระบุข้อความประกาศด่วน..."></textarea>
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="cms-urgent-active" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+              <span class="font-bold text-slate-800">เปิดแสดงแถบประกาศด่วนบนหน้าแรก</span>
+            </label>
+            <button type="button" id="save-urgent-announcement-btn" class="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition">
+              💾 บันทึกประกาศด่วน
+            </button>
+          </div>
         </div>
       </div>
     </section>
