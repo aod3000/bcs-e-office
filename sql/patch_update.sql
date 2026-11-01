@@ -1,49 +1,88 @@
 -- =====================================================================
 -- patch_update.sql - อัปเดตโครงสร้างฐานข้อมูล Supabase (รันใน SQL Editor)
--- แก้ไข Error: "Could not find the 'is_active' column of 'profiles'"
+-- ปรับโครงสร้างห้องเรียนตามโครงสร้างจริงของโรงเรียนบางชัน:
+--   - ระดับปฐมวัย (อ.1 - อ.3): 3 ห้องต่อระดับชั้น
+--   - ระดับประถมศึกษา (ป.1 - ป.6): 9 ห้องต่อระดับชั้น (ห้อง 1 - 9) รวม 54 ห้อง
+--   - ระดับมัธยมศึกษา (ม.1 - ม.3): 7 ห้องต่อระดับชั้น (ห้อง 1 - 7) รวม 21 ห้อง
+--   - ระดับการศึกษาพิเศษ (ห้องเรียนคู่ขนาน/การศึกษาพิเศษ)
 -- ปลอดภัย 100%: ไม่ลบข้อมูลเดิม และรองรับ IF NOT EXISTS ทั้งหมด
 -- =====================================================================
 
--- 1) เพิ่มคอลัมน์ is_active ให้กับตาราง profiles (หากยังไม่มี)
+-- 1) เพิ่มคอลัมน์ is_active ให้กับตาราง profiles (แก้ Error ทันที)
 alter table public.profiles 
   add column if not exists is_active boolean not null default true;
 
--- 2) สร้างตารางห้องเรียน (classrooms) หากยังไม่มี
+-- 2) เพิ่มกลุ่มงานการศึกษาพิเศษใน departments
+insert into public.departments (name, kind) values
+  ('งานการศึกษาพิเศษ (ห้องเรียนคู่ขนาน)', 'special'),
+  ('ระดับชั้นการศึกษาพิเศษ', 'grade_level')
+on conflict (name) do nothing;
+
+-- 3) สร้างตารางห้องเรียน (classrooms)
 create table if not exists public.classrooms (
   id           bigint generated always as identity primary key,
-  grade_level  text not null,                       -- เช่น 'ป.1', 'ป.2', 'ม.1'
-  room_number  text not null,                       -- เช่น '1', '2', 'EP'
-  name         text not null unique,                -- เช่น 'ป.1/1', 'ป.1/2'
+  grade_level  text not null,                       -- เช่น 'อนุบาล', 'ป.1', 'ม.1', 'การศึกษาพิเศษ'
+  room_number  text not null,                       -- เช่น '1' ถึง '9', 'EP'
+  name         text not null unique,                -- เช่น 'ป.1/1', 'ป.1/9', 'ม.1/7'
   created_at   timestamptz not null default now()
 );
 
--- ข้อมูลห้องเรียนเริ่มต้นของโรงเรียนบางชัน
+-- ข้อมูลห้องเรียนตามโครงสร้างจริงของโรงเรียนบางชัน
 insert into public.classrooms (grade_level, room_number, name) values
-  ('อนุบาล', '1', 'อนุบาล 1'),
-  ('อนุบาล', '2', 'อนุบาล 2'),
-  ('อนุบาล', '3', 'อนุบาล 3'),
-  ('ป.1', '1', 'ป.1/1'),
-  ('ป.1', '2', 'ป.1/2'),
-  ('ป.1', 'EP', 'ป.1/EP'),
-  ('ป.2', '1', 'ป.2/1'),
-  ('ป.2', '2', 'ป.2/2'),
-  ('ป.3', '1', 'ป.3/1'),
-  ('ป.3', '2', 'ป.3/2'),
-  ('ป.4', '1', 'ป.4/1'),
-  ('ป.4', '2', 'ป.4/2'),
-  ('ป.5', '1', 'ป.5/1'),
-  ('ป.5', '2', 'ป.5/2'),
-  ('ป.6', '1', 'ป.6/1'),
-  ('ป.6', '2', 'ป.6/2'),
-  ('ม.1', '1', 'ม.1/1'),
-  ('ม.1', '2', 'ม.1/2'),
-  ('ม.2', '1', 'ม.2/1'),
-  ('ม.2', '2', 'ม.2/2'),
-  ('ม.3', '1', 'ม.3/1'),
-  ('ม.3', '2', 'ม.3/2')
+  -- ระดับปฐมวัย (อนุบาล 1 - 3)
+  ('อ.1', '1', 'อนุบาล 1/1'), ('อ.1', '2', 'อนุบาล 1/2'), ('อ.1', '3', 'อนุบาล 1/3'),
+  ('อ.2', '1', 'อนุบาล 2/1'), ('อ.2', '2', 'อนุบาล 2/2'), ('อ.2', '3', 'อนุบาล 2/3'),
+  ('อ.3', '1', 'อนุบาล 3/1'), ('อ.3', '2', 'อนุบาล 3/2'), ('อ.3', '3', 'อนุบาล 3/3'),
+
+  -- ระดับประถมศึกษาปีที่ 1 (9 ห้อง)
+  ('ป.1', '1', 'ป.1/1'), ('ป.1', '2', 'ป.1/2'), ('ป.1', '3', 'ป.1/3'),
+  ('ป.1', '4', 'ป.1/4'), ('ป.1', '5', 'ป.1/5'), ('ป.1', '6', 'ป.1/6'),
+  ('ป.1', '7', 'ป.1/7'), ('ป.1', '8', 'ป.1/8'), ('ป.1', '9', 'ป.1/9 (EP)'),
+
+  -- ระดับประถมศึกษาปีที่ 2 (9 ห้อง)
+  ('ป.2', '1', 'ป.2/1'), ('ป.2', '2', 'ป.2/2'), ('ป.2', '3', 'ป.2/3'),
+  ('ป.2', '4', 'ป.2/4'), ('ป.2', '5', 'ป.2/5'), ('ป.2', '6', 'ป.2/6'),
+  ('ป.2', '7', 'ป.2/7'), ('ป.2', '8', 'ป.2/8'), ('ป.2', '9', 'ป.2/9'),
+
+  -- ระดับประถมศึกษาปีที่ 3 (9 ห้อง)
+  ('ป.3', '1', 'ป.3/1'), ('ป.3', '2', 'ป.3/2'), ('ป.3', '3', 'ป.3/3'),
+  ('ป.3', '4', 'ป.3/4'), ('ป.3', '5', 'ป.3/5'), ('ป.3', '6', 'ป.3/6'),
+  ('ป.3', '7', 'ป.3/7'), ('ป.3', '8', 'ป.3/8'), ('ป.3', '9', 'ป.3/9'),
+
+  -- ระดับประถมศึกษาปีที่ 4 (9 ห้อง)
+  ('ป.4', '1', 'ป.4/1'), ('ป.4', '2', 'ป.4/2'), ('ป.4', '3', 'ป.4/3'),
+  ('ป.4', '4', 'ป.4/4'), ('ป.4', '5', 'ป.4/5'), ('ป.4', '6', 'ป.4/6'),
+  ('ป.4', '7', 'ป.4/7'), ('ป.4', '8', 'ป.4/8'), ('ป.4', '9', 'ป.4/9'),
+
+  -- ระดับประถมศึกษาปีที่ 5 (9 ห้อง)
+  ('ป.5', '1', 'ป.5/1'), ('ป.5', '2', 'ป.5/2'), ('ป.5', '3', 'ป.5/3'),
+  ('ป.5', '4', 'ป.5/4'), ('ป.5', '5', 'ป.5/5'), ('ป.5', '6', 'ป.5/6'),
+  ('ป.5', '7', 'ป.5/7'), ('ป.5', '8', 'ป.5/8'), ('ป.5', '9', 'ป.5/9'),
+
+  -- ระดับประถมศึกษาปีที่ 6 (9 ห้อง)
+  ('ป.6', '1', 'ป.6/1'), ('ป.6', '2', 'ป.6/2'), ('ป.6', '3', 'ป.6/3'),
+  ('ป.6', '4', 'ป.6/4'), ('ป.6', '5', 'ป.6/5'), ('ป.6', '6', 'ป.6/6'),
+  ('ป.6', '7', 'ป.6/7'), ('ป.6', '8', 'ป.6/8'), ('ป.6', '9', 'ป.6/9'),
+
+  -- ระดับมัธยมศึกษาปีที่ 1 (7 ห้อง)
+  ('ม.1', '1', 'ม.1/1'), ('ม.1', '2', 'ม.1/2'), ('ม.1', '3', 'ม.1/3'),
+  ('ม.1', '4', 'ม.1/4'), ('ม.1', '5', 'ม.1/5'), ('ม.1', '6', 'ม.1/6'), ('ม.1', '7', 'ม.1/7'),
+
+  -- ระดับมัธยมศึกษาปีที่ 2 (7 ห้อง)
+  ('ม.2', '1', 'ม.2/1'), ('ม.2', '2', 'ม.2/2'), ('ม.2', '3', 'ม.2/3'),
+  ('ม.2', '4', 'ม.2/4'), ('ม.2', '5', 'ม.2/5'), ('ม.2', '6', 'ม.2/6'), ('ม.2', '7', 'ม.2/7'),
+
+  -- ระดับมัธยมศึกษาปีที่ 3 (7 ห้อง)
+  ('ม.3', '1', 'ม.3/1'), ('ม.3', '2', 'ม.3/2'), ('ม.3', '3', 'ม.3/3'),
+  ('ม.3', '4', 'ม.3/4'), ('ม.3', '5', 'ม.3/5'), ('ม.3', '6', 'ม.3/6'), ('ม.3', '7', 'ม.3/7'),
+
+  -- ระดับการศึกษาพิเศษ (ห้องเรียนคู่ขนาน/กศ.พ.)
+  ('การศึกษาพิเศษ', '1', 'การศึกษาพิเศษ 1'),
+  ('การศึกษาพิเศษ', '2', 'การศึกษาพิเศษ 2'),
+  ('การศึกษาพิเศษ', '3', 'การศึกษาพิเศษ 3')
 on conflict (name) do nothing;
 
--- 3) ครูประจำชั้น (classroom_teachers)
+-- 4) ครูประจำชั้น (classroom_teachers)
 create table if not exists public.classroom_teachers (
   id           bigint generated always as identity primary key,
   classroom_id bigint not null references public.classrooms(id) on delete cascade,
@@ -53,7 +92,7 @@ create table if not exists public.classroom_teachers (
   unique (classroom_id, teacher_id)
 );
 
--- 4) ประธานสายชั้น และ IT ประจำสายชั้น (grade_level_staff)
+-- 5) ประธานสายชั้น และ IT ประจำสายชั้น (grade_level_staff)
 create table if not exists public.grade_level_staff (
   id           bigint generated always as identity primary key,
   grade_level  text not null,
@@ -63,7 +102,7 @@ create table if not exists public.grade_level_staff (
   unique (grade_level, staff_id, role_type)
 );
 
--- 5) ข้อมูลนักเรียน (students)
+-- 6) ข้อมูลนักเรียน (students)
 create table if not exists public.students (
   id           bigint generated always as identity primary key,
   classroom_id bigint not null references public.classrooms(id) on delete cascade,
@@ -76,7 +115,7 @@ create table if not exists public.students (
 );
 create index if not exists students_classroom_idx on public.students(classroom_id);
 
--- 6) บันทึกเช็คชื่อนักเรียนประจำวัน (student_attendance)
+-- 7) บันทึกเช็คชื่อนักเรียน (student_attendance)
 create table if not exists public.student_attendance (
   id           bigint generated always as identity primary key,
   student_id   bigint not null references public.students(id) on delete cascade,
@@ -90,7 +129,7 @@ create table if not exists public.student_attendance (
 );
 create index if not exists attendance_date_room_idx on public.student_attendance(date, classroom_id);
 
--- 7) งานที่มอบหมายและการส่งงานของนักเรียน (assignments & submissions)
+-- 8) งานที่มอบหมายและการส่งงานของนักเรียน (assignments & submissions)
 create table if not exists public.assignments (
   id           bigint generated always as identity primary key,
   teacher_id   uuid not null references public.profiles(id),
@@ -117,7 +156,7 @@ create table if not exists public.student_submissions (
   created_at    timestamptz not null default now()
 );
 
--- 8) ระบบรายงานหน้าเดียว พร้อมจัดเก็บรูปภาพ (one_page_reports)
+-- 9) ระบบรายงานหน้าเดียว (one_page_reports)
 create table if not exists public.one_page_reports (
   id           bigint generated always as identity primary key,
   title        text not null,
@@ -131,10 +170,10 @@ create table if not exists public.one_page_reports (
   created_at   timestamptz not null default now()
 );
 
--- 9) ยืนยันสิทธิ์ SuperAdmin ให้กับ admin@bcs.ac.th
+-- 10) กำหนดสิทธิ์ SuperAdmin ให้ admin@bcs.ac.th
 update public.profiles 
 set role = 'admin', is_active = true 
 where lower(email) = 'admin@bcs.ac.th';
 
--- 10) สั่งรีเฟรชแคชของ Supabase PostgREST ให้เห็นคอลัมน์ใหม่ทันที
+-- 11) บังคับให้ Supabase อัปเดตโครงสร้างตารางใหม่ทันที (Reload Schema Cache)
 notify pgrst, 'reload schema';

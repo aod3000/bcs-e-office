@@ -164,6 +164,9 @@
             <button id="add-single-user-btn" class="px-3 py-2 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
               <span>➕</span> <span>เพิ่มรายคน</span>
             </button>
+            <button id="download-user-template-btn" class="px-2.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="ดาวน์โหลดไฟล์ตัวอย่าง CSV บุคลากร">
+              <span>📄</span> <span>แม่แบบ CSV</span>
+            </button>
             <label class="px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-sm">
               <span>📥</span> <span>นำเข้า CSV</span>
               <input type="file" id="import-users-csv" accept=".csv" class="hidden">
@@ -232,30 +235,49 @@
             <div>
               <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ระดับสายชั้น:</label>
               <select id="att-grade-select" class="rounded-xl border border-slate-200 px-3 py-1.5 font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600">
-                <option value="ป.1">ชั้นประถมศึกษาปีที่ 1 (ป.1)</option>
-                <option value="ป.2">ชั้นประถมศึกษาปีที่ 2 (ป.2)</option>
-                <option value="ป.3">ชั้นประถมศึกษาปีที่ 3 (ป.3)</option>
-                <option value="ป.4">ชั้นประถมศึกษาปีที่ 4 (ป.4)</option>
-                <option value="ป.5">ชั้นประถมศึกษาปีที่ 5 (ป.5)</option>
-                <option value="ป.6">ชั้นประถมศึกษาปีที่ 6 (ป.6)</option>
-                <option value="ม.1">ชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
-                <option value="ม.2">ชั้นมัธยมศึกษาปีที่ 2 (ม.2)</option>
-                <option value="ม.3">ชั้นมัธยมศึกษาปีที่ 3 (ม.3)</option>
+                <optgroup label="🌱 ระดับปฐมวัย (อนุบาล)">
+                  <option value="อ.1">ชั้นอนุบาล 1 (อ.1)</option>
+                  <option value="อ.2">ชั้นอนุบาล 2 (อ.2)</option>
+                  <option value="อ.3">ชั้นอนุบาล 3 (อ.3)</option>
+                </optgroup>
+                <optgroup label="📚 ระดับประถมศึกษา (9 ห้อง/ชั้น)">
+                  <option value="ป.1" selected>ชั้นประถมศึกษาปีที่ 1 (ป.1)</option>
+                  <option value="ป.2">ชั้นประถมศึกษาปีที่ 2 (ป.2)</option>
+                  <option value="ป.3">ชั้นประถมศึกษาปีที่ 3 (ป.3)</option>
+                  <option value="ป.4">ชั้นประถมศึกษาปีที่ 4 (ป.4)</option>
+                  <option value="ป.5">ชั้นประถมศึกษาปีที่ 5 (ป.5)</option>
+                  <option value="ป.6">ชั้นประถมศึกษาปีที่ 6 (ป.6)</option>
+                </optgroup>
+                <optgroup label="🎓 ระดับมัธยมศึกษา (7 ห้อง/ชั้น)">
+                  <option value="ม.1">ชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
+                  <option value="ม.2">ชั้นมัธยมศึกษาปีที่ 2 (ม.2)</option>
+                  <option value="ม.3">ชั้นมัธยมศึกษาปีที่ 3 (ม.3)</option>
+                </optgroup>
+                <optgroup label="🌟 การศึกษาพิเศษ">
+                  <option value="การศึกษาพิเศษ">ห้องเรียนการศึกษาพิเศษ (กศ.พ.)</option>
+                </optgroup>
               </select>
             </div>
 
             <div>
               <label class="block text-[10px] font-bold text-slate-500 mb-0.5">ห้องเรียน:</label>
               <select id="att-room-select" class="rounded-xl border border-slate-200 px-3 py-1.5 font-bold text-slate-800 bg-white focus:outline-none focus:border-emerald-600">
+                <!-- เจนเนอเรตอัตโนมัติตามระดับชั้น: ประถม 9 ห้อง / มัธยม 7 ห้อง / อนุบาล 3 ห้อง / การศึกษาพิเศษ -->
                 <option value="1">ห้อง 1 (ป.1/1)</option>
                 <option value="2">ห้อง 2 (ป.1/2)</option>
-                <option value="3">ห้อง 3 (ป.1/3 EP)</option>
+                <option value="3">ห้อง 3 (ป.1/3)</option>
+                <option value="4">ห้อง 4 (ป.1/4)</option>
+                <option value="5">ห้อง 5 (ป.1/5)</option>
+                <option value="6">ห้อง 6 (ป.1/6)</option>
+                <option value="7">ห้อง 7 (ป.1/7)</option>
+                <option value="8">ห้อง 8 (ป.1/8)</option>
+                <option value="9">ห้อง 9 (ป.1/9 EP)</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Action Toolbar for Chairperson & IT Admin -->
+        <!-- Action Toolbar for Chairperson & IT Admin & CSV Operations -->
         <div class="flex flex-wrap items-center justify-between gap-4 py-4 border-b border-slate-100">
           <div class="flex items-center gap-2 text-xs">
             <span class="font-bold text-slate-700">ครูประจำชั้นร่วม:</span>
@@ -268,15 +290,24 @@
             <button id="att-add-single-btn" class="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
               <span>➕</span> <span>เพิ่มรายคน</span>
             </button>
+            <button id="download-student-template-btn" class="px-2.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="ดาวน์โหลดไฟล์ตัวอย่าง CSV สำหรับกรอกข้อมูล">
+              <span>📄</span> <span>แม่แบบ CSV</span>
+            </button>
             <label class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-sm">
               <span>📥</span> <span>นำเข้า CSV</span>
               <input type="file" id="import-students-csv" accept=".csv" class="hidden">
             </label>
-            <button id="export-students-csv-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
-              <span>📤</span> <span>ส่งออก CSV</span>
+            <button id="export-students-csv-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="ส่งออก CSV รายชื่อนักเรียนห้องปัจจุบัน">
+              <span>📤</span> <span>ส่งออกห้องนี้ (CSV)</span>
+            </button>
+            <button id="export-grade-csv-btn" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="ส่งออก CSV นักเรียนครบทุกห้องในสายชั้นนี้">
+              <span>📋</span> <span>ส่งออกทั้งสายชั้น (CSV)</span>
+            </button>
+            <button id="export-attendance-csv-btn" class="px-3 py-1.5 bg-teal-700 hover:bg-teal-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm" title="ส่งออกผลการเช็คชื่อวันนี้เป็น CSV">
+              <span>📊</span> <span>ส่งออกเช็คชื่อ (CSV)</span>
             </button>
             <button id="att-grade-broadcast-btn" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
-              <span>📢</span> <span>ประกาศข่าวด่วน</span>
+              <span>📢</span> <span>ประกาศด่วน</span>
             </button>
           </div>
         </div>
@@ -680,7 +711,12 @@
             </h2>
             <p class="text-xs text-slate-500 mt-0.5">ตรวจสอบเอกสารหลักฐานสูติบัตร ทะเบียนบ้าน และอนุมัติผลการรับสมัคร</p>
           </div>
-          <span class="text-xs px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold">เปิดรับสมัคร อ.1-3 / ป.1-6 / ม.1-3</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="export-admissions-csv-btn" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <span>📤</span> <span>ส่งออกรายชื่อผู้สมัคร (CSV)</span>
+            </button>
+            <span class="text-xs px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold">เปิดรับสมัคร อ.1-3 / ป.1-6 / ม.1-3</span>
+          </div>
         </div>
 
         <div class="overflow-x-auto">

@@ -897,16 +897,68 @@ function initAttendanceModule() {
 
   if (!roleSelect || !gradeSelect || !roomSelect || !tbody) return;
 
+  /** ปรับเปลี่ยนห้องเรียนตามสายชั้นจริง: ประถม 9 ห้อง / มัธยม 7 ห้อง / อนุบาล 3 ห้อง / การศึกษาพิเศษ */
+  function populateRoomsForGrade(grade) {
+    let count = 9;
+    let customRooms = null;
+
+    if (grade.startsWith('อ.')) {
+      count = 3;
+    } else if (grade.startsWith('ม.')) {
+      count = 7;
+    } else if (grade === 'การศึกษาพิเศษ') {
+      customRooms = [
+        { val: '1', label: 'ห้อง 1 (การศึกษาพิเศษ 1)' },
+        { val: '2', label: 'ห้อง 2 (การศึกษาพิเศษ 2)' },
+        { val: '3', label: 'ห้อง 3 (การศึกษาพิเศษ 3)' }
+      ];
+    }
+
+    const currentVal = roomSelect.value;
+    roomSelect.innerHTML = '';
+
+    if (customRooms) {
+      customRooms.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.val;
+        opt.textContent = r.label;
+        roomSelect.appendChild(opt);
+      });
+    } else {
+      for (let i = 1; i <= count; i++) {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        const epTag = (grade === 'ป.1' && i === 9) ? ' (EP)' : '';
+        opt.textContent = `ห้อง ${i} (${grade}/${i}${epTag})`;
+        roomSelect.appendChild(opt);
+      }
+    }
+
+    // หากห้องเดิมยังอยู่ในช่วง ให้เลือกห้องเดิม
+    if (parseInt(currentVal, 10) <= count) {
+      roomSelect.value = currentVal;
+    }
+  }
+
   function getCurrentClassKey() {
     return `${gradeSelect.value}/${roomSelect.value}`;
   }
 
   function renderAttendanceTable() {
     const classKey = getCurrentClassKey();
-    const students = MOCK_CLASS_STUDENTS[classKey] || [
-      { no: 1, code: 'BCS-001', name: 'ด.ช. นักเรียน ตัวอย่าง 1', status: 'present', remark: '' },
-      { no: 2, code: 'BCS-002', name: 'ด.ญ. นักเรียน ตัวอย่าง 2', status: 'present', remark: '' }
-    ];
+    if (!MOCK_CLASS_STUDENTS[classKey]) {
+      // สร้างข้อมูลตัวอย่างอัตโนมัติประจำห้องเพื่อให้ทดสอบได้ทันที
+      const gradeStr = gradeSelect.value;
+      const roomStr = roomSelect.value;
+      MOCK_CLASS_STUDENTS[classKey] = [
+        { no: 1, code: `BCS-69${roomStr}1`, name: `ด.ช. ภูมิพัฒน์ มั่นคง (${gradeStr}/${roomStr})`, status: 'present', remark: '' },
+        { no: 2, code: `BCS-69${roomStr}2`, name: `ด.ญ. สุภัสสรา รัตนกุล (${gradeStr}/${roomStr})`, status: 'present', remark: '' },
+        { no: 3, code: `BCS-69${roomStr}3`, name: `ด.ช. ชัยวัฒน์ เจริญสุข (${gradeStr}/${roomStr})`, status: 'present', remark: '' },
+        { no: 4, code: `BCS-69${roomStr}4`, name: `ด.ญ. ปรียาภรณ์ สมบูรณ์ (${gradeStr}/${roomStr})`, status: 'leave', remark: 'ลากิจส่วนตัว' },
+        { no: 5, code: `BCS-69${roomStr}5`, name: `ด.ช. ปัณณธร ศรีสวัสดิ์ (${gradeStr}/${roomStr})`, status: 'present', remark: '' }
+      ];
+    }
+    const students = MOCK_CLASS_STUDENTS[classKey];
 
     tbody.innerHTML = students.map((s, idx) => `
       <tr class="hover:bg-slate-50 transition" data-student-index="${idx}">
@@ -996,8 +1048,14 @@ function initAttendanceModule() {
   }
 
   roleSelect.addEventListener('change', handleRoleAccess);
-  gradeSelect.addEventListener('change', renderAttendanceTable);
+  gradeSelect.addEventListener('change', () => {
+    populateRoomsForGrade(gradeSelect.value);
+    renderAttendanceTable();
+  });
   roomSelect.addEventListener('change', renderAttendanceTable);
+
+  // เตรียมห้องเรียนเริ่มต้นให้ตรงกับสายชั้นที่เลือก
+  populateRoomsForGrade(gradeSelect.value);
 
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
@@ -1194,6 +1252,92 @@ function initCsvAndIndividualCrud() {
       });
       downloadCsvFile(csv, 'รายชื่อผู้ใช้ระบบ_BCS.csv');
       showToast('📤 ส่งออกไฟล์ CSV ผู้ใช้สำเร็จ');
+    });
+  }
+
+  // 3.1) ดาวน์โหลดแม่แบบ CSV นักเรียน
+  const downloadStudentTemplateBtn = document.getElementById('download-student-template-btn');
+  if (downloadStudentTemplateBtn) {
+    downloadStudentTemplateBtn.addEventListener('click', () => {
+      let csv = '\uFEFFเลขที่,รหัสประจำตัว,ชื่อ-นามสกุล,สถานะมาเรียน,หมายเหตุ,สายชั้น,ห้อง\n';
+      csv += '"1","BCS-6901","ด.ช. เก่งกาจ สามารถ","present","","ป.1","1"\n';
+      csv += '"2","BCS-6902","ด.ญ. สดใส ร่าเริง","present","","ป.1","1"\n';
+      csv += '"3","BCS-6903","ด.ช. ปัญญา เลิศล้ำ","leave","ลาป่วย","ป.1","1"\n';
+      downloadCsvFile(csv, 'แม่แบบ_รายชื่อนักเรียน_BCS.csv');
+      showToast('📄 ดาวน์โหลดแม่แบบ CSV นักเรียนเรียบร้อย (เปิดใน Excel ภาษาไทยไม่เพี้ยน)');
+    });
+  }
+
+  // 3.2) ดาวน์โหลดแม่แบบ CSV บุคลากร
+  const downloadUserTemplateBtn = document.getElementById('download-user-template-btn');
+  if (downloadUserTemplateBtn) {
+    downloadUserTemplateBtn.addEventListener('click', () => {
+      let csv = '\uFEFFชื่อ-นามสกุล,อีเมล,บทบาท,กลุ่มงาน,สถานะ\n';
+      csv += '"นายสมชาย สอนดี","somchai@bcs.ac.th","teacher","กลุ่มสาระการเรียนรู้คณิตศาสตร์","เปิดใช้งาน"\n';
+      csv += '"นางสมศรี มีสุข","somsri@bcs.ac.th","head","ฝ่ายบริหารวิชาการ","เปิดใช้งาน"\n';
+      csv += '"นายอำนวย บริหาร","director@bcs.ac.th","executive","ฝ่ายบริหารทั่วไป","เปิดใช้งาน"\n';
+      downloadCsvFile(csv, 'แม่แบบ_รายชื่อบุคลากร_BCS.csv');
+      showToast('📄 ดาวน์โหลดแม่แบบ CSV บุคลากรเรียบร้อย');
+    });
+  }
+
+  // 3.3) ส่งออกรายชื่อนักเรียนทั้งสายชั้น (ครบทุกห้อง)
+  const exportGradeBtn = document.getElementById('export-grade-csv-btn');
+  if (exportGradeBtn) {
+    exportGradeBtn.addEventListener('click', () => {
+      const grade = gradeSelect.value;
+      let csv = '\uFEFFสายชั้น,ห้อง,เลขที่,รหัสประจำตัว,ชื่อ-นามสกุล,สถานะเช็คชื่อ,หมายเหตุ\n';
+      let totalCount = 0;
+
+      Object.keys(MOCK_CLASS_STUDENTS).forEach(key => {
+        if (key.startsWith(grade + '/')) {
+          const room = key.split('/')[1];
+          const list = MOCK_CLASS_STUDENTS[key] || [];
+          list.forEach(s => {
+            csv += `"${grade}","${room}","${s.no}","${s.code}","${s.name}","${s.status}","${s.remark || ''}"\n`;
+            totalCount++;
+          });
+        }
+      });
+
+      if (totalCount === 0) {
+        alert('ไม่พบข้อมูลนักเรียนในสายชั้น ' + grade);
+        return;
+      }
+
+      downloadCsvFile(csv, `รายชื่อนักเรียนทั้งสายชั้น_${grade}.csv`);
+      showToast(`📋 ส่งออกรายชื่อทั้งสายชั้น ${grade} (${totalCount} คน) สำเร็จ`);
+    });
+  }
+
+  // 3.4) ส่งออกบันทึกการเช็คชื่อวันนี้
+  const exportAttendanceBtn = document.getElementById('export-attendance-csv-btn');
+  if (exportAttendanceBtn) {
+    exportAttendanceBtn.addEventListener('click', () => {
+      const classKey = getCurrentClassKey();
+      const students = MOCK_CLASS_STUDENTS[classKey] || [];
+      const todayStr = new Date().toLocaleDateString('th-TH');
+      let csv = '\uFEFFวันที่,สายชั้น,ห้อง,เลขที่,รหัสประจำตัว,ชื่อ-นามสกุล,ผลการเช็คชื่อ,หมายเหตุ\n';
+      
+      const statusMap = { present: 'มาเรียน', absent: 'ขาดเรียน', leave: 'ลา', late: 'มาสาย' };
+      students.forEach(s => {
+        csv += `"${todayStr}","${gradeSelect.value}","${roomSelect.value}","${s.no}","${s.code}","${s.name}","${statusMap[s.status] || s.status}","${s.remark || ''}"\n`;
+      });
+
+      downloadCsvFile(csv, `บันทึกเช็คชื่อ_${classKey.replace('/', '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
+      showToast('📊 ส่งออกบันทึกเช็คชื่อเป็น CSV เรียบร้อย');
+    });
+  }
+
+  // 3.5) ส่งออกรายชื่อผู้สมัครเรียนออนไลน์
+  const exportAdmissionsBtn = document.getElementById('export-admissions-csv-btn');
+  if (exportAdmissionsBtn) {
+    exportAdmissionsBtn.addEventListener('click', () => {
+      let csv = '\uFEFFเลขที่ใบสมัคร,วันที่สมัคร,ชื่อ-นามสกุลนักเรียน,ระดับชั้นที่สมัคร,ผู้ปกครอง,เบอร์โทรศัพท์,สถานะ\n';
+      csv += '"BCS-69-0012","1 พ.ย. 2569 14:20 น.","ด.ช. พงศกร มั่นคง","ป.1 (ห้องเรียนปกติ)","นายสมศักดิ์","081-234-5678","รอตรวจเอกสาร"\n';
+      csv += '"BCS-69-0013","1 พ.ย. 2569 15:05 น.","ด.ญ. ชัญญา รุ่งเรือง","ป.1 (English Program)","นางรัชนี","089-987-6543","อนุมัติแล้ว"\n';
+      downloadCsvFile(csv, 'รายชื่อผู้สมัครเรียนออนไลน์_2569.csv');
+      showToast('📤 ส่งออกรายชื่อผู้สมัครเรียนเป็น CSV สำเร็จ');
     });
   }
 
