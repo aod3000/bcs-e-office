@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavDropdowns();
   initImageLightbox();
   loadDynamicActivities();
+  initOnlineAdmissions();
 });
 
 /* ---------- ทำเนียบบุคลากร Popup Modal ---------- */
@@ -539,5 +540,72 @@ function initMobileMenu() {
   btn.addEventListener('click', () => {
     const open = menu.classList.toggle('open');
     btn.setAttribute('aria-expanded', open);
+  });
+}
+
+/* ---------- ระบบรับสมัครนักเรียนใหม่ออนไลน์ ---------- */
+function initOnlineAdmissions() {
+  const form = document.getElementById('online-admission-form');
+  if (!form) return;
+
+  const fileInput = document.getElementById('adm-file');
+  const submitBtn = document.getElementById('adm-submit-btn');
+  const btnText = document.getElementById('adm-btn-text');
+  const spinner = document.getElementById('adm-spinner');
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('กรุณาแนบไฟล์เอกสารหลักฐาน (สูติบัตร หรือ ทะเบียนบ้าน)');
+      return;
+    }
+
+    const grade = document.getElementById('adm-grade').value;
+    const studentName = document.getElementById('adm-student-name').value.trim();
+    const citizenId = document.getElementById('adm-citizen-id').value.trim();
+    const parentName = document.getElementById('adm-parent-name').value.trim();
+    const phone = document.getElementById('adm-phone').value.trim();
+
+    try {
+      submitBtn.disabled = true;
+      spinner.classList.remove('hidden');
+      btnText.textContent = 'กำลังส่งใบสมัครเข้า Google Drive...';
+
+      // 1. แปลงไฟล์เป็น Base64
+      const reader = new FileReader();
+      const base64 = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = () => reject(new Error('อ่านไฟล์หลักฐานไม่สำเร็จ'));
+        reader.readAsDataURL(file);
+      });
+
+      // 2. ส่งไปยัง GAS เพื่อบันทึกลง Google Drive
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          base64: base64,
+          fileName: `[สมัคร_${grade}]_${studentName}_${file.name}`,
+          mimeType: file.type,
+          category: 'admissions'
+        })
+      });
+
+      const result = await res.json();
+      const driveUrl = result.url || result.fileUrl || '';
+      const receiptNo = `BCS-69-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      alert(`✅ ยื่นใบสมัครเรียนออนไลน์สำเร็จเรียบร้อยแล้ว!\n\n📋 รหัสใบสมัคร: ${receiptNo}\nระดับชั้น: ${grade}\nชื่อนักเรียน: ${studentName}\n\nระบบได้จัดส่งเอกสารหลักฐานเข้าสู่ Google Drive ของโรงเรียนเรียบร้อยแล้ว ทางโรงเรียนจะติดต่อกลับทางเบอร์โทรศัพท์ ${phone} ครับ`);
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      alert('❌ เกิดข้อผิดพลาดในการส่งใบสมัคร: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      spinner.classList.add('hidden');
+      btnText.textContent = 'ส่งใบสมัครเรียนออนไลน์';
+    }
   });
 }

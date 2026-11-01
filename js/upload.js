@@ -3,7 +3,17 @@
    ============================================ */
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWauxGLUEvpjQseK1bd509Il27vN33jxgqxVhj65fsm5me-fSI61By2SNIUlE5aQvr/exec';
-const MAX_FILE_MB = 10; // จำกัดขนาดไฟล์ เพราะ Base64 ใหญ่ขึ้นราว 33%
+
+/** ดึงขนาดไฟล์อัปโหลดสูงสุดที่แอดมินกำหนดไว้ (ค่าเริ่มต้น 50 MB) */
+function getMaxUploadMb() {
+  try {
+    const custom = localStorage.getItem('bcs_max_upload_mb');
+    return custom ? parseInt(custom, 10) : 50;
+  } catch (e) {
+    return 50;
+  }
+}
+
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -65,9 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /** ตรวจชนิดและขนาดไฟล์ก่อนอัปโหลด */
 function validateFile(file) {
+  const maxMb = getMaxUploadMb();
   if (!file) throw new Error('กรุณาเลือกไฟล์ก่อนส่ง');
   if (!ALLOWED_TYPES.includes(file.type)) throw new Error('รองรับเฉพาะไฟล์รูปภาพ (JPG, PNG, WEBP, GIF) และ PDF');
-  if (file.size > MAX_FILE_MB * 1024 * 1024) throw new Error(`ไฟล์ต้องมีขนาดไม่เกิน ${MAX_FILE_MB} MB`);
+  if (file.size > maxMb * 1024 * 1024) throw new Error(`ไฟล์ต้องมีขนาดไม่เกิน ${maxMb} MB (ตามที่แอดมินกำหนด)`);
 }
 
 /** แปลงไฟล์เป็น Base64 string (ตัดส่วนหัว data:...;base64, ออก) */

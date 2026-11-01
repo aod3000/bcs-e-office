@@ -4,13 +4,14 @@
    ============================================ */
 
 :root {
-  --bcs-green-dark: #064e3b;    /* เขียวเข้มพรีเมียม */
-  --bcs-green: #047857;         /* เขียวโรงเรียน */
-  --bcs-green-light: #10b981;
-  --bcs-yellow: #f59e0b;        /* เหลืองทอง */
-  --bcs-yellow-light: #fef3c7;
-  --bcs-dark: #0f172a;          /* ดำกราไฟต์ */
-  --bcs-dark-surface: #1e293b;
+  --bcs-green-dark: #064e3b;    /* เขียวเข้มสง่างาม */
+  --bcs-green: #047857;         /* เขียวโรงเรียนบางชัน */
+  --bcs-green-light: #10b981;   /* เขียวมรกตสดใส */
+  --bcs-green-soft: #ecfdf5;    /* เขียวอ่อนสบายตา */
+  --bcs-yellow: #f59e0b;        /* เหลืองทองประจำโรงเรียน */
+  --bcs-yellow-light: #fef3c7;  /* เหลืองนวล */
+  --bcs-yellow-gold: #fbbf24;   /* ทองประกาย */
+  --bcs-dark: #1e293b;          /* เทาดำนุ่มนวล */
   --bcs-gray-light: #f8fafc;
 }
 
@@ -19,26 +20,43 @@ body {
   word-break: break-word;
   overflow-wrap: break-word;
   background-color: #f8fafc;
-  color: #0f172a;
+  color: #1e293b;
 }
 
-/* MakeWebEasy Bento & Card Elevations */
+/* MakeWebEasy Bento & Card Elevations (สบายตา สัมผัสนุ่มนวล) */
 .mwe-card {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px -2px rgba(4, 120, 87, 0.06);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 .mwe-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px -4px rgba(4, 120, 87, 0.12);
-  border-color: #f59e0b;
+  box-shadow: 0 16px 32px -4px rgba(4, 120, 87, 0.15);
+  border-color: #fbbf24;
 }
 
-/* Contrast Headers */
-.header-dark {
-  background: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
-  border-bottom: 2px solid #f59e0b;
+/* Header สีเขียวโรงเรียนตัดขอบทองหรูหรา สบายตา */
+.header-school {
+  background: linear-gradient(135deg, #065f46 0%, #047857 60%, #059669 100%);
+  border-bottom: 3px solid #fbbf24;
+}
+
+/* ป้ายกรอบสีขาวขับเน้นโลโก้โรงเรียนให้โดดเด่น ไม่กลืนกับพื้นหลัง */
+.logo-badge {
+  background: #ffffff;
+  padding: 6px;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  border: 2px solid #fde68a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.logo-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.25);
 }
 
 /* Quick Action Badges */

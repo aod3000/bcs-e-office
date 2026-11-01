@@ -37,33 +37,37 @@
 <body class="bg-slate-50 text-slate-900 antialiased min-h-screen font-sans leading-relaxed selection:bg-amber-400 selection:text-slate-950">
 
   <!-- ============================================================== -->
-  <!-- 1. HEADER & NAVBAR (สไตล์ MakeWebEasy: เขียวเข้มตัดดำ ขอบทอง) -->
+  <!-- 1. HEADER & NAVBAR (สีเขียว-เหลืองทอง ประจำโรงเรียนบางชัน สบายตา) -->
   <!-- ============================================================== -->
-  <header class="sticky top-0 z-40 header-dark text-white shadow-xl">
+  <header class="sticky top-0 z-40 header-school text-white shadow-lg">
     <div class="mx-auto max-w-[1536px] px-4 sm:px-8">
       <div class="flex items-center justify-between h-20 sm:h-24">
         
         <!-- Logo & School Title -->
         <a href="index.html" class="flex items-center gap-3.5 group shrink-0">
-          <img src="assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-12 sm:h-14 w-auto object-contain filter drop-shadow">
+          <div class="logo-badge">
+            <img src="assets/logo.png" alt="โลโก้โรงเรียนบางชัน" class="h-11 sm:h-13 w-auto object-contain">
+          </div>
           <div class="leading-tight">
-            <span class="block font-bold text-base sm:text-xl text-white tracking-tight group-hover:text-amber-400 transition-colors">
+            <span class="block font-bold text-base sm:text-xl text-white tracking-tight group-hover:text-amber-300 transition-colors">
               โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์)
             </span>
-            <span class="block text-xs sm:text-sm text-emerald-200 font-light">
+            <span class="block text-xs sm:text-sm text-emerald-100 font-light">
               สำนักงานเขตคลองสามวา สำนักการศึกษา กรุงเทพมหานคร
             </span>
           </div>
         </a>
 
         <!-- Desktop Navigation Bar -->
-        <nav class="hidden xl:flex items-center gap-1.5 text-sm font-medium text-slate-200">
-          <a href="#home" class="px-3.5 py-2 rounded-xl hover:bg-white/10 hover:text-white transition">หน้าแรก</a>
-          <a href="#vision" class="px-3.5 py-2 rounded-xl hover:bg-white/10 hover:text-white transition">เกี่ยวกับโรงเรียน</a>
-          <a href="#director" class="px-3.5 py-2 rounded-xl hover:bg-white/10 hover:text-white transition">สารจาก ผอ.</a>
-          <a href="#staff-section" class="px-3.5 py-2 rounded-xl hover:bg-white/10 hover:text-white transition">ทำเนียบบุคลากร</a>
-          <a href="#gallery" class="px-3.5 py-2 rounded-xl hover:bg-white/10 hover:text-white transition">ภาพกิจกรรม</a>
-          <a href="#contact" class="px-3.5 py-2 rounded-xl hover:bg-white/10 hover:text-white transition">ติดต่อเรา</a>
+        <nav class="hidden xl:flex items-center gap-1.5 text-sm font-medium text-emerald-50">
+          <a href="#home" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">หน้าแรก</a>
+          <a href="#vision" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">เกี่ยวกับโรงเรียน</a>
+          <a href="#director" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">สารจาก ผอ.</a>
+          <a href="#admissions" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition text-amber-300 font-bold">📝 รับสมัครเรียน</a>
+          <a href="#staff-section" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">ทำเนียบบุคลากร</a>
+          <a href="#gallery" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">ภาพกิจกรรม</a>
+          <a href="pages/public-dashboard.html" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">📊 แดชบอร์ด</a>
+          <a href="#contact" class="px-3 py-2 rounded-xl hover:bg-white/15 hover:text-white transition">ติดต่อเรา</a>
         </nav>
 
         <!-- Right Side: User Badge & Login / Admin Access -->
@@ -513,7 +517,102 @@
   </section>
 
   <!-- ============================================================== -->
-  <!-- 8. FOOTER (สไตล์ MakeWebEasy: ดำชาร์โคล ตัดเขียวเข้ม) -->
+  <!-- 8. ONLINE ADMISSIONS & DOWNLOADS (ระบบรับสมัครนักเรียนใหม่ออนไลน์) -->
+  <!-- ============================================================== -->
+  <section id="admissions" class="mx-auto max-w-[1536px] px-4 sm:px-8 py-12 scroll-mt-24">
+    <div class="bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl border-2 border-amber-400">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- ฝั่งซ้าย: ข้อมูลการรับสมัครและปุ่มดาวน์โหลดระเบียบการ -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+            <span>📢</span> เปิดรับสมัครปีการศึกษา 2569
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-white leading-tight">
+            รับสมัครนักเรียนใหม่<br><span class="text-amber-300">ทุกระดับชั้น ประจำปีการศึกษา 2569</span>
+          </h2>
+          <p class="text-xs sm:text-sm text-emerald-100 font-light leading-relaxed">
+            โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) เปิดรับสมัครนักเรียนระดับชั้นปฐมวัย (อ.1 - อ.3), ประถมศึกษา (ป.1 - ป.6), มัธยมศึกษา (ม.1 - ม.3) และห้องเรียนพิเศษ English Program (EP) ผู้ปกครองสามารถดาวน์โหลดเอกสารระเบียบการ หรือยื่นใบสมัครออนไลน์ผ่านระบบนี้ได้ทันที
+          </p>
+
+          <!-- ปุ่มดาวน์โหลดระเบียบการ -->
+          <div class="space-y-2.5 pt-2">
+            <span class="block text-xs font-bold text-amber-300">📥 เอกสารดาวน์โหลดสำหรับผู้ปกครอง:</span>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <a href="assets/logo.png" download="ระเบียบการรับสมัคร_2569.png" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-emerald-900 hover:bg-amber-100 rounded-xl text-xs font-bold transition shadow-sm">
+                <span>📄</span> <span>ระเบียบการรับสมัคร (PDF)</span>
+              </a>
+              <a href="assets/logo.png" download="ใบสมัครนักเรียนใหม่_2569.png" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition shadow-sm border border-emerald-500">
+                <span>📝</span> <span>ใบสมัครและหลักฐาน (PDF)</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ฝั่งขวา: ฟอร์มยื่นใบสมัครเรียนออนไลน์ ส่งตรงเข้า Google Drive ผ่าน GAS -->
+        <div class="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-lg">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>✍️</span> ฟอร์มยื่นใบสมัครเรียนออนไลน์
+            </h3>
+            <span class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full font-bold">ฟรี ไม่มีค่าสมัคร</span>
+          </div>
+
+          <form id="online-admission-form" class="space-y-3.5 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">ระดับชั้นที่ต้องการสมัคร</label>
+              <select id="adm-grade" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs bg-white font-medium focus:border-emerald-600 focus:outline-none">
+                <option value="ปฐมวัย (อนุบาล 1-3)">ระดับชั้นปฐมวัย (อนุบาล 1 - 3)</option>
+                <option value="ประถมศึกษาปีที่ 1 (ป.1 ปกติ)" selected>ระดับชั้นประถมศึกษาปีที่ 1 (ป.1 ปกติ)</option>
+                <option value="ประถมศึกษาปีที่ 1 (English Program EP)">ระดับชั้นประถมศึกษาปีที่ 1 (English Program - EP)</option>
+                <option value="มัธยมศึกษาปีที่ 1 (ม.1)">ระดับชั้นมัธยมศึกษาปีที่ 1 (ม.1)</option>
+                <option value="ย้ายเข้าเรียนระหว่างปีการศึกษา">ย้ายเข้าเรียนระหว่างปีการศึกษา (ป.2 - ป.6 / ม.2 - ม.3)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล นักเรียน</label>
+                <input type="text" id="adm-student-name" required placeholder="เช่น ด.ช. พงศกร มั่นคง" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">เลขประจำตัวประชาชน 13 หลัก</label>
+                <input type="text" id="adm-citizen-id" required maxlength="13" placeholder="เลข 13 หลัก" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none font-mono">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">ชื่อ - นามสกุล ผู้ปกครอง</label>
+                <input type="text" id="adm-parent-name" required placeholder="เช่น นายสมศักดิ์ มั่นคง" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อผู้ปกครอง</label>
+                <input type="tel" id="adm-phone" required placeholder="เช่น 081-234-5678" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:border-emerald-600 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">แนบไฟล์หลักฐาน (สูติบัตร หรือ สำเนาทะเบียนบ้าน)</label>
+              <input type="file" id="adm-file" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-800 hover:file:bg-emerald-100">
+              <span class="text-[10px] text-slate-400 mt-1 block">ไฟล์จะถูกส่งไปเก็บยัง Google Drive ของโรงเรียนอย่างปลอดภัย</span>
+            </div>
+
+            <button type="submit" id="adm-submit-btn" class="w-full py-3 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+              <span id="adm-btn-text">ส่งใบสมัครเรียนออนไลน์</span>
+              <svg id="adm-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- 9. FOOTER (สไตล์ MakeWebEasy: เขียวเข้มตัดทอง) -->
   <!-- ============================================================== -->
   <footer id="contact" class="bg-slate-950 text-white mt-16 pt-14 pb-8 border-t-2 border-amber-400">
     <div class="mx-auto max-w-[1536px] px-4 sm:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 pb-12 border-b border-slate-800">
@@ -689,6 +788,16 @@
         </div>
         <p id="slideover-date" class="mt-8 inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-1.5 text-sm font-bold text-amber-950"></p>
         <div id="slideover-content" class="mt-6 max-w-3xl space-y-5 text-lg font-light leading-loose text-slate-700"></div>
+
+        <!-- ปุ่มดาวน์โหลดเอกสารประกาศฉบับเต็ม -->
+        <div class="mt-8 pt-6 border-t border-slate-200 flex flex-wrap items-center gap-3">
+          <a id="slideover-download-btn" href="assets/logo.png" download="ประกาศโรงเรียนบางชัน.png" class="inline-flex items-center gap-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white px-5 py-2.5 text-xs font-bold transition shadow-sm">
+            <span>📥</span> <span>ดาวน์โหลดเอกสารประกาศฉบับเต็ม (PDF)</span>
+          </a>
+          <button type="button" onclick="window.print()" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 text-xs font-semibold transition">
+            <span>🖨️</span> <span>พิมพ์ประกาศนี้</span>
+          </button>
+        </div>
       </div>
     </div>
   </aside>

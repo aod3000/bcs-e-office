@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initRevisionModal();
   initAttendanceModule();
   initOnePageReportModule();
+  initCsvAndIndividualCrud();
+  initBannersModule();
+  initUploadLimitModule();
 });
 
 /* =====================================================================
@@ -921,6 +924,10 @@ function initAttendanceModule() {
         <td class="py-3 px-4">
           <input type="text" value="${escapeHtml(s.remark || '')}" placeholder="ระบุเหตุผล (ถ้ามี)..." onchange="setStudentRemark(${idx}, this.value)" class="w-full rounded-lg border border-slate-200 px-2.5 py-1 text-xs focus:border-emerald-600 focus:outline-none">
         </td>
+        <td class="py-3 px-4 text-right whitespace-nowrap">
+          <button type="button" onclick="editStudentIndividual(${idx})" class="p-1 text-blue-700 hover:text-blue-900 transition mr-1" title="แก้ไขข้อมูลนักเรียน">✏️</button>
+          <button type="button" onclick="deleteStudentIndividual(${idx})" class="p-1 text-red-600 hover:text-red-800 transition" title="ลบนักเรียนรายบุคคล">🗑️</button>
+        </td>
       </tr>
     `).join('');
 
@@ -1080,14 +1087,387 @@ function initOnePageReportModule() {
   });
 }
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
-    reader.onerror = () => reject(new Error('อ่านไฟล์รูปภาพไม่สำเร็จ'));
-    reader.readAsDataURL(file);
+/* =====================================================================
+   11. CSV IMPORT/EXPORT & INDIVIDUAL CRUD MODULE
+   ===================================================================== */
+function initCsvAndIndividualCrud() {
+  const exportStudentsBtn = document.getElementById('export-students-csv-btn');
+  const importStudentsInput = document.getElementById('import-students-csv');
+  const exportUsersBtn = document.getElementById('export-users-csv-btn');
+  const importUsersInput = document.getElementById('import-users-csv');
+
+  const addSingleStudentBtn = document.getElementById('att-add-single-btn');
+  const studentModal = document.getElementById('student-modal');
+  const closeStudentModal = document.getElementById('close-student-modal');
+  const cancelStudentModal = document.getElementById('cancel-student-modal');
+  const studentCrudForm = document.getElementById('student-crud-form');
+
+  const addSingleUserBtn = document.getElementById('add-single-user-btn');
+  const userModal = document.getElementById('user-modal');
+  const closeUserModal = document.getElementById('close-user-modal');
+  const cancelUserModal = document.getElementById('cancel-user-modal');
+  const userCrudForm = document.getElementById('user-crud-form');
+
+  const gradeSelect = document.getElementById('att-grade-select');
+  const roomSelect = document.getElementById('att-room-select');
+
+  function getCurrentClassKey() {
+    return `${gradeSelect.value}/${roomSelect.value}`;
+  }
+
+  // 1) ส่งออก CSV นักเรียน (พร้อม UTF-8 BOM ภาษาไทย)
+  if (exportStudentsBtn) {
+    exportStudentsBtn.addEventListener('click', () => {
+      const classKey = getCurrentClassKey();
+      const students = MOCK_CLASS_STUDENTS[classKey] || [];
+      if (!students.length) {
+        alert('ไม่พบข้อมูลนักเรียนในห้องนี้');
+        return;
+      }
+
+      let csv = '\uFEFFเลขที่,รหัสประจำตัว,ชื่อ-นามสกุล,สถานะมาเรียน,หมายเหตุ,สายชั้น,ห้อง\n';
+      students.forEach(s => {
+        csv += `"${s.no}","${s.code}","${s.name}","${s.status}","${s.remark || ''}","${gradeSelect.value}","${roomSelect.value}"\n`;
+      });
+
+      downloadCsvFile(csv, `รายชื่อนักเรียน_${classKey.replace('/', '_')}.csv`);
+      showToast('📤 ส่งออกไฟล์ CSV นักเรียนสำเร็จ');
+    });
+  }
+
+  // 2) นำเข้า CSV นักเรียน
+  if (importStudentsInput) {
+    importStudentsInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const lines = text.split(/\r?\n/).filter(line => line.trim());
+        if (lines.length <= 1) throw new Error('ไฟล์ CSV ว่างเปล่า');
+
+        const classKey = getCurrentClassKey();
+        if (!MOCK_CLASS_STUDENTS[classKey]) MOCK_CLASS_STUDENTS[classKey] = [];
+
+        let added = 0;
+        // ข้าม header บรรทัดแรก
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+          if (cols.length >= 3 && cols[2]) {
+            const no = parseInt(cols[0], 10) || (MOCK_CLASS_STUDENTS[classKey].length + 1);
+            const code = cols[1] || `BCS-69${no < 10 ? '0' + no : no}`;
+            const name = cols[2];
+            const remark = cols[4] || 'นำเข้าจาก CSV';
+
+            MOCK_CLASS_STUDENTS[classKey].push({
+              no,
+              code,
+              name,
+              status: 'present',
+              remark
+            });
+            added++;
+          }
+        }
+
+        e.target.value = '';
+        const attRoleSelect = document.getElementById('att-role-select');
+        if (attRoleSelect) attRoleSelect.dispatchEvent(new Event('change'));
+        showToast(`📥 นำเข้านักเรียน ${added} คนจาก CSV สำเร็จ`);
+      } catch (err) {
+        alert('❌ นำเข้า CSV ไม่สำเร็จ: ' + err.message);
+      }
+    });
+  }
+
+  // 3) ส่งออก CSV ผู้ใช้งาน
+  if (exportUsersBtn) {
+    exportUsersBtn.addEventListener('click', () => {
+      if (!allUsers.length) {
+        alert('ไม่มีข้อมูลผู้ใช้');
+        return;
+      }
+      let csv = '\uFEFFชื่อ-นามสกุล,อีเมล,บทบาท,กลุ่มงาน,สถานะ\n';
+      allUsers.forEach(u => {
+        const deptName = u.departments ? u.departments.name : '-';
+        csv += `"${u.full_name || ''}","${u.email}","${u.role}","${deptName}","${u.is_active ? 'เปิดใช้งาน' : 'ระงับ'}"\n`;
+      });
+      downloadCsvFile(csv, 'รายชื่อผู้ใช้ระบบ_BCS.csv');
+      showToast('📤 ส่งออกไฟล์ CSV ผู้ใช้สำเร็จ');
+    });
+  }
+
+  // 4) นักเรียนรายบุคคล: เพิ่ม & แก้ไข & ลบ
+  if (addSingleStudentBtn && studentModal) {
+    addSingleStudentBtn.addEventListener('click', () => {
+      document.getElementById('crud-student-index').value = '-1';
+      document.getElementById('student-modal-title').textContent = '➕ เพิ่มข้อมูลนักเรียนรายบุคคล';
+      document.getElementById('crud-student-no').value = (MOCK_CLASS_STUDENTS[getCurrentClassKey()] || []).length + 1;
+      document.getElementById('crud-student-code').value = '';
+      document.getElementById('crud-student-name').value = '';
+      document.getElementById('crud-student-remark').value = '';
+      studentModal.classList.remove('hidden');
+    });
+  }
+
+  window.editStudentIndividual = function(idx) {
+    const classKey = getCurrentClassKey();
+    const s = (MOCK_CLASS_STUDENTS[classKey] || [])[idx];
+    if (!s) return;
+
+    document.getElementById('crud-student-index').value = idx;
+    document.getElementById('student-modal-title').textContent = '✏️ แก้ไขข้อมูลนักเรียนรายบุคคล';
+    document.getElementById('crud-student-no').value = s.no;
+    document.getElementById('crud-student-code').value = s.code;
+    document.getElementById('crud-student-name').value = s.name;
+    document.getElementById('crud-student-remark').value = s.remark || '';
+    if (studentModal) studentModal.classList.remove('hidden');
+  };
+
+  window.deleteStudentIndividual = function(idx) {
+    const classKey = getCurrentClassKey();
+    const students = MOCK_CLASS_STUDENTS[classKey];
+    if (!students || !students[idx]) return;
+
+    if (confirm(`คุณต้องการลบนักเรียน "${students[idx].name}" ออกจากสายชั้นใช่หรือไม่?`)) {
+      students.splice(idx, 1);
+      // เรียงเลขที่ใหม่
+      students.forEach((s, i) => s.no = i + 1);
+      const attRoleSelect = document.getElementById('att-role-select');
+      if (attRoleSelect) attRoleSelect.dispatchEvent(new Event('change'));
+      showToast('🗑️ ลบนักเรียนเรียบร้อยแล้ว');
+    }
+  };
+
+  if (closeStudentModal) closeStudentModal.addEventListener('click', () => studentModal.classList.add('hidden'));
+  if (cancelStudentModal) cancelStudentModal.addEventListener('click', () => studentModal.classList.add('hidden'));
+
+  if (studentCrudForm) {
+    studentCrudForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const idx = parseInt(document.getElementById('crud-student-index').value, 10);
+      const no = parseInt(document.getElementById('crud-student-no').value, 10);
+      const code = document.getElementById('crud-student-code').value.trim();
+      const name = document.getElementById('crud-student-name').value.trim();
+      const remark = document.getElementById('crud-student-remark').value.trim();
+
+      const classKey = getCurrentClassKey();
+      if (!MOCK_CLASS_STUDENTS[classKey]) MOCK_CLASS_STUDENTS[classKey] = [];
+
+      if (idx >= 0 && MOCK_CLASS_STUDENTS[classKey][idx]) {
+        // แก้ไข
+        MOCK_CLASS_STUDENTS[classKey][idx].no = no;
+        MOCK_CLASS_STUDENTS[classKey][idx].code = code;
+        MOCK_CLASS_STUDENTS[classKey][idx].name = name;
+        MOCK_CLASS_STUDENTS[classKey][idx].remark = remark;
+        showToast('✅ แก้ไขข้อมูลนักเรียนเรียบร้อย');
+      } else {
+        // เพิ่มใหม่
+        MOCK_CLASS_STUDENTS[classKey].push({
+          no,
+          code,
+          name,
+          status: 'present',
+          remark
+        });
+        showToast('✅ เพิ่มนักเรียนใหม่เรียบร้อย');
+      }
+
+      studentModal.classList.add('hidden');
+      const attRoleSelect = document.getElementById('att-role-select');
+      if (attRoleSelect) attRoleSelect.dispatchEvent(new Event('change'));
+    });
+  }
+
+  // 5) ผู้ใช้รายบุคคล: เพิ่ม
+  if (addSingleUserBtn && userModal) {
+    addSingleUserBtn.addEventListener('click', () => {
+      userModal.classList.remove('hidden');
+    });
+  }
+  if (closeUserModal) closeUserModal.addEventListener('click', () => userModal.classList.add('hidden'));
+  if (cancelUserModal) cancelUserModal.addEventListener('click', () => userModal.classList.add('hidden'));
+
+  if (userCrudForm) {
+    userCrudForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('crud-user-email').value.trim().toLowerCase();
+      const name = document.getElementById('crud-user-name').value.trim();
+      const role = document.getElementById('crud-user-role').value;
+
+      allUsers.unshift({
+        id: 'usr_' + Date.now(),
+        email,
+        full_name: name,
+        role,
+        is_active: true,
+        created_at: new Date().toISOString()
+      });
+
+      renderUsersTable(allUsers);
+      updateUserStats(allUsers);
+      userModal.classList.add('hidden');
+      userCrudForm.reset();
+      showToast('✅ เพิ่มผู้ใช้งานในระบบเรียบร้อยแล้ว');
+    });
+  }
+}
+
+function downloadCsvFile(content, fileName) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* =====================================================================
+   12. HERO BANNERS & CAROUSEL MANAGEMENT (จัดการภาพสไลด์หน้าแรก)
+   ===================================================================== */
+function initBannersModule() {
+  const form = document.getElementById('hero-banner-form');
+  const container = document.getElementById('banners-list-container');
+  if (!form || !container) return;
+
+  const defaultBanners = [
+    {
+      id: 1,
+      title: 'อัตลักษณ์และความเป็นเลิศทางวิชาการ',
+      tagline: 'โรงเรียนบางชัน (ปลื้มวิทยานุสรณ์) มุ่งมั่นพัฒนาผู้เรียนสู่ศตวรรษที่ 21',
+      img: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1600&auto=format&fit=crop&q=80',
+      active: true
+    },
+    {
+      id: 2,
+      title: 'English Program (EP) และทักษะสากล',
+      tagline: 'เรียนรู้ภาษาอังกฤษกับครูเจ้าของภาษา เสริมสร้างศักยภาพสู่พลเมืองโลก',
+      img: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&auto=format&fit=crop&q=80',
+      active: true
+    }
+  ];
+
+  function getBanners() {
+    try {
+      const stored = localStorage.getItem('bcs_hero_banners');
+      return stored ? JSON.parse(stored) : defaultBanners;
+    } catch (e) {
+      return defaultBanners;
+    }
+  }
+
+  function saveBanners(list) {
+    try {
+      localStorage.setItem('bcs_hero_banners', JSON.stringify(list));
+    } catch (e) { /* ignore */ }
+  }
+
+  function renderBanners() {
+    const list = getBanners();
+    container.innerHTML = list.map((b, idx) => `
+      <div class="p-3 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-200">
+        <div class="flex items-center gap-3 min-w-0">
+          <img src="${b.img}" alt="${escapeHtml(b.title)}" class="w-16 h-10 object-cover rounded-xl shrink-0 border border-slate-200">
+          <div class="min-w-0">
+            <h4 class="font-bold text-slate-900 truncate">${escapeHtml(b.title)}</h4>
+            <p class="text-[10px] text-slate-500 truncate">${escapeHtml(b.tagline || '')}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full">● แสดงอยู่</span>
+          <button type="button" onclick="deleteHeroBanner(${idx})" class="text-xs text-red-600 hover:text-red-800 hover:underline">ลบ</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.deleteHeroBanner = function(idx) {
+    const list = getBanners();
+    if (confirm('ต้องการลบภาพสไลด์แบนเนอร์นี้ใช่หรือไม่?')) {
+      list.splice(idx, 1);
+      saveBanners(list);
+      renderBanners();
+      showToast('🗑️ ลบแบนเนอร์เรียบร้อยแล้ว');
+    }
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('banner-title').value.trim();
+    const tagline = document.getElementById('banner-tagline').value.trim();
+    const urlInput = document.getElementById('banner-img-url').value.trim();
+    const fileInput = document.getElementById('banner-file');
+
+    let imgUrl = urlInput || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600&auto=format&fit=crop&q=80';
+
+    if (fileInput && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      try {
+        const base64 = await fileToBase64(file);
+        const res = await fetch(GAS_UPLOAD_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ base64, fileName: file.name, mimeType: file.type, category: 'banners' })
+        });
+        const result = await res.json();
+        if (result.url || result.fileUrl) imgUrl = result.url || result.fileUrl;
+      } catch (err) {
+        console.warn('อัปโหลดแบนเนอร์ GAS ล้มเหลว:', err);
+      }
+    }
+
+    const list = getBanners();
+    list.unshift({
+      id: Date.now(),
+      title,
+      tagline,
+      img: imgUrl,
+      active: true
+    });
+    saveBanners(list);
+    renderBanners();
+    form.reset();
+    showToast('✅ เพิ่มภาพสไลด์แบนเนอร์ใหม่สำเร็จ');
+  });
+
+  renderBanners();
+}
+
+/* =====================================================================
+   13. UPLOAD LIMIT SETTINGS MODULE (ตั้งค่าขนาดไฟล์อัปโหลด)
+   ===================================================================== */
+function initUploadLimitModule() {
+  const saveBtn = document.getElementById('save-upload-limit-btn');
+  const radios = document.querySelectorAll('input[name="max-size-radio"]');
+  if (!saveBtn || !radios.length) return;
+
+  const currentLimit = localStorage.getItem('bcs_max_upload_mb') || '50';
+  radios.forEach(r => {
+    if (r.value === currentLimit) {
+      r.checked = true;
+      r.closest('label').classList.add('border-emerald-600', 'bg-emerald-50/50');
+    } else {
+      r.closest('label').classList.remove('border-emerald-600', 'bg-emerald-50/50');
+    }
+
+    r.addEventListener('change', () => {
+      radios.forEach(other => other.closest('label').classList.remove('border-emerald-600', 'bg-emerald-50/50'));
+      r.closest('label').classList.add('border-emerald-600', 'bg-emerald-50/50');
+    });
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const selected = document.querySelector('input[name="max-size-radio"]:checked');
+    if (selected) {
+      localStorage.setItem('bcs_max_upload_mb', selected.value);
+      showToast(`⚙️ บันทึกขนาดไฟล์อัปโหลดสูงสุด ${selected.value} MB เรียบร้อยแล้ว`);
+    }
   });
 }
+
 
 function showToast(message, type = 'success') {
   const toast = document.getElementById('admin-toast');
