@@ -1255,6 +1255,52 @@ function initCsvAndIndividualCrud() {
     });
   }
 
+  // 2.1) นำเข้า CSV ผู้ใช้งาน / บุคลากร
+  if (importUsersInput) {
+    importUsersInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const lines = text.split(/\r?\n/).filter(line => line.trim());
+        if (lines.length <= 1) throw new Error('ไฟล์ CSV ว่างเปล่า หรือไม่มีข้อมูลแถว');
+
+        let added = 0;
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+          if (cols.length >= 2 && cols[1]) {
+            const fullName = cols[0] || 'ไม่ระบุชื่อ';
+            const email = cols[1];
+            const role = (cols[2] && ['admin', 'executive', 'head', 'teacher', 'student'].includes(cols[2])) ? cols[2] : 'teacher';
+            const deptStr = cols[3] || 'กลุ่มสาระการเรียนรู้คณิตศาสตร์';
+            const isActive = cols[4] ? !cols[4].includes('ระงับ') : true;
+
+            const existing = allUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+            if (!existing) {
+              allUsers.push({
+                id: 'import-' + Date.now() + '-' + i,
+                full_name: fullName,
+                email: email,
+                role: role,
+                is_active: isActive,
+                departments: { id: 1, name: deptStr }
+              });
+              added++;
+            }
+          }
+        }
+
+        renderUsersTable(allUsers);
+        updateUserStats(allUsers);
+        showToast(`📥 นำเข้าบุคลากร ${added} ท่านจาก CSV สำเร็จ`);
+      } catch (err) {
+        alert('❌ นำเข้าไฟล์ CSV บุคลากรไม่สำเร็จ: ' + err.message);
+      }
+      e.target.value = '';
+    });
+  }
+
   // 3) ส่งออก CSV ผู้ใช้งาน
   if (exportUsersBtn) {
     exportUsersBtn.addEventListener('click', () => {
